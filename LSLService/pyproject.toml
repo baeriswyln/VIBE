@@ -1,0 +1,13 @@
+[project]
+name = "LSLService"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "mne-lsl",
+    "numpy",
+    "matplotlib",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
