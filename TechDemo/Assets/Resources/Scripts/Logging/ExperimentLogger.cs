@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using LSL;
 using UnityEngine;
 
 namespace Resources.Scripts.Logging
@@ -21,7 +22,13 @@ namespace Resources.Scripts.Logging
         [Header("References")]
         public GazeRaycaster gazeRaycaster;
         public PinchDetector pinchDetector;
-
+        
+        [Header("LSL Configuration")]
+        string StreamName = "LSL4Unity.TechDemo.EventStream";
+        string StreamType = "Markers";
+        private StreamOutlet outlet;
+        private string[] sample = { "" };
+        
         private string _filePath;
         private float _sessionStartTime;
 
@@ -63,6 +70,15 @@ namespace Resources.Scripts.Logging
             {
                 Debug.LogError($"[ExperimentLogger] No pinch detector found.");
             }
+            
+            // Stream setup
+            var hash = new Hash128();
+            hash.Append(StreamName);
+            hash.Append(StreamType);
+            hash.Append(""+gameObject.GetEntityId());
+            StreamInfo streamInfo = new StreamInfo(StreamName, StreamType, 1, LSL.LSL.IRREGULAR_RATE,
+                channel_format_t.cf_string, hash.ToString());
+            outlet = new StreamOutlet(streamInfo);
         }
 
         public void OnGazeEnter(Interactable stimulus)
@@ -116,7 +132,9 @@ namespace Resources.Scripts.Logging
             {
                 log.LogToConsole();
                 File.AppendAllText(_filePath, log.ToCsvEntry() + "\n");
-                // todo lsl log
+                
+                sample[0] = log.ToLslEntry();
+                outlet.push_sample(sample);
             }
             catch (Exception e)
             {

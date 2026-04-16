@@ -91,7 +91,7 @@ namespace Resources.Scripts
             }
             else
             {
-                onStimulusClicked?.Invoke(null);
+                onPinchDetected?.Invoke();
             }
         }
 

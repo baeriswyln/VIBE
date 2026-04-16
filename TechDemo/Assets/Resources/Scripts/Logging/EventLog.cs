@@ -1,4 +1,6 @@
 ﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace Resources.Scripts.Logging
@@ -7,9 +9,11 @@ namespace Resources.Scripts.Logging
     {
         public enum LogSeverity
         {
-            MESSAGE, WARNING, ERROR
+            MESSAGE,
+            WARNING,
+            ERROR
         }
-        
+
         public LogSeverity Severity = LogSeverity.MESSAGE;
         private DefaultLogData logData;
         private DateTime timestamp { get; set; }
@@ -25,16 +29,23 @@ namespace Resources.Scripts.Logging
         {
             logData = data;
         }
-        
+
         public static string[] GetCsvHeaders()
-            => new[] { "Timestamp", "Severity", "EventType", "EventName", "Payload"};
+            => new[] { "Timestamp", "Severity", "EventType", "EventName", "Payload" };
 
         public string[] ToCsvEntry()
-            => new[] { timestamp.ToString("O"), Severity.ToString(), eventType, GetPayload()};
+            => new[] { timestamp.ToString("O"), Severity.ToString(), eventType, GetPayload() };
 
         public string ToLslEntry()
         {
-            return "";
+            return JsonConvert.SerializeObject(new
+            {
+                UnityTimestamp = timestamp.ToString("O"),
+                EventType = eventType,
+                EventName = eventName,
+                Severity = Severity.ToString(),
+                Payload = new JRaw(GetPayload()),
+            });
         }
 
         public void LogToConsole()
@@ -53,7 +64,7 @@ namespace Resources.Scripts.Logging
                     break;
             }
         }
-        
+
         protected abstract string GetPayload();
 
         public struct DefaultLogData
@@ -63,6 +74,5 @@ namespace Resources.Scripts.Logging
             public Vector3 HeadPosition;
             public Vector3 HeadForward;
         }
-
     }
 }
