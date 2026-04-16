@@ -2,9 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Newtonsoft.Json;
+using Resources.Scripts.Logging;
 using UnityEngine;
 using UnityEngine.Events;
-using Debug = UnityEngine.Debug;
 
 namespace Resources.Scripts
 {
@@ -12,6 +13,8 @@ namespace Resources.Scripts
     {
         [Header("Experiment Sequence")] [Tooltip("Experiments will run in this order.")]
         public List<Experiment> experiments = new List<Experiment>();
+
+        [Header("Logging")] public ExperimentLogger logger;
 
         [Header("Start Behaviour")]
         [Tooltip("Start the sequence automatically on Play. If false, call StartSequence() manually.")]
@@ -53,13 +56,13 @@ namespace Resources.Scripts
         {
             if (_isRunning)
             {
-                Debug.LogWarning("[ExperimentRunner] Sequence already running.");
+                Log(new ExperimentManagerLog("SEQUENCE_ALREADY_RUNNING", "", EventLog.LogSeverity.WARNING));
                 return;
             }
 
             if (experiments.Count == 0)
             {
-                Debug.LogError("[ExperimentRunner] No experiments assigned.");
+                Log(new ExperimentManagerLog("NO_EXPERIMENT", "No experiments assigned.", EventLog.LogSeverity.ERROR));
                 return;
             }
 
@@ -74,7 +77,7 @@ namespace Resources.Scripts
         {
             if (CurrentExperiment != null)
             {
-                Debug.Log($"[ExperimentRunner] Skipping: {CurrentExperiment.experimentName}");
+                Log(new ExperimentManagerLog("SEQUENCE_SKIP", CurrentExperiment.experimentName));
                 CurrentExperiment.OnEnd();
             }
         }
@@ -83,14 +86,14 @@ namespace Resources.Scripts
         {
             _isRunning = true;
             onSequenceStart?.Invoke();
-            Debug.Log("[ExperimentRunner] Sequence started.");
+            Log(new ExperimentManagerLog("SEQUENCE_START", ""));
 
             for (_currentIndex = 0; _currentIndex < experiments.Count; _currentIndex++)
             {
                 Experiment exp = experiments[_currentIndex];
                 if (exp == null)
                 {
-                    Debug.LogWarning($"[ExperimentRunner] Experiment at index {_currentIndex} is null, skipping.");
+                    Log(new ExperimentManagerLog("MISSING_EXPERIMENT", $"Experiment at index {_currentIndex} is null, skipping.", EventLog.LogSeverity.WARNING));
                     continue;
                 }
 
@@ -113,7 +116,7 @@ namespace Resources.Scripts
             _currentIndex = -1;
             _isRunning = false;
             onSequenceComplete?.Invoke();
-            Debug.Log("[ExperimentRunner] Sequence complete.");
+            Log(new ExperimentManagerLog("SEQUENCE_COMPLETE", ""));
         }
 
         /// <summary>
@@ -128,9 +131,47 @@ namespace Resources.Scripts
             }
         }
 
-        public void Log(ExperimentLogger.LogEntry entry)
+        public void Log(EventLog entry)
         {
+            logger.RecordEvent(entry);
+        }
+        
+        public void LogWarning(EventLog entry)
+        {
+            entry.Severity = EventLog.LogSeverity.WARNING;
+            logger.RecordEvent(entry);
+        }
+        
+        public void LogError(EventLog entry)
+        {
+            entry.Severity = EventLog.LogSeverity.ERROR;
+            logger.RecordEvent(entry);
+        }
+
+        protected class ExperimentManagerLog : EventLog
+        {
+            private string _message;
             
+            public ExperimentManagerLog(string name, string message)
+            {
+                eventName = name;
+                _message = message;
+            }
+
+            public ExperimentManagerLog(string name, string message, LogSeverity severity)
+            {
+                eventName = name;
+                _message = message;
+                base.Severity = severity;
+            }
+
+            protected override string GetPayload()
+            {
+                return JsonConvert.SerializeObject(new
+                {
+                    Message = _message,
+                });
+            }
         }
     }
 }

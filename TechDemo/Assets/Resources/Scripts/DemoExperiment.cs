@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Resources.Scripts.Logging;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -115,7 +116,7 @@ namespace Resources.Scripts
         {
             if (spawner == null)
             {
-                Debug.LogError("[TargetSelectionExperiment] No spawner assigned.");
+                em.LogError(new ExperimentLog(GetType().Name, "No spawner assigned."));
                 yield break;
             }
 
@@ -130,7 +131,7 @@ namespace Resources.Scripts
             }
             spawner.DestroyStimuli();
 
-            Debug.Log($"[TargetSelectionExperiment] Finished: {_results.Count} events.");
+            em.Log(new ExperimentLog(GetType().Name, $"Finished: {_results.Count} events."));
 
             MarkComplete();
         }
@@ -145,9 +146,9 @@ namespace Resources.Scripts
 
             // Pick a random stimulus as the target
             var spawned = spawner.spawnedStimuli;
-            if (spawned == null || spawned.Count == 0)
+            if (spawned == null || spawned.Count != stimuliPerTrial)
             {
-                Debug.LogError($"[TargetSelectionExperiment] No stimuli spawned for trial {trialNumber}.");
+                em.LogError(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned for trial {trialNumber}."));
                 yield break;
             }
 
@@ -180,7 +181,7 @@ namespace Resources.Scripts
             _results.Add(result);
             onTrialComplete?.Invoke(result);
 
-            Debug.Log($"[Trial {trialNumber}] target={result.TargetId}  rt={result.ResponseTime:F3}s");
+            em.Log(new ExperimentLog(GetType().Name, $"trial={trialNumber} target={result.TargetId}  rt={result.ResponseTime:F3}s"));
             
             yield return new WaitForSeconds(feedbackDuration);
 
@@ -194,5 +195,6 @@ namespace Resources.Scripts
         {
             _selectedStimulus = clicked;
         }
+        
     }
 }

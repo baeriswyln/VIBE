@@ -1713,7 +1713,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.ExperimentLogger
   participantId: P001
   outputFolder: ExperimentLogs
-  gazeRaycaster: {fileID: 0}
+  gazeRaycaster: {fileID: 1359528791}
+  pinchDetector: {fileID: 968829679}
 --- !u!4 &1865475892
 Transform:
   m_ObjectHideFlags: 0
@@ -1848,6 +1849,7 @@ MonoBehaviour:
   experiments:
   - {fileID: 611744584}
   - {fileID: 1960306619}
+  logger: {fileID: 1865475891}
   startOnPlay: 1
   gapBetweenExperiments: 1
   onSequenceStart:

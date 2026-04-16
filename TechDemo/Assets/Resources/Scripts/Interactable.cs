@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using Newtonsoft.Json;
 
 namespace Resources.Scripts
 {
@@ -95,8 +96,6 @@ namespace Resources.Scripts
             _isSelected = true;
             UpdateColor();
             onSelected?.Invoke();
- 
-            Debug.Log($"[StimulusInteractable] Selected: {StimulusId}");
         }
  
         /// <summary>Resets this stimulus to its default visual state.</summary>
@@ -123,6 +122,16 @@ namespace Resources.Scripts
             _propBlock.SetColor("_Color", color);
             _propBlock.SetColor("_BaseColor", color); // URP/HDRP
             _renderer.SetPropertyBlock(_propBlock);
+        }
+
+        public string ToJSON()
+        {
+            var pos = transform.position;
+            return JsonConvert.SerializeObject(new
+            {
+            StimulusId, IsHighlighted, IsSelected, IsGazed,
+            Position = new { x = pos.x, y = pos.y, z = pos.z },
+            });
         }
     }
 }

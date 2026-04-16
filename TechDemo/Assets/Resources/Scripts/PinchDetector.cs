@@ -1,5 +1,4 @@
-﻿using System;
-using Leap;
+﻿using Leap;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -81,8 +80,6 @@ namespace Resources.Scripts
 
         private void HandlePinch()
         {
-            onPinchDetected?.Invoke();
-            
             _audioSource.PlayOneShot(clickSound, .5f);
 
             // Only select if gaze is confirmed on a target
@@ -91,12 +88,10 @@ namespace Resources.Scripts
                 Interactable target = gazeRaycaster.CurrentTarget;
                 target.OnSelect();
                 onStimulusClicked?.Invoke(target);
-
-                Debug.Log($"[PinchDetector] Pinch-clicked: {target.StimulusId}");
             }
             else
             {
-                Debug.Log("[PinchDetector] Pinch detected but no focused stimulus.");
+                onStimulusClicked?.Invoke(null);
             }
         }
 
