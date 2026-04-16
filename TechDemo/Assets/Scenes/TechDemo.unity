@@ -844,13 +844,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.InteractableManager
   stimuliPrefab: {fileID: 2297796887684887862, guid: 131b1dc1bfcaf0a43a865edd2f2ddefa, type: 3}
   spawnBox: {fileID: 1406548672}
-  maxSpawnAttempts: 5
+  maxSpawnAttempts: 10
+  minStimuliGap: 0.1
   useCurvedBounds: 1
   innerRadius: 5
   outerRadius: 5.2
-  arcAngleDegrees: 60
-  minHeight: 0.5
-  maxHeight: 2
+  arcAngleDegrees: 75
+  minHeight: 0.2
+  maxHeight: 3
 --- !u!1 &968829676
 GameObject:
   m_ObjectHideFlags: 0
@@ -1181,7 +1182,7 @@ MonoBehaviour:
   focusDwellTime: 0
   reticle: {fileID: 650430509}
   reticleDefaultDistance: 8
-  gazeSmoothingFactor: 0.9
+  gazeSmoothingFactor: 10
   drawDebugRay: 1
   debugRayWidth: 0.003
   logDebug: 0
@@ -1844,8 +1845,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.ExperimentManager
   experiments:
-  - {fileID: 1960306619}
   - {fileID: 611744584}
+  - {fileID: 1960306619}
   startOnPlay: 1
   gapBetweenExperiments: 1
   onSequenceStart:

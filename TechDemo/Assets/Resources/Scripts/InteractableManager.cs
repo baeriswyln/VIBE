@@ -6,9 +6,11 @@ namespace Resources.Scripts
 {
     public class InteractableManager : MonoBehaviour
     {
+        [Header("Spawn properties")]
         [SerializeField] private Interactable stimuliPrefab;
         [SerializeField] private BoxCollider spawnBox;
         [SerializeField] private int maxSpawnAttempts = 5;
+        [SerializeField] private float minStimuliGap = 0.5f;
         
         [Header("Curved Spawn Area")]
         public bool useCurvedBounds = true;
@@ -27,6 +29,10 @@ namespace Resources.Scripts
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
+            var sphere = stimuliPrefab.GetComponentInChildren<SphereCollider>();
+            var scale = sphere.transform.lossyScale;
+            var maxScale = Mathf.Max(scale.x, scale.y, scale.z);
+            _prefabRadius = sphere.radius * maxScale;
         }
 
         // Update is called once per frame
@@ -116,7 +122,7 @@ namespace Resources.Scripts
         {
             foreach (var pos in existing)
             {
-                if (Vector3.Distance(candidate, pos) < _prefabRadius * 2f)
+                if (Vector3.Distance(candidate, pos) < _prefabRadius * 2f + minStimuliGap)
                     return true;
             }
 
