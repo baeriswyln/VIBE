@@ -162,6 +162,7 @@ MonoBehaviour:
   selectedColor: {r: 0.3, g: 1, b: 0.5, a: 1}
   highlightScaleMultiplier: 1.15
   scaleAnimationSpeed: 8
+  selectSound: {fileID: 8300000, guid: cef5d2eaf31bece4c93da1d521e64b22, type: 3}
   onGazeEnter:
     m_PersistentCalls:
       m_Calls: []

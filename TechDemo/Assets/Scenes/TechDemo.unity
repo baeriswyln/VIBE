@@ -902,6 +902,7 @@ MonoBehaviour:
   pinchThreshold: 0.85
   releaseThreshold: 0.5
   cooldownTime: 0.4
+  clickSound: {fileID: 8300000, guid: cef5d2eaf31bece4c93da1d521e64b22, type: 3}
   onPinchDetected:
     m_PersistentCalls:
       m_Calls: []
