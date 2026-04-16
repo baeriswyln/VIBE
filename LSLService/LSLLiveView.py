@@ -17,7 +17,7 @@ eeg.connect(acquisition_delay=0.05)
 eeg_correction = eeg._inlet.time_correction(timeout=5.0)
 
 print("Discovering marker streams...")
-all_streams = resolve_streams(timeout=5.0)
+all_streams = resolve_streams(timeout=2.0)
 marker_streams_info = [s for s in all_streams if s.stype == "Markers"]
 
 marker_inlets = []
@@ -95,6 +95,8 @@ while plt.fignum_exists(fig.number):
     # 1. Collect new markers into the absolute timestamp list
     for i, (inlet, correction) in enumerate(zip(marker_inlets, marker_corrections)):
         samples, ts = inlet.pull_chunk(timeout=0.0)
+        for t, s in zip(ts, samples):
+            print(f"{t} [{inlet.name}]: {s}")
         if ts.size > 0:
             corrected = np.array(ts) + correction
             all_marker_ts.extend([(t,i) for t in corrected.tolist()])
