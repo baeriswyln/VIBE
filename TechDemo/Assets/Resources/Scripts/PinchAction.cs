@@ -3,6 +3,7 @@ using Leap;
 using LSL;
 using TMPro;
 using UnityEngine.UI;
+using PinchDetector = Resources.Scripts.PinchDetector;
 
 public class PinchAction : MonoBehaviour
 {
@@ -80,12 +81,12 @@ public class PinchAction : MonoBehaviour
 
     private void OnEnable()
     {
-        pinchDetector.OnPinchStart += HandlePinchStart;
+        // pinchDetector.OnPinchStart += HandlePinchStart;
     }
 
     private void OnDisable()
     {
-        pinchDetector.OnPinchStart -= HandlePinchStart;
+        // pinchDetector.OnPinchStart -= HandlePinchStart;
     }
 
     private void HandlePinchStart(Hand hand)
