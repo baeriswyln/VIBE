@@ -1,6 +1,10 @@
 ﻿// VIVE OpenXR Plugin native eye tracker API
 // Requires: VIVE OpenXR Plugin with "Vive XR Eye Tracker (Beta)" enabled
 // in Project Settings > XR Plug-in Management > OpenXR > OpenXR Feature Groups
+
+using Newtonsoft.Json;
+using Resources.Scripts.Logging;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -43,8 +47,13 @@ namespace Resources.Scripts
         [Tooltip("Which eye to use for the gaze ray.")]
         public GazeEye gazeEye = GazeEye.Combined;
 
-        [Header("Raycast Settings")]
-        [Tooltip("Maximum distance for gaze detection.")]
+        [Tooltip("Threshold to cross to consider an eye closed")]
+        public float eyeClosedThreshold = 0.4f;
+
+        [Tooltip("Threshold to cross to consider an eye to be opened up again")]
+        public float eyeOpenThreshold = 0.6f;
+
+        [Header("Raycast Settings")] [Tooltip("Maximum distance for gaze detection.")]
         public float maxDistance = 20f;
 
         [Tooltip("Layer mask for stimulus objects.")]
@@ -69,7 +78,10 @@ namespace Resources.Scripts
         [Range(0f, 20f)]
         public float gazeSmoothingFactor = 5f;
 
-        [Header("Debug")]
+        [Header("Debug")] 
+        [Tooltip("Log manager")]
+        public ExperimentLogger logger;
+        
         [Tooltip("Draw gaze ray in Scene view.")]
         public bool drawDebugRay = true;
         
@@ -97,18 +109,24 @@ namespace Resources.Scripts
         private GazeSource _activeSource = GazeSource.None;
         private GazeSource _prevSource = GazeSource.None;
 
+        // EyeState
+        private bool rightEyeOpen;
+        private bool leftEyeOpen;
+
         // --- Public API ---
 
         public Interactable CurrentTarget => _currentTarget;
         public bool IsFocusConfirmed => _currentTarget != null && _focusTimer >= focusDwellTime;
+
         public bool IsEyeTrackingActive => _activeSource == GazeSource.ViveNativeEyeTracker
                                            || _activeSource == GazeSource.OpenXRInputSystem;
+
         public Vector3 CurrentGazeDirection => _smoothedGazeDirection;
         public Vector3 CurrentGazeOrigin { get; private set; }
         public GazeSource ActiveSource => _activeSource;
 
         // -------------------------------------------------------------------
-        
+
         private void Start()
         {
             _smoothedGazeDirection = transform.forward;
@@ -220,9 +238,8 @@ namespace Resources.Scripts
                 // Debug ray — visible in headset via LineRenderer
                 UpdateDebugRay(rayOrigin, didHit ? hit.point : rayOrigin + _smoothedGazeDirection * maxDistance);
             }
-            
         }
-        
+
         private void UpdateDebugRay(Vector3 start, Vector3 end)
         {
             if (!drawDebugRay)
@@ -230,7 +247,7 @@ namespace Resources.Scripts
                 if (_debugLine != null) _debugLine.enabled = false;
                 return;
             }
- 
+
             // Create LineRenderer on demand
             if (_debugLine == null)
             {
@@ -245,14 +262,14 @@ namespace Resources.Scripts
                 _debugLine.receiveShadows = false;
                 _debugLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
- 
+
             _debugLine.enabled = true;
- 
+
             Color c = _activeSource switch
             {
                 GazeSource.ViveNativeEyeTracker => Color.green,
-                GazeSource.OpenXRInputSystem    => Color.yellow,
-                _                               => Color.cyan
+                GazeSource.OpenXRInputSystem => Color.yellow,
+                _ => Color.cyan
             };
             _debugLine.startColor = c;
             _debugLine.endColor = c;
@@ -279,6 +296,9 @@ namespace Resources.Scripts
                 if (!success || gazes == null || gazes.Length == 0)
                     return false;
 
+                UpdateEyeGeometry();
+
+
                 // Pick the requested eye
                 XrSingleEyeGazeDataHTC gazeData;
                 switch (gazeEye)
@@ -291,17 +311,17 @@ namespace Resources.Scripts
                         break;
                     default: // Combined
                         // Use left eye as base; average with right if both valid
-                        var left  = gazes[(int)XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC];
+                        var left = gazes[(int)XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC];
                         var right = gazes[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
                         if (left.isValid && right.isValid)
                         {
                             // Average the two gaze directions for a combined ray
-                            Vector3 leftDir  = (left.gazePose.orientation.ToUnityQuaternion()) * Vector3.forward;
+                            Vector3 leftDir = (left.gazePose.orientation.ToUnityQuaternion()) * Vector3.forward;
                             Vector3 rightDir = (right.gazePose.orientation.ToUnityQuaternion()) * Vector3.forward;
-                            Vector3 leftPos  = (left.gazePose.position.ToUnityVector());
+                            Vector3 leftPos = (left.gazePose.position.ToUnityVector());
                             Vector3 rightPos = (right.gazePose.position.ToUnityVector());
 
-                            origin    = (leftPos + rightPos) * 0.5f;
+                            origin = (leftPos + rightPos) * 0.5f;
                             direction = ((leftDir + rightDir) * 0.5f).normalized;
 
                             _activeSource = GazeSource.ViveNativeEyeTracker;
@@ -311,6 +331,7 @@ namespace Resources.Scripts
 
                             return true;
                         }
+
                         // Fall through to whichever single eye is valid
                         gazeData = left.isValid ? left : right;
                         break;
@@ -323,7 +344,7 @@ namespace Resources.Scripts
                 Vector3 localPos = gazeData.gazePose.position.ToUnityVector();
                 Quaternion localRot = gazeData.gazePose.orientation.ToUnityQuaternion();
 
-                origin    = transform.TransformPoint(localPos);
+                origin = transform.TransformPoint(localPos);
                 direction = (transform.rotation * localRot * Vector3.forward).normalized;
 
                 _activeSource = GazeSource.ViveNativeEyeTracker;
@@ -341,6 +362,45 @@ namespace Resources.Scripts
             }
         }
 
+        private void UpdateEyeGeometry()
+        {
+            // Read Eye Geometry
+            XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out XrSingleEyeGeometricDataHTC[] out_geometrics);
+            if (out_geometrics is { Length: 2 })
+            {
+                XrSingleEyeGeometricDataHTC rightGeometric =
+                    out_geometrics[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
+                if (rightGeometric.isValid)
+                {
+                    if (rightEyeOpen && rightGeometric.eyeOpenness < eyeClosedThreshold)
+                    {
+                        logger.RecordEvent(new BlinkLog("RIGHT", "CLOSED"));
+                        rightEyeOpen = false;
+                    }
+                    else if (!rightEyeOpen && rightGeometric.eyeOpenness > eyeOpenThreshold)
+                    {
+                        logger.RecordEvent(new BlinkLog("RIGHT", "OPENED"));
+                        rightEyeOpen = true;
+                    }
+                }
+                XrSingleEyeGeometricDataHTC leftGeometric =
+                    out_geometrics[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
+                if (leftGeometric.isValid)
+                {
+                    if (leftEyeOpen && leftGeometric.eyeOpenness < eyeClosedThreshold)
+                    {
+                        logger.RecordEvent(new BlinkLog("LEFT", "CLOSED"));
+                        leftEyeOpen = false;
+                    }
+                    else if (!leftEyeOpen && leftGeometric.eyeOpenness > eyeOpenThreshold)
+                    {
+                        logger.RecordEvent(new BlinkLog("LEFT", "OPENED"));
+                        leftEyeOpen = true;
+                    }
+                }
+            }
+        }
+
         private void UpdateReticle(Vector3 position, Vector3 normal)
         {
             if (reticle == null) return;
@@ -352,6 +412,26 @@ namespace Resources.Scripts
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawRay(transform.position, transform.forward * maxDistance);
+        }
+
+        protected class BlinkLog : EventLog
+        {
+            private string _eye;
+            private string _state;
+            public BlinkLog(string eye, string state)
+            {
+                _eye = eye;
+                _state = state;
+            }
+
+            protected override string GetPayload()
+            {
+                return JsonConvert.SerializeObject(new
+                {
+                    Eye = _eye,
+                    State = _state
+                });
+            }
         }
     }
 }

@@ -1173,6 +1173,8 @@ MonoBehaviour:
   useEyeTracking: 1
   fallbackToHeadGaze: 1
   gazeEye: 0
+  eyeClosedThreshold: 0.4
+  eyeOpenThreshold: 0.6
   maxDistance: 20
   stimulusLayer:
     serializedVersion: 2
@@ -1182,6 +1184,7 @@ MonoBehaviour:
   reticle: {fileID: 650430509}
   reticleDefaultDistance: 8
   gazeSmoothingFactor: 10
+  logger: {fileID: 1865475891}
   drawDebugRay: 0
   debugRayWidth: 0.003
   logDebug: 0
