@@ -11,5 +11,6 @@
 ## Setup
 
 1. Install compatible Unity version
-2. Start Ultraleap
-3. Start the experiment
+2. Activate EyeTracking in SteamVR
+3. Start Ultraleap
+4. Start the experiment

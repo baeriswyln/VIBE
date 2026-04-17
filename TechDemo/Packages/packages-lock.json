@@ -1,5 +1,17 @@
 {
   "dependencies": {
+    "com.htc.upm.vive.openxr": {
+      "version": "https://github.com/ViveSoftware/VIVE-OpenXR.git?path=com.htc.upm.vive.openxr",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.xr.management": "4.2.1",
+        "com.unity.inputsystem": "1.7.0",
+        "com.unity.xr.openxr": "1.12.1",
+        "com.unity.xr.interaction.toolkit": "2.5.4"
+      },
+      "hash": "25a5fd212420688952ead9deba735357656278ec"
+    },
     "com.labstreaminglayer.lsl4unity": {
       "version": "https://github.com/labstreaminglayer/LSL4Unity.git",
       "depth": 0,

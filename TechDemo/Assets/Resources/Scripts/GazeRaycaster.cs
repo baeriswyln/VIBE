@@ -4,6 +4,8 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using VIVE.OpenXR;
+using VIVE.OpenXR.EyeTracker;
 
 namespace Resources.Scripts
 {
@@ -40,13 +42,6 @@ namespace Resources.Scripts
 
         [Tooltip("Which eye to use for the gaze ray.")]
         public GazeEye gazeEye = GazeEye.Combined;
-
-        [Header("Input System Fallback (Optional)")]
-        [Tooltip("Input Action bound to <EyeGaze>/pose/position (used only if native API fails).")]
-        public InputActionReference gazePositionAction;
-
-        [Tooltip("Input Action bound to <EyeGaze>/pose/rotation (used only if native API fails).")]
-        public InputActionReference gazeRotationAction;
 
         [Header("Raycast Settings")]
         [Tooltip("Maximum distance for gaze detection.")]
@@ -113,23 +108,7 @@ namespace Resources.Scripts
         public GazeSource ActiveSource => _activeSource;
 
         // -------------------------------------------------------------------
-
-        private void OnEnable()
-        {
-            if (gazePositionAction != null && gazePositionAction.action != null)
-                gazePositionAction.action.Enable();
-            if (gazeRotationAction != null && gazeRotationAction.action != null)
-                gazeRotationAction.action.Enable();
-        }
-
-        private void OnDisable()
-        {
-            if (gazePositionAction != null && gazePositionAction.action != null)
-                gazePositionAction.action.Disable();
-            if (gazeRotationAction != null && gazeRotationAction.action != null)
-                gazeRotationAction.action.Disable();
-        }
-
+        
         private void Start()
         {
             _smoothedGazeDirection = transform.forward;
@@ -146,11 +125,7 @@ namespace Resources.Scripts
                 // Priority 1: VIVE native eye tracker API
                 gotEyeTracking = TryGetViveNativeEyeGaze(out rayOrigin, out rayDirection);
 
-                // Priority 2: OpenXR Input System (generic)
-                if (!gotEyeTracking)
-                    gotEyeTracking = TryGetInputSystemEyeGaze(out rayOrigin, out rayDirection);
-
-                // Priority 3: Head gaze fallback
+                // Priority 2: Head gaze fallback
                 if (!gotEyeTracking)
                 {
                     if (fallbackToHeadGaze)
@@ -295,7 +270,6 @@ namespace Resources.Scripts
             origin = Vector3.zero;
             direction = Vector3.forward;
 
-#if VIVE_OPENXR_EYETRACKER
             try
             {
                 bool success = XR_HTC_eye_tracker.Interop.GetEyeGazeData(
@@ -322,10 +296,10 @@ namespace Resources.Scripts
                         if (left.isValid && right.isValid)
                         {
                             // Average the two gaze directions for a combined ray
-                            Vector3 leftDir  = (transform.rotation * left.gazePose.orientation.ToUnityQuaternion()) * Vector3.forward;
-                            Vector3 rightDir = (transform.rotation * right.gazePose.orientation.ToUnityQuaternion()) * Vector3.forward;
-                            Vector3 leftPos  = transform.TransformPoint(left.gazePose.position.ToUnityVector());
-                            Vector3 rightPos = transform.TransformPoint(right.gazePose.position.ToUnityVector());
+                            Vector3 leftDir  = (left.gazePose.orientation.ToUnityQuaternion()) * Vector3.forward;
+                            Vector3 rightDir = (right.gazePose.orientation.ToUnityQuaternion()) * Vector3.forward;
+                            Vector3 leftPos  = (left.gazePose.position.ToUnityVector());
+                            Vector3 rightPos = (right.gazePose.position.ToUnityVector());
 
                             origin    = (leftPos + rightPos) * 0.5f;
                             direction = ((leftDir + rightDir) * 0.5f).normalized;
@@ -365,51 +339,7 @@ namespace Resources.Scripts
                     Debug.LogWarning($"[GazeRaycaster] VIVE native API error: {e.Message}");
                 return false;
             }
-#else
-        return false;
-#endif
         }
-
-        // =======================================================================
-        // PRIORITY 2: OpenXR Eye Gaze Interaction via Input System
-        // Uses <EyeGaze>/pose/position and <EyeGaze>/pose/rotation.
-        // Often returns (0,0,1) on Vive Pro Eye — hence it's the fallback.
-        // =======================================================================
-        private bool TryGetInputSystemEyeGaze(out Vector3 origin, out Vector3 direction)
-        {
-            origin = Vector3.zero;
-            direction = Vector3.forward;
-
-            if (gazePositionAction == null || gazePositionAction.action == null ||
-                gazeRotationAction == null || gazeRotationAction.action == null)
-                return false;
-
-            Vector3 localPos = gazePositionAction.action.ReadValue<Vector3>();
-            Quaternion localRot = gazeRotationAction.action.ReadValue<Quaternion>();
-
-            // Check for default/invalid data — this is the (0,0,1) problem
-            if (localRot == Quaternion.identity && localPos == Vector3.zero)
-                return false;
-
-            // Also reject if direction hasn't changed at all (stuck data)
-            Vector3 testDir = (localRot * Vector3.forward);
-            if (Mathf.Approximately(testDir.x, 0f) &&
-                Mathf.Approximately(testDir.y, 0f) &&
-                Mathf.Approximately(testDir.z, 1f))
-                return false;
-
-            origin    = transform.TransformPoint(localPos);
-            direction = (transform.rotation * localRot * Vector3.forward).normalized;
-
-            _activeSource = GazeSource.OpenXRInputSystem;
-
-            if (logDebug)
-                Debug.Log($"[GazeRaycaster] InputSystem: dir={direction}");
-
-            return true;
-        }
-
-        // =======================================================================
 
         private void UpdateReticle(Vector3 position, Vector3 normal)
         {
