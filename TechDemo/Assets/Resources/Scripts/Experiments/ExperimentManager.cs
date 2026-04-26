@@ -7,7 +7,7 @@ using Resources.Scripts.Logging;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Resources.Scripts
+namespace Resources.Scripts.Experiments
 {
     public class ExperimentManager : MonoBehaviour
     {

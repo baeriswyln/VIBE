@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
-namespace Resources.Scripts
+namespace Resources.Scripts.Experiments
 {
     /// <summary>
     /// Spawns N stimuli, highlights one as the target, and waits for the user to

@@ -1,9 +1,8 @@
 ﻿using System.Collections;
-using Resources.Scripts.Experiments;
 using TMPro;
 using UnityEngine;
 
-namespace Resources.Scripts
+namespace Resources.Scripts.Experiments
 {
     /// <summary>
     /// A simple tutorial experiment that displays instruction text in world space

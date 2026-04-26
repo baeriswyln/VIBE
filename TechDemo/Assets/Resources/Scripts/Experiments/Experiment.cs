@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Resources.Scripts
+namespace Resources.Scripts.Experiments
 {
     /// <summary>
     /// Base class for all experiments. Inherit from this to create new experiment types.
