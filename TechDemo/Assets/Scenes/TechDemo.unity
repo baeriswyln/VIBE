@@ -975,6 +975,56 @@ MonoBehaviour:
   arcAngleDegrees: 75
   minHeight: 0.2
   maxHeight: 3
+--- !u!1 &928532299
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 928532301}
+  - component: {fileID: 928532300}
+  m_Layer: 0
+  m_Name: ViveEyeLslStreamer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &928532300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 928532299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1db7b22fce18402da82cf0dd248c3438, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.ViveEyeLslStreamer
+  sourceId: ViveOpenXREye_001
+  nominalRateHz: 120
+  blinkOpennessThreshold: 0.4
+  blinkHoldFrames: 2
+  logger: {fileID: 1865475891}
+  skipInvalidSamples: 0
+--- !u!4 &928532301
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 928532299}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &968829676
 GameObject:
   m_ObjectHideFlags: 0
@@ -1296,8 +1346,7 @@ MonoBehaviour:
   useEyeTracking: 1
   fallbackToHeadGaze: 1
   gazeEye: 0
-  eyeClosedThreshold: 0.4
-  eyeOpenThreshold: 0.6
+  blinkHoldFrames: 2
   maxDistance: 20
   stimulusLayer:
     serializedVersion: 2
@@ -2146,3 +2195,4 @@ SceneRoots:
   - {fileID: 1865475892}
   - {fileID: 1976708001}
   - {fileID: 1434859424}
+  - {fileID: 928532301}

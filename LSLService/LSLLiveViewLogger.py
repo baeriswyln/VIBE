@@ -20,6 +20,11 @@ USE_EEG_SIM = len(sys.argv) > 2 and sys.argv[2] == "use_eeg_sim"
 
 MARKER_COLORS = ["#ff6b6b", "#6bffb8", "#6bb8ff", "#ffb86b", "#d96bff"]
 
+# --- Output directory (created early so gaze/marker/eeg setup can all use it) ---
+_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+_data_dir = os.path.join("data", f"subject_{SUBJECT_ID}")
+os.makedirs(_data_dir, exist_ok=True)
+
 # --- Optionally start EEG simulator ---
 _sim_proc = None
 if USE_EEG_SIM:
@@ -42,9 +47,10 @@ eeg = StreamLSL(name=eeg_stream_info.name, bufsize=5.0)
 eeg.connect(acquisition_delay=0.05)
 eeg_correction = eeg._inlet.time_correction(timeout=5.0)
 
-print("Discovering marker streams...")
+print("Discovering marker and gaze streams...")
 all_streams = resolve_streams(timeout=2.0)
 marker_streams_info = [s for s in all_streams if s.stype == "Markers"]
+gaze_streams_info   = [s for s in all_streams if s.stype == "Gaze"]
 
 marker_inlets = []
 marker_corrections = []
@@ -58,13 +64,40 @@ for s in marker_streams_info:
 if not marker_inlets:
     print("No marker streams found, continuing without markers.")
 
+def _gaze_ch_names(info):
+    try:
+        names = info.get_channel_names()
+        if names:
+            return names
+    except Exception:
+        pass
+    return [f"ch_{i}" for i in range(info.n_channels)]
+
+gaze_inlets = []
+gaze_corrections = []
+gaze_writers = []
+gaze_csvs = []
+for s in gaze_streams_info:
+    inlet = StreamInlet(s)
+    inlet.open_stream()
+    correction = inlet.time_correction(timeout=5.0)
+    ch_names = _gaze_ch_names(s)
+    csv_path = os.path.join(_data_dir, f"gaze_{s.name}_{_ts}.csv")
+    f = open(csv_path, "w", newline="")
+    w = csv.writer(f)
+    w.writerow(["timestamp"] + ch_names)
+    gaze_inlets.append(inlet)
+    gaze_corrections.append(correction)
+    gaze_writers.append(w)
+    gaze_csvs.append(f)
+    print(f"Connected to gaze stream: {s.name} ({len(ch_names)} ch)")
+if not gaze_inlets:
+    print("No gaze streams found, continuing without gaze logging.")
+
 CH_NAMES   = ["Fp1", "Fp2", "C3", "C4", "P3", "P4", "O1", "O2"]
 N_CHANNELS = len(CH_NAMES)
 
 # --- CSV logging setup ---
-_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-_data_dir = os.path.join("data", f"subject_{SUBJECT_ID}")
-os.makedirs(_data_dir, exist_ok=True)
 _eeg_csv = open(os.path.join(_data_dir, f"eeg_{_ts}.csv"), "w", newline="")
 _marker_csv = open(os.path.join(_data_dir, f"markers_{_ts}.csv"), "w", newline="")
 _eeg_writer = csv.writer(_eeg_csv)
@@ -136,6 +169,14 @@ while plt.fignum_exists(fig.number):
     ax.set_xlim(0, WINDOW_SEC)
     ax.set_ylim(-SPACING, N_CHANNELS * SPACING)
 
+    # --- Log gaze samples ---
+    for inlet, correction, writer in zip(gaze_inlets, gaze_corrections, gaze_writers):
+        gaze_samples, gaze_ts = inlet.pull_chunk(timeout=0.0)
+        if gaze_ts.size > 0:
+            corrected = np.array(gaze_ts) + correction
+            for t, row in zip(corrected.tolist(), gaze_samples):
+                writer.writerow([t] + list(row))
+
     # --- Fetch markers ---
     # 1. Collect new markers into the absolute timestamp list
     for i, (inlet, correction) in enumerate(zip(marker_inlets, marker_corrections)):
@@ -182,6 +223,9 @@ while plt.fignum_exists(fig.number):
 eeg.disconnect()
 for inlet in marker_inlets:
     inlet.close_stream()
+for inlet, f in zip(gaze_inlets, gaze_csvs):
+    inlet.close_stream()
+    f.close()
 _eeg_csv.close()
 _marker_csv.close()
 if _sim_proc:

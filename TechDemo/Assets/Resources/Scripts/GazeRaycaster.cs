@@ -46,12 +46,11 @@ namespace Resources.Scripts
 
         [Tooltip("Which eye to use for the gaze ray.")]
         public GazeEye gazeEye = GazeEye.Combined;
+        
+        [Tooltip("Number of consecutive 'closed-or-invalid' frames required before a blink_start fires. " +
+                 "Filters out single-frame tracker hiccups. 2 is a good default at 90+ Hz.")]
+        [Range(1, 10)] public int blinkHoldFrames = 2;
 
-        [Tooltip("Threshold to cross to consider an eye closed")]
-        public float eyeClosedThreshold = 0.4f;
-
-        [Tooltip("Threshold to cross to consider an eye to be opened up again")]
-        public float eyeOpenThreshold = 0.6f;
 
         [Header("Raycast Settings")] [Tooltip("Maximum distance for gaze detection.")]
         public float maxDistance = 20f;
@@ -108,10 +107,6 @@ namespace Resources.Scripts
         private Vector3 _smoothedGazeDirection;
         private GazeSource _activeSource = GazeSource.None;
         private GazeSource _prevSource = GazeSource.None;
-
-        // EyeState
-        private bool rightEyeOpen;
-        private bool leftEyeOpen;
 
         // --- Public API ---
 
@@ -296,8 +291,6 @@ namespace Resources.Scripts
                 if (!success || gazes == null || gazes.Length == 0)
                     return false;
 
-                UpdateEyeGeometry();
-
 
                 // Pick the requested eye
                 XrSingleEyeGazeDataHTC gazeData;
@@ -362,45 +355,6 @@ namespace Resources.Scripts
             }
         }
 
-        private void UpdateEyeGeometry()
-        {
-            // Read Eye Geometry
-            XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out XrSingleEyeGeometricDataHTC[] out_geometrics);
-            if (out_geometrics is { Length: 2 })
-            {
-                XrSingleEyeGeometricDataHTC rightGeometric =
-                    out_geometrics[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
-                if (rightGeometric.isValid)
-                {
-                    if (rightEyeOpen && rightGeometric.eyeOpenness < eyeClosedThreshold)
-                    {
-                        logger.RecordEvent(new BlinkLog("RIGHT", "CLOSED"));
-                        rightEyeOpen = false;
-                    }
-                    else if (!rightEyeOpen && rightGeometric.eyeOpenness > eyeOpenThreshold)
-                    {
-                        logger.RecordEvent(new BlinkLog("RIGHT", "OPENED"));
-                        rightEyeOpen = true;
-                    }
-                }
-                XrSingleEyeGeometricDataHTC leftGeometric =
-                    out_geometrics[(int)XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
-                if (leftGeometric.isValid)
-                {
-                    if (leftEyeOpen && leftGeometric.eyeOpenness < eyeClosedThreshold)
-                    {
-                        logger.RecordEvent(new BlinkLog("LEFT", "CLOSED"));
-                        leftEyeOpen = false;
-                    }
-                    else if (!leftEyeOpen && leftGeometric.eyeOpenness > eyeOpenThreshold)
-                    {
-                        logger.RecordEvent(new BlinkLog("LEFT", "OPENED"));
-                        leftEyeOpen = true;
-                    }
-                }
-            }
-        }
-
         private void UpdateReticle(Vector3 position, Vector3 normal)
         {
             if (reticle == null) return;
@@ -412,26 +366,6 @@ namespace Resources.Scripts
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawRay(transform.position, transform.forward * maxDistance);
-        }
-
-        protected class BlinkLog : EventLog
-        {
-            private string _eye;
-            private string _state;
-            public BlinkLog(string eye, string state)
-            {
-                _eye = eye;
-                _state = state;
-            }
-
-            protected override string GetPayload()
-            {
-                return JsonConvert.SerializeObject(new
-                {
-                    Eye = _eye,
-                    State = _state
-                });
-            }
         }
     }
 }

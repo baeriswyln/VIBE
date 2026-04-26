@@ -101,7 +101,7 @@ namespace Resources.Scripts.Logging
             RecordEvent(new PinchLog(stimulus));
         }
 
-        public void RecordEvent(EventLog log)
+        public void RecordEvent(EventLog log, double ts = 0.0)
         {
             // Gaze data from the raycaster
             Vector3 gazeOrigin = Vector3.zero;
@@ -134,7 +134,7 @@ namespace Resources.Scripts.Logging
                 File.AppendAllText(_filePath, log.ToCsvEntry() + "\n");
                 
                 sample[0] = log.ToLslEntry();
-                outlet.push_sample(sample);
+                outlet.push_sample(sample, ts > 0 ? ts : LSL.LSL.local_clock());
             }
             catch (Exception e)
             {
