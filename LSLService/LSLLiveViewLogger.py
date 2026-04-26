@@ -4,6 +4,7 @@ import time
 import csv
 import datetime
 import os
+import json
 import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
@@ -64,13 +65,27 @@ for s in marker_streams_info:
 if not marker_inlets:
     print("No marker streams found, continuing without markers.")
 
-def _gaze_ch_names(info):
+def get_channel_names_log_metadata(info, file_prefix):
     try:
-        names = info.get_channel_names()
-        if names:
-            return names
-    except Exception:
+        csv_path = os.path.join(_data_dir, f"{file_prefix}_{info.name}_{_ts}_metadata.txt")
+        f = open(csv_path, "w", newline="\n")
+        # w = csv.writer(f)
+        channels = info.get_channel_names()
+        info_meta = info.get_channel_info()
+        f.write("Channels: " + str(channels) + "\n")
+        f.write("Types: " + str(info.get_channel_types()) + "\n")
+        f.write("Units: " + str(info.get_channel_units()) + "\n")
+        f.write("Info: "  + json.dumps(info_meta.to_json_dict()) + "\n")
+
+        f.close()
+
+        return channels
+
+    except Exception as e:
+        print(e)
+        exit()
         pass
+
     return [f"ch_{i}" for i in range(info.n_channels)]
 
 gaze_inlets = []
@@ -81,7 +96,7 @@ for s in gaze_streams_info:
     inlet = StreamInlet(s)
     inlet.open_stream()
     correction = inlet.time_correction(timeout=5.0)
-    ch_names = _gaze_ch_names(s)
+    ch_names = get_channel_names_log_metadata(inlet.get_sinfo(), "gaze")
     csv_path = os.path.join(_data_dir, f"gaze_{s.name}_{_ts}.csv")
     f = open(csv_path, "w", newline="")
     w = csv.writer(f)
@@ -94,15 +109,15 @@ for s in gaze_streams_info:
 if not gaze_inlets:
     print("No gaze streams found, continuing without gaze logging.")
 
-CH_NAMES   = ["Fp1", "Fp2", "C3", "C4", "P3", "P4", "O1", "O2"]
-N_CHANNELS = len(CH_NAMES)
+eeg_ch_names   = get_channel_names_log_metadata(eeg._inlet.get_sinfo(), "eeg")
+eeg_n_channels = len(eeg_ch_names)
 
 # --- CSV logging setup ---
-_eeg_csv = open(os.path.join(_data_dir, f"eeg_{_ts}.csv"), "w", newline="")
+_eeg_csv = open(os.path.join(_data_dir, f"eeg_{eeg._inlet.get_sinfo().name}_{_ts}.csv"), "w", newline="")
 _marker_csv = open(os.path.join(_data_dir, f"markers_{_ts}.csv"), "w", newline="")
 _eeg_writer = csv.writer(_eeg_csv)
 _marker_writer = csv.writer(_marker_csv)
-_eeg_writer.writerow(["timestamp"] + CH_NAMES)
+_eeg_writer.writerow(["timestamp"] + eeg_ch_names)
 _marker_writer.writerow(["timestamp", "stream", "value"])
 _last_eeg_ts = -1.0
 WINDOW_SEC = 5.0          # how many seconds to show
@@ -122,12 +137,12 @@ for spine in ax.spines.values():
     spine.set_edgecolor("#444466")
 
 # Y-axis: one tick per channel
-ax.set_yticks([i * SPACING for i in range(N_CHANNELS)])
-ax.set_yticklabels(CH_NAMES, color="white", fontsize=9)
+ax.set_yticks([i * SPACING for i in range(eeg_n_channels)])
+ax.set_yticklabels(eeg_ch_names, color="white", fontsize=9)
 
 # Pre-create line objects (one per channel) and marker lines list
-colors = plt.cm.cool(np.linspace(0, 1, N_CHANNELS))
-lines  = [ax.plot([], [], lw=0.8, color=colors[i])[0] for i in range(N_CHANNELS)]
+colors = plt.cm.cool(np.linspace(0, 1, eeg_n_channels))
+lines  = [ax.plot([], [], lw=0.8, color=colors[i])[0] for i in range(eeg_n_channels)]
 marker_lines = []   # vertical lines added dynamically
 marker_texts = []
 
@@ -145,7 +160,6 @@ while plt.fignum_exists(fig.number):
     # --- Fetch EEG ---
     eeg_data, eeg_ts = eeg.get_data(winsize=WINDOW_SEC)
     eeg_ts = eeg_ts + eeg_correction
-    # eeg_data shape: (n_channels, n_samples)
 
     if eeg_ts.size == 0:
         plt.pause(REFRESH)
@@ -167,7 +181,7 @@ while plt.fignum_exists(fig.number):
         line.set_data(t_rel, eeg_data[i] + offset)
 
     ax.set_xlim(0, WINDOW_SEC)
-    ax.set_ylim(-SPACING, N_CHANNELS * SPACING)
+    ax.set_ylim(-SPACING, eeg_n_channels * SPACING)
 
     # --- Log gaze samples ---
     for inlet, correction, writer in zip(gaze_inlets, gaze_corrections, gaze_writers):
@@ -204,7 +218,7 @@ while plt.fignum_exists(fig.number):
         color = MARKER_COLORS[stream_idx % len(MARKER_COLORS)]
         if 0 <= t_rel_mk <= WINDOW_SEC:
             vline = ax.axvline(x=t_rel_mk, color=color, lw=1.5, linestyle="--", alpha=0.85)
-            txt = ax.text(t_rel_mk + 0.05, (N_CHANNELS - 0.7) * SPACING,
+            txt = ax.text(t_rel_mk + 0.05, (eeg_n_channels - 0.7) * SPACING,
                     "stim", color="#ff6b6b", fontsize=8, alpha=0.9)
             marker_lines.append(vline)
             marker_texts.append(txt)
