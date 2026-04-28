@@ -1,97 +1,83 @@
-using UnityEngine;
+﻿using System;
 using Leap;
-using LSL;
-using TMPro;
-using UnityEngine.UI;
-using PinchDetector = Resources.Scripts.PinchDetector;
+using UnityEngine;
+using UnityEngine.Events;
 
-public class PinchAction : MonoBehaviour
+// Requires the Ultraleap Unity Plugin (com.ultraleap.tracking)
+
+namespace Resources.Scripts
 {
-
-    public TMP_Text leapStateText;
-    public PinchDetector pinchDetector;
-    private LeapServiceProvider leapProvider;
-
-    string StreamName = "LSL4Unity.TechDemo.PinchEvent";
-    string StreamType = "Markers";
-    private StreamOutlet outlet;
-    private string[] sample = { "" };
-    private bool isTrackingLH = false;
-    private bool isTrackingRH = false;
-
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    /// <summary>
+    /// Detects pinch gestures from Ultraleap hand tracking and triggers
+    /// selection on the currently gazed stimulus.
+    /// Attach to any GameObject in the scene. Requires a LeapServiceProvider.
+    /// </summary>
+    public class PinchAction : MonoBehaviour
     {
-        leapProvider = FindAnyObjectByType<LeapServiceProvider>();
-        leapProvider.OnUpdateFrame += OnUpdateFrame;
-        
-        var hash = new Hash128();
-        hash.Append(StreamName);
-        hash.Append(StreamType);
-        hash.Append(""+gameObject.GetEntityId());
-        StreamInfo streamInfo = new StreamInfo(StreamName, StreamType, 1, LSL.LSL.IRREGULAR_RATE,
-            channel_format_t.cf_string, hash.ToString());
-        outlet = new StreamOutlet(streamInfo);
-    }
+        [Header("References")] [Tooltip("The GazeRaycaster that tracks which stimulus is focused.")]
+        public GazeRaycaster gazeRaycaster;
 
-    private void OnUpdateFrame(Frame frame)
-    {
-        bool newLHState = frame.Hands.Exists(hand => hand.IsLeft);
-        bool newRHState = frame.Hands.Exists(hand => !hand.IsLeft);
-        
-        if (newLHState && !isTrackingLH)   OnHandFound("Left");
-        if (!newLHState && isTrackingLH)   OnHandLost("Left");
+        [Tooltip("The Leap Pinch Detector in the scene.")]
+        public Leap.PinchDetector pinchDetector;
 
-        if (newRHState && !isTrackingRH) OnHandFound("Right");
-        if (!newRHState && isTrackingRH) OnHandLost("Right");
+        [Header("Pinch Settings")] [Tooltip("Which hand to track for pinch.")]
+        public Chirality handedness = Chirality.Right;
 
-        if (newLHState != isTrackingLH || newRHState != isTrackingRH)
+        [Tooltip("Pinch strength threshold (0-1). Higher = more closed pinch required.")] [Range(0f, 1f)]
+        public float pinchThreshold = 0.85f;
+
+        [Tooltip("Pinch strength below which the gesture is considered released.")] [Range(0f, 1f)]
+        public float releaseThreshold = 0.5f;
+
+        [Tooltip("Minimum seconds between successive pinch activations (debounce).")]
+        public float cooldownTime = 0.2f;
+
+        [Tooltip("Click sound")] public AudioClip clickSound;
+
+        [Header("Events")] public UnityEvent onPinchDetected;
+        public UnityEvent<Interactable> onStimulusClicked;
+
+        private bool _isPinching;
+        private float _lastPinchTime;
+        private AudioSource _audioSource;
+
+        public AggregationProviderConfidenceInterpolation apci;
+
+        private void Awake()
         {
-            isTrackingLH = newLHState;
-            isTrackingRH = newRHState;
-            UpdateText();
+            _audioSource = GetComponent<AudioSource>();
+            if (_audioSource == null)
+                _audioSource = gameObject.AddComponent<AudioSource>();
         }
-    }
-    
-    private void OnHandFound(string handName)
-    {
-        Debug.Log($"{handName} hand found");
-        sample[0] = $"{handName}HandFound " + gameObject.GetEntityId();
-        outlet.push_sample(sample);
-    }
 
-    private void OnHandLost(string handName)
-    {
-        Debug.Log($"{handName} hand lost");
-        sample[0] = $"{handName}HandFound " + gameObject.GetEntityId();
-        outlet.push_sample(sample);
-    }
+        private void OnEnable()
+        {
+            pinchDetector.OnPinchStart += HandlePinch;
+        }
 
-    private void UpdateText()
-    {
-        leapStateText.text = $"Left hand: {isTrackingLH} | Right hand: {isTrackingRH}";
-    }
+        private void OnDisable()
+        {
+            pinchDetector.OnPinchStart -= HandlePinch;
+        }
+        
 
-    // Update is called once per frame
-    void Update()
-    {
+        private void HandlePinch(Hand hand)
+        {
+            _audioSource.PlayOneShot(clickSound, .5f);
+            Debug.Log("pinch");
 
-    }
+            // Only select if gaze is confirmed on a target
+            if (gazeRaycaster.IsFocusConfirmed && gazeRaycaster.CurrentTarget != null)
+            {
+                Interactable target = gazeRaycaster.CurrentTarget;
+                target.OnSelect();
+                onStimulusClicked?.Invoke(target);
+            }
+            else
+            {
+                onPinchDetected?.Invoke();
+            }
+        }
 
-    private void OnEnable()
-    {
-        // pinchDetector.OnPinchStart += HandlePinchStart;
-    }
-
-    private void OnDisable()
-    {
-        // pinchDetector.OnPinchStart -= HandlePinchStart;
-    }
-
-    private void HandlePinchStart(Hand hand)
-    {
-        sample[0] = "PinchStart " + gameObject.GetEntityId();
-        outlet.push_sample(sample);
     }
 }

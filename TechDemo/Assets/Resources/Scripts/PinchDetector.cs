@@ -1,4 +1,5 @@
-﻿using Leap;
+﻿using System;
+using Leap;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -40,6 +41,8 @@ namespace Resources.Scripts
         private float _lastPinchTime;
         private AudioSource _audioSource;
 
+        public AggregationProviderConfidenceInterpolation apci;
+
         private void Awake()
         {
             _audioSource = GetComponent<AudioSource>();
@@ -47,11 +50,21 @@ namespace Resources.Scripts
                 _audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        private void Update()
+        private void OnEnable()
+        {
+            apci.OnFixedFrame += ProcessFrame;
+        }
+
+        private void OnDisable()
+        {
+            apci.OnFixedFrame -= ProcessFrame;
+        }
+
+        private void ProcessFrame(Frame frame)
         {
             if (leapProvider == null || gazeRaycaster == null) return;
 
-            Hand hand = GetTrackedHand();
+            Hand hand = GetTrackedHand(frame);
             if (hand == null)
             {
                 _isPinching = false;
@@ -95,9 +108,9 @@ namespace Resources.Scripts
             }
         }
 
-        private Hand GetTrackedHand()
+        private Hand GetTrackedHand(Frame frame)
         {
-            Frame frame = leapProvider.CurrentFrame;
+            // Frame frame = leapProvider.CurrentFrame;
             if (frame == null) return null;
 
             foreach (Hand hand in frame.Hands)

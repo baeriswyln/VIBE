@@ -457,8 +457,8 @@ MonoBehaviour:
   _frameOptimization: 0
   _physicsExtrapolation: 1
   _physicsExtrapolationTime: 0.011111111
-  _multipleDeviceMode: 0
-  _specificSerialNumber: 
+  _multipleDeviceMode: 1
+  _specificSerialNumber: LE5100002000008AD3-6710-0000000000
   _trackingOptimization: 0
   _preventInitializingTrackingMode: 1
   _serviceConnectionInput: 0
@@ -497,6 +497,86 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Ultraleap.Tracking.Core::Leap.PinchDetector
   leapProvider: {fileID: 259854093}
+  chirality: 1
+  fingerType: 1
+  activateDistance: 0.025
+  deactivateDistance: 0.03
+--- !u!1 &407473967
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 407473969}
+  - component: {fileID: 407473968}
+  - component: {fileID: 407473971}
+  m_Layer: 0
+  m_Name: LeapAggregator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &407473968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 407473967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f045ca1c6d85c44695c48cc8d799198, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ultraleap.Tracking.Aggregation::Leap.AggregationProviderConfidenceInterpolation
+  editTimePose: 2
+  providers:
+  - {fileID: 259854093}
+  - {fileID: 2059498350}
+  _frameOptimization: 0
+  ignoreRecentNewHands: 1
+  palmPosFactor: 0
+  palmRotFactor: 0
+  palmVelocityFactor: 0
+  jointRotFactor: 0
+  jointRotToPalmFactor: 0
+  jointOcclusionFactor: 0
+  debugJointOrigins: 0
+  debugHandLeft: {fileID: 0}
+  debugHandRight: {fileID: 0}
+  debugColors:
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 0, g: 1, b: 0, a: 1}
+--- !u!4 &407473969
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 407473967}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &407473971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 407473967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f88b4f88666559c4481c8d271f1f304d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ultraleap.Tracking.Core::Leap.PinchDetector
+  leapProvider: {fileID: 407473968}
   chirality: 1
   fingerType: 1
   activateDistance: 0.025
@@ -1035,6 +1115,7 @@ GameObject:
   m_Component:
   - component: {fileID: 968829678}
   - component: {fileID: 968829679}
+  - component: {fileID: 968829680}
   m_Layer: 0
   m_Name: PinchDetector
   m_TagString: Untagged
@@ -1064,7 +1145,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 968829676}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8798917207394901b2c9b7170fd189e6, type: 3}
   m_Name: 
@@ -1082,6 +1163,33 @@ MonoBehaviour:
   onStimulusClicked:
     m_PersistentCalls:
       m_Calls: []
+  apci: {fileID: 407473968}
+--- !u!114 &968829680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 968829676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b028cc0c8d34053b525a4f691cee554, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.PinchAction
+  gazeRaycaster: {fileID: 1359528791}
+  pinchDetector: {fileID: 407473971}
+  handedness: 1
+  pinchThreshold: 0.85
+  releaseThreshold: 0.5
+  cooldownTime: 0.2
+  clickSound: {fileID: 8300000, guid: cef5d2eaf31bece4c93da1d521e64b22, type: 3}
+  onPinchDetected:
+    m_PersistentCalls:
+      m_Calls: []
+  onStimulusClicked:
+    m_PersistentCalls:
+      m_Calls: []
+  apci: {fileID: 0}
 --- !u!1 &1359528785
 GameObject:
   m_ObjectHideFlags: 0
@@ -2153,6 +2261,70 @@ MonoBehaviour:
   onExperimentFinished:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &2059498349
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2059498351}
+  - component: {fileID: 2059498350}
+  m_Layer: 0
+  m_Name: LeapProvider2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2059498350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2059498349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 025cc0fa7b46aa541aba29d28d35ac09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Ultraleap.Tracking.Core::Leap.LeapServiceProvider
+  editTimePose: 2
+  _interactionVolumeVisualization: 4
+  FOV_Visualization: 0
+  OptimalFOV_Visualization: 1
+  MaxFOV_Visualization: 1
+  _frameOptimization: 0
+  _physicsExtrapolation: 1
+  _physicsExtrapolationTime: 0.011111111
+  _multipleDeviceMode: 1
+  _specificSerialNumber: LE5100002000008ADF-6710-0000000000
+  _trackingOptimization: 2
+  _preventInitializingTrackingMode: 0
+  _serviceConnectionInput: 0
+  _serverNameSpace: Leap Service
+  _serviceIP: 127.0.0.1
+  _servicePort: 12345
+  _useInterpolation: 1
+  _reconnectionAttempts: 5
+  _reconnectionInterval: 180
+  _trackFiducialMarkers: 0
+--- !u!4 &2059498351
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2059498349}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.7, y: 0, z: 2.89}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2144071228
 GameObject:
   m_ObjectHideFlags: 0
@@ -2193,6 +2365,8 @@ SceneRoots:
   - {fileID: 876147908}
   - {fileID: 968829678}
   - {fileID: 259854094}
+  - {fileID: 2059498351}
+  - {fileID: 407473969}
   - {fileID: 676257297}
   - {fileID: 242690301}
   - {fileID: 724500052}

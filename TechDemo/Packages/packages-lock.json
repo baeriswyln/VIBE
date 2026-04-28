@@ -26,6 +26,17 @@
       "dependencies": {},
       "url": "https://package.openupm.com"
     },
+    "com.ultraleap.tracking.preview": {
+      "version": "7.3.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.ultraleap.tracking": "7.3.0",
+        "com.unity.inputsystem": "1.5.0",
+        "com.unity.ugui": "1.0.0"
+      },
+      "url": "https://package.openupm.com"
+    },
     "com.unity.burst": {
       "version": "1.8.29",
       "depth": 2,
