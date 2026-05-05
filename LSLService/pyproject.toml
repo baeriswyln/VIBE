@@ -8,6 +8,5 @@ dependencies = [
     "matplotlib",
 ]
 
-
 [tool.uv]
 package = false

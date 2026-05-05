@@ -1,0 +1,18 @@
+data/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+.venv
+.uv/
+
+# PyCharm
+.idea/
+.idea_modules/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+desktop.ini
