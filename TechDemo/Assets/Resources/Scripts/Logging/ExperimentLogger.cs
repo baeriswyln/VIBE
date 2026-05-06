@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using JetBrains.Annotations;
 using LSL;
 using UnityEngine;
 
@@ -122,14 +123,14 @@ namespace Resources.Scripts.Logging
             Vector3 gazeOrigin = Vector3.zero;
             Vector3 gazeDir = Vector3.forward;
 
-            if (gazeRaycaster != null)
+            if (gazeRaycaster)
             {
                 gazeOrigin = gazeRaycaster.CurrentGazeOrigin;
                 gazeDir = gazeRaycaster.CurrentGazeDirection;
             }
 
             // Head pose (always from the camera transform)
-            Transform cam = gazeRaycaster != null ? gazeRaycaster.transform : Camera.main.transform;
+            Transform cam = gazeRaycaster ? gazeRaycaster.transform : Camera.main.transform;
             Vector3 headPos = cam.position;
             Vector3 headFwd = cam.forward;
 
