@@ -46,9 +46,6 @@ namespace Resources.Scripts.Experiments
         [Tooltip("StimulusSpawner that handles placing the stimuli.")]
         public InteractableManager spawner;
 
-        [Tooltip("PinchDetector that fires onStimulusClicked.")]
-        public PinchDetector pinchDetector;
-
         [Header("Target Highlighting")]
         [Tooltip("Color used to mark the target stimulus (different from gaze highlight).")]
         public Color targetColor = new Color(1f, 0.2f, 0.2f, 1f);
@@ -89,34 +86,32 @@ namespace Resources.Scripts.Experiments
         {
             base.OnBegin();
             _results.Clear();
+                
+            PinchDetector.Instance.onStimulusClicked.AddListener(OnStimulusClicked);
 
-            if (pinchDetector != null)
-                pinchDetector.onStimulusClicked.AddListener(OnStimulusClicked);
-
-            if (feedbackText != null) feedbackText.text = "";
+            if (feedbackText) feedbackText.text = "";
         }
 
         public override void OnEnd()
         {
-            if (pinchDetector != null)
-                pinchDetector.onStimulusClicked.RemoveListener(OnStimulusClicked);
+            PinchDetector.Instance.onStimulusClicked.RemoveListener(OnStimulusClicked);
 
             // Clean up any remaining stimuli
-            if (spawner != null)
+            if (spawner)
                 spawner.DestroyStimuli();
 
             // Clear UI
-            if (trialInfoText != null) trialInfoText.text = "";
-            if (feedbackText != null) feedbackText.text = "";
+            if (trialInfoText) trialInfoText.text = "";
+            if (feedbackText) feedbackText.text = "";
 
             base.OnEnd();
         }
 
         public override IEnumerator Run()
         {
-            if (spawner == null)
+            if (!spawner)
             {
-                em.LogError(new ExperimentLog(GetType().Name, "No spawner assigned."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, "No spawner assigned."));
                 yield break;
             }
 
@@ -131,7 +126,7 @@ namespace Resources.Scripts.Experiments
             }
             spawner.DestroyStimuli();
 
-            em.Log(new ExperimentLog(GetType().Name, $"Finished: {_results.Count} events."));
+            ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name, $"Finished: {_results.Count} events."));
 
             MarkComplete();
         }
@@ -139,16 +134,16 @@ namespace Resources.Scripts.Experiments
         private IEnumerator RunSingleTrial(int trialNumber)
         {
             // --- Setup ---
-            if (trialInfoText != null)
+            if (trialInfoText)
                 trialInfoText.text = $"Trial {trialNumber} / {numberOfTrials}";
 
-            if (feedbackText != null) feedbackText.text = "";
+            if (feedbackText) feedbackText.text = "";
 
             // Pick a random stimulus as the target
             var spawned = spawner.spawnedStimuli;
             if (spawned == null || spawned.Count != stimuliPerTrial)
             {
-                em.LogError(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned for trial {trialNumber}."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned for trial {trialNumber}."));
                 yield break;
             }
 
@@ -181,7 +176,7 @@ namespace Resources.Scripts.Experiments
             _results.Add(result);
             onTrialComplete?.Invoke(result);
 
-            em.Log(new ExperimentLog(GetType().Name, $"trial={trialNumber} target={result.TargetId}  rt={result.ResponseTime:F3}s"));
+            ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name, $"trial={trialNumber} target={result.TargetId}  rt={result.ResponseTime:F3}s"));
             
             yield return new WaitForSeconds(feedbackDuration);
 

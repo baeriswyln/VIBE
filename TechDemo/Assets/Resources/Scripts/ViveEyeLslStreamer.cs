@@ -217,13 +217,13 @@ namespace Resources.Scripts
  
             if (!prevLeftClosed && leftClosedStreak >= blinkHoldFrames)
             {
-                logger.RecordEvent(new BlinkLog("LEFT", "BLINK_START"), leftClosedTs);
+                logger.Log(new BlinkLog("LEFT", "BLINK_START"), leftClosedTs);
                 prevLeftClosed = true;
             }
             else if (prevLeftClosed && leftOpenStreak >= blinkHoldFrames)
             {
                 
-                logger.RecordEvent(new BlinkLog("LEFT", "BLINK_END"), leftOpenTs);
+                logger.Log(new BlinkLog("LEFT", "BLINK_END"), leftOpenTs);
                 prevLeftClosed = false;
             }
  
@@ -233,12 +233,12 @@ namespace Resources.Scripts
  
             if (!prevRightClosed && rightClosedStreak >= blinkHoldFrames)
             {
-                logger.RecordEvent(new BlinkLog("RIGHT", "BLINK_START"), rightClosedTs);
+                logger.Log(new BlinkLog("RIGHT", "BLINK_START"), rightClosedTs);
                 prevRightClosed = true;
             }
             else if (prevRightClosed && rightOpenStreak >= blinkHoldFrames)
             {
-                logger.RecordEvent(new BlinkLog("RIGHT", "BLINK_END"), rightOpenTs);
+                logger.Log(new BlinkLog("RIGHT", "BLINK_END"), rightOpenTs);
                 prevRightClosed = false;
             }
         }

@@ -14,6 +14,8 @@ namespace Resources.Scripts
     /// </summary>
     public class PinchDetector : MonoBehaviour
     {
+        public static PinchDetector Instance { get; private set; }
+
         [Header("References")] [Tooltip("The GazeRaycaster that tracks which stimulus is focused.")]
         public GazeRaycaster gazeRaycaster;
 
@@ -43,11 +45,21 @@ namespace Resources.Scripts
 
         public AggregationProviderConfidenceInterpolation apci;
 
+        // Singleton initialization
         private void Awake()
         {
             _audioSource = GetComponent<AudioSource>();
             if (_audioSource == null)
                 _audioSource = gameObject.AddComponent<AudioSource>();
+
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
 
         private void OnEnable()

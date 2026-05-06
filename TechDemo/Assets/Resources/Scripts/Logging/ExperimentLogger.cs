@@ -12,6 +12,8 @@ namespace Resources.Scripts.Logging
     /// </summary>
     public class ExperimentLogger : MonoBehaviour
     {
+        public static ExperimentLogger Instance {get; private set;}
+        
         [Header("Configuration")]
         [Tooltip("Participant / session identifier.")]
         public string participantId = "P001";
@@ -33,6 +35,19 @@ namespace Resources.Scripts.Logging
         private float _sessionStartTime;
 
         private readonly List<EventLog> _entries = new List<EventLog>();
+
+        // Singleton initialization
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
 
         private void Start()
         {
@@ -83,25 +98,25 @@ namespace Resources.Scripts.Logging
 
         public void OnGazeEnter(Interactable stimulus)
         {
-            RecordEvent(new GazeLog("GAZE_ENTER", stimulus));
+            Log(new GazeLog("GAZE_ENTER", stimulus));
         }
 
         public void OnGazeExit(Interactable stimulus)
         {
-            RecordEvent(new GazeLog("GAZE_EXIT", stimulus));
+            Log(new GazeLog("GAZE_EXIT", stimulus));
         }
 
         public void OnPinchDetected()
         {
-            RecordEvent(new PinchLog());
+            Log(new PinchLog());
         }
 
         public void OnStimulusSelected(Interactable stimulus)
         {
-            RecordEvent(new PinchLog(stimulus));
+            Log(new PinchLog(stimulus));
         }
 
-        public void RecordEvent(EventLog log, double ts = 0.0)
+        public void Log(EventLog log, double ts = 0.0)
         {
             // Gaze data from the raycaster
             Vector3 gazeOrigin = Vector3.zero;
@@ -140,6 +155,18 @@ namespace Resources.Scripts.Logging
             {
                 Debug.LogError($"[ExperimentLogger] {e.Message}");
             }
+        }
+
+        public void Warn(EventLog log, double ts = 0.0)
+        {
+            log.Severity = EventLog.LogSeverity.WARNING;
+            Log(log, ts);
+        }
+        
+        public void Error(EventLog log, double ts = 0.0)
+        {
+            log.Severity = EventLog.LogSeverity.ERROR;
+            Log(log, ts);
         }
 
         private void OnDestroy()

@@ -11,10 +11,10 @@ namespace Resources.Scripts.Experiments
 {
     public class ExperimentManager : MonoBehaviour
     {
+        public static ExperimentManager Instance { get; private set; }
+        
         [Header("Experiment Sequence")] [Tooltip("Experiments will run in this order.")]
         public List<Experiment> experiments = new List<Experiment>();
-
-        [Header("Logging")] public ExperimentLogger logger;
 
         [Header("Start Behaviour")]
         [Tooltip("Start the sequence automatically on Play. If false, call StartSequence() manually.")]
@@ -43,6 +43,18 @@ namespace Resources.Scripts.Experiments
                 ? experiments[_currentIndex]
                 : null;
 
+        // Singleton initialization
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        
         private void Start()
         {
             if (startOnPlay)
@@ -56,13 +68,13 @@ namespace Resources.Scripts.Experiments
         {
             if (_isRunning)
             {
-                Log(new ExperimentManagerLog("SEQUENCE_ALREADY_RUNNING", "", EventLog.LogSeverity.WARNING));
+                ExperimentLogger.Instance.Warn(new ExperimentManagerLog("SEQUENCE_ALREADY_RUNNING", ""));
                 return;
             }
 
             if (experiments.Count == 0)
             {
-                Log(new ExperimentManagerLog("NO_EXPERIMENT", "No experiments assigned.", EventLog.LogSeverity.ERROR));
+                ExperimentLogger.Instance.Error(new ExperimentManagerLog("NO_EXPERIMENT", "No experiments assigned."));
                 return;
             }
 
@@ -77,7 +89,7 @@ namespace Resources.Scripts.Experiments
         {
             if (CurrentExperiment != null)
             {
-                Log(new ExperimentManagerLog("SEQUENCE_SKIP", CurrentExperiment.experimentName));
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_SKIP", CurrentExperiment.experimentName));
                 CurrentExperiment.OnEnd();
             }
         }
@@ -86,20 +98,19 @@ namespace Resources.Scripts.Experiments
         {
             _isRunning = true;
             onSequenceStart?.Invoke();
-            Log(new ExperimentManagerLog("SEQUENCE_START", ""));
+            ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_START", ""));
 
             for (_currentIndex = 0; _currentIndex < experiments.Count; _currentIndex++)
             {
                 Experiment exp = experiments[_currentIndex];
-                if (exp == null)
+                if (!exp)
                 {
-                    Log(new ExperimentManagerLog("MISSING_EXPERIMENT", $"Experiment at index {_currentIndex} is null, skipping.", EventLog.LogSeverity.WARNING));
+                    ExperimentLogger.Instance.Warn(new ExperimentManagerLog("MISSING_EXPERIMENT", $"Experiment at index {_currentIndex} is null, skipping."));
                     continue;
                 }
 
                 // Disable all other experiments' GameObjects so they don't interfere
                 SetOnlyActive(exp);
-                exp.em = this;
 
                 exp.OnBegin();
                 onExperimentStarted?.Invoke(exp);
@@ -116,7 +127,7 @@ namespace Resources.Scripts.Experiments
             _currentIndex = -1;
             _isRunning = false;
             onSequenceComplete?.Invoke();
-            Log(new ExperimentManagerLog("SEQUENCE_COMPLETE", ""));
+            ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_COMPLETE", ""));
         }
 
         /// <summary>
@@ -131,23 +142,6 @@ namespace Resources.Scripts.Experiments
             }
         }
 
-        public void Log(EventLog entry)
-        {
-            logger.RecordEvent(entry);
-        }
-        
-        public void LogWarning(EventLog entry)
-        {
-            entry.Severity = EventLog.LogSeverity.WARNING;
-            logger.RecordEvent(entry);
-        }
-        
-        public void LogError(EventLog entry)
-        {
-            entry.Severity = EventLog.LogSeverity.ERROR;
-            logger.RecordEvent(entry);
-        }
-
         protected class ExperimentManagerLog : EventLog
         {
             private string _message;
@@ -156,13 +150,6 @@ namespace Resources.Scripts.Experiments
             {
                 eventName = name;
                 _message = message;
-            }
-
-            public ExperimentManagerLog(string name, string message, LogSeverity severity)
-            {
-                eventName = name;
-                _message = message;
-                base.Severity = severity;
             }
 
             protected override string GetPayload()

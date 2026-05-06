@@ -19,8 +19,6 @@ namespace Resources.Scripts.Experiments
         public UnityEvent onExperimentStart;
         public UnityEvent onExperimentComplete;
 
-        public ExperimentManager em;
-
         /// <summary>True while this experiment is actively running.</summary>
         public bool IsRunning { get; private set; }
 
