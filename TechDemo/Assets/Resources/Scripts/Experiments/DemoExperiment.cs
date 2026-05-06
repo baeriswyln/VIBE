@@ -21,65 +21,11 @@ namespace Resources.Scripts.Experiments
     ///   5. Brief feedback + pause
     ///   6. Clear and start the next trial
     /// </summary>
-    public class DemoExperiment : Experiment
+    public class DemoExperiment : StimuliExperiment
     {
-        [Header("Trial Configuration")]
-        [Tooltip("How many stimuli to spawn per trial.")]
-        public int stimuliPerTrial = 10;
-
-        [Tooltip("Number of trials to run.")]
-        public int numberOfTrials = 20;
-
-        [Tooltip("Seconds to wait between trials.")]
-        public float interTrialInterval = 1.5f;
-
-        [Tooltip("Seconds to show feedback (correct/incorrect) before moving on.")]
-        public float feedbackDuration = 1.0f;
-
-        [Tooltip("Seconds to show target highlight before the user can click (helps them notice the target).")]
-        public float previewDuration = 0.5f;
-
-        [Tooltip("Max seconds to wait for a response before marking trial as timeout.")]
-        public float trialTimeout = 10f;
-
-        [Header("References")]
-        [Tooltip("StimulusSpawner that handles placing the stimuli.")]
-        public InteractableManager spawner;
-
-        [Header("Target Highlighting")]
-        [Tooltip("Color used to mark the target stimulus (different from gaze highlight).")]
-        public Color targetColor = new Color(1f, 0.2f, 0.2f, 1f);
-
-        [Tooltip("Scale multiplier for the target (on top of base scale).")]
-        public float targetScaleMultiplier = 1.3f;
-
-        [Header("Feedback UI (Optional)")]
-        [Tooltip("World-space text for trial info (e.g. 'Trial 3 / 20').")]
-        public TMP_Text trialInfoText;
-
-        [Tooltip("World-space text for feedback ('Correct!' / 'Wrong').")]
-        public TMP_Text feedbackText;
-
-        [Header("Events")]
-        public UnityEvent<TrialResult> onTrialComplete;
-
         // --- State ---
         private Interactable _currentTarget;
         private Interactable _selectedStimulus;
-        private readonly List<TrialResult> _results = new List<TrialResult>();
-
-        public struct TrialResult
-        {
-            public int TrialNumber;          // 1-indexed
-            public DateTime Timestamp;
-            public string TargetId;
-            public float ResponseTime;       // seconds from target visible to click
-            public Vector3 TargetPosition;
-        }
-
-        /// <summary>Read-only access to the full trial history.</summary>
-        public IReadOnlyList<TrialResult> Results => _results;
-
         // -------------------------------------------------------------------
 
         public override void OnBegin()

@@ -2,10 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Resources.Scripts.Logging;
-using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
-using Random = UnityEngine.Random;
 
 namespace Resources.Scripts.Experiments
 {
@@ -21,68 +18,11 @@ namespace Resources.Scripts.Experiments
     ///   5. Brief feedback + pause
     ///   6. Clear and start the next trial
     /// </summary>
-    public class DataGatheringExperiment : Experiment
+    public class DataGatheringExperiment : StimuliExperiment
     {
-        [Header("Trial Configuration")]
-        [Tooltip("How many stimuli to spawn per trial.")]
-        public int stimuliPerTrial = 1;
-
-        [Tooltip("Number of trials to run.")]
-        public int numberOfTrials = 20;
-
-        [Tooltip("Seconds to wait between trials.")]
-        public float interTrialInterval = .5f;
-
-        [Tooltip("Seconds to show feedback (correct/incorrect) before moving on.")]
-        public float feedbackDuration = 1.0f;
-
-        [Tooltip("Seconds to show target highlight before the user can click (helps them notice the target).")]
-        public float previewDuration = 0.2f;
-
-        [Tooltip("Max seconds to wait for a response before marking trial as timeout.")]
-        public float trialTimeout = 10f;
-
-        [Header("References")]
-        [Tooltip("StimulusSpawner that handles placing the stimuli.")]
-        public InteractableManager spawner;
-
-        [Tooltip("PinchDetector that fires onStimulusClicked.")]
-        public PinchDetector pinchDetector;
-
-        [Header("Target Highlighting")]
-        [Tooltip("Color used to mark the target stimulus (different from gaze highlight).")]
-        public Color targetColor = new Color(1f, 0.2f, 0.2f, 1f);
-
-        [Tooltip("Scale multiplier for the target (on top of base scale).")]
-        public float targetScaleMultiplier = 1.3f;
-
-        [Header("Feedback UI (Optional)")]
-        [Tooltip("World-space text for trial info (e.g. 'Trial 3 / 20').")]
-        public TMP_Text trialInfoText;
-
-        [Tooltip("World-space text for feedback ('Correct!' / 'Wrong').")]
-        public TMP_Text feedbackText;
-
-        [Header("Events")]
-        public UnityEvent<TrialResult> onTrialComplete;
-
         // --- State ---
         private Interactable _currentTarget;
         private Interactable _selectedStimulus;
-        private readonly List<TrialResult> _results = new List<TrialResult>();
-
-        public struct TrialResult
-        {
-            public int TrialNumber;          // 1-indexed
-            public DateTime Timestamp;
-            public string TargetId;
-            public float ResponseTime;       // seconds from target visible to click
-            public Vector3 TargetPosition;
-        }
-
-        /// <summary>Read-only access to the full trial history.</summary>
-        public IReadOnlyList<TrialResult> Results => _results;
-
         // -------------------------------------------------------------------
 
         public override void OnBegin()
@@ -90,16 +30,14 @@ namespace Resources.Scripts.Experiments
             base.OnBegin();
             _results.Clear();
 
-            if (pinchDetector != null)
-                pinchDetector.onStimulusClicked.AddListener(OnStimulusClicked);
+            PinchDetector.Instance.onStimulusClicked.AddListener(OnStimulusClicked);
 
             if (feedbackText != null) feedbackText.text = "";
         }
 
         public override void OnEnd()
         {
-            if (pinchDetector != null)
-                pinchDetector.onStimulusClicked.RemoveListener(OnStimulusClicked);
+            PinchDetector.Instance.onStimulusClicked.RemoveListener(OnStimulusClicked);
 
             // Clean up any remaining stimuli
             if (spawner)
@@ -120,7 +58,7 @@ namespace Resources.Scripts.Experiments
                 yield break;
             }
 
-            
+
             spawner.SpawnStimuli(stimuliPerTrial);
             for (int trial = 1; trial <= numberOfTrials; trial++)
             {
@@ -129,6 +67,7 @@ namespace Resources.Scripts.Experiments
                 if (interTrialInterval > 0f)
                     yield return new WaitForSeconds(interTrialInterval);
             }
+
             spawner.DestroyStimuli();
 
             ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name, $"Finished: {_results.Count} events."));
@@ -148,7 +87,8 @@ namespace Resources.Scripts.Experiments
             var spawned = spawner.spawnedStimuli;
             if (spawned == null || spawned.Count != stimuliPerTrial)
             {
-                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned for trial {trialNumber}."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name,
+                    $"Not enough Stimuli spawned for trial {trialNumber}."));
                 yield break;
             }
 
@@ -163,7 +103,7 @@ namespace Resources.Scripts.Experiments
             float responseStart = Time.time;
 
             // --- Wait for correct stimulus click ---
-            while (!(_selectedStimulus && _selectedStimulus == _currentTarget)) 
+            while (!(_selectedStimulus && _selectedStimulus == _currentTarget))
             {
                 yield return null;
             }
@@ -175,14 +115,15 @@ namespace Resources.Scripts.Experiments
             {
                 TrialNumber = trialNumber,
                 TargetId = _currentTarget.StimulusId,
-                TargetPosition =  _currentTarget.transform.position,
+                TargetPosition = _currentTarget.transform.position,
                 ResponseTime = responseTime,
             };
             _results.Add(result);
             onTrialComplete?.Invoke(result);
 
-            ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name, $"trial={trialNumber} target={result.TargetId}  rt={result.ResponseTime:F3}s"));
-            
+            ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name,
+                $"trial={trialNumber} target={result.TargetId}  rt={result.ResponseTime:F3}s"));
+
             yield return new WaitForSeconds(feedbackDuration);
 
             // --- Cleanup ---
@@ -195,6 +136,5 @@ namespace Resources.Scripts.Experiments
         {
             _selectedStimulus = clicked;
         }
-        
     }
 }
