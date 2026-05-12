@@ -1,3 +1,4 @@
-src/dl-myo
+src/myo
 .venv
 __pycache__/
+myo_pinch_config.json
