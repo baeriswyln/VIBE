@@ -36,7 +36,7 @@ namespace Resources.Scripts
 
         void OnEnable()
         {
-            StartCoroutine(ResolveLoop());
+            //StartCoroutine(ResolveLoop());
         }
 
         void OnDisable()

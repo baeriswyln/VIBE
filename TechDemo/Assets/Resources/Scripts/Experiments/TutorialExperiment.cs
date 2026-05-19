@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using TMPro;
+using Unity.InferenceEngine.Samples.TTS.Inference;
 using UnityEngine;
 
 namespace Resources.Scripts.Experiments
@@ -29,15 +30,15 @@ namespace Resources.Scripts.Experiments
         public TMP_Text progressText;
 
         [Header("Advance Trigger")]
-        [Tooltip("PinchDetector used to advance through pages.")]
-        public PinchDetector pinchDetector;
-
         [Tooltip("Minimum seconds a page must be shown before a pinch can advance it (prevents accidental skipping).")]
         public float minTimePerPage = 1.0f;
 
         [Header("Auto-advance (Optional)")]
         [Tooltip("If > 0, automatically advance after this many seconds (in addition to pinch).")]
         public float autoAdvanceAfterSeconds = 0f;
+        
+        [SerializeField]
+        private KokoroTTS kokoroTTS;
 
         // State
         private bool _pinchedThisFrame;
@@ -46,14 +47,12 @@ namespace Resources.Scripts.Experiments
         {
             base.OnBegin();
 
-            if (pinchDetector != null)
-                pinchDetector.onPinchDetected.AddListener(OnPinch);
+            PinchDetector.Instance.onPinchDetected.AddListener(OnPinch);
         }
 
         public override void OnEnd()
         {
-            if (pinchDetector != null)
-                pinchDetector.onPinchDetected.RemoveListener(OnPinch);
+            PinchDetector.Instance.onPinchDetected.RemoveListener(OnPinch);
 
             // Hide the UI
             if (instructionText != null) instructionText.text = "";
@@ -73,6 +72,7 @@ namespace Resources.Scripts.Experiments
             for (int i = 0; i < pages.Length; i++)
             {
                 instructionText.text = pages[i];
+                _ = kokoroTTS.SpeakAsync(MisakiSharp.TextToPhonemes(pages[i]));
 
                 if (progressText != null)
                     progressText.text = $"{i + 1} / {pages.Length}";

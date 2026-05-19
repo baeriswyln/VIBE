@@ -84,6 +84,7 @@ namespace Resources.Scripts
             }
 
             float pinchStrength = hand.PinchStrength;
+            Debug.Log(pinchStrength);
 
             // Detect pinch onset (transition from open to pinched)
             if (!_isPinching && pinchStrength >= pinchThreshold)

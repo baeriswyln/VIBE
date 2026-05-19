@@ -4,6 +4,7 @@
     "com.labstreaminglayer.lsl4unity": "https://github.com/labstreaminglayer/LSL4Unity.git",
     "com.ultraleap.tracking": "7.3.0",
     "com.ultraleap.tracking.preview": "7.3.0",
+    "com.unity.ai.inference": "2.6.1",
     "com.unity.feature.development": "1.0.2",
     "com.unity.ide.rider": "3.0.39",
     "com.unity.inputsystem": "1.19.0",
