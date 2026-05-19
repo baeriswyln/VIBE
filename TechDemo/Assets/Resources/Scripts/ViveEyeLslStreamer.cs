@@ -13,6 +13,7 @@
 // OpenXR extension is a polling API, there is no callback equivalent.
 // ----------------------------------------------------------------------
 
+using System;
 using LSL;
 using Newtonsoft.Json;
 using Resources.Scripts.Logging;
@@ -91,6 +92,8 @@ namespace Resources.Scripts
         private double leftOpenTs  = 0;
         private double rightClosedTs = 0;
         private double rightOpenTs = 0;
+        private bool eyeTrackerAvailable = false;
+        private bool warnedUnavailable = false;
 
 
         void Start()
@@ -99,11 +102,42 @@ namespace Resources.Scripts
             BuildEventOutlet();
             gazeSample  = new float[N_CHANNELS];
             eventSample = new string[1];
+            
+            eyeTrackerAvailable = ProbeEyeTracker();
+            if (!eyeTrackerAvailable)
+            {
+                Debug.LogWarning("[ViveEyeLslStreamer] HTC eye tracker extension not available. " +
+                                 "Gaze sampling disabled; event/marker stream still active. " +
+                                 "This is normal in the Editor without a headset.");
+                PushEvent("eye_tracker_unavailable");
+            }
+            
             PushEvent("session_start");
+        }
+        
+        private bool ProbeEyeTracker()
+        {
+            try
+            {
+                XrSingleEyeGazeDataHTC[] g;
+                bool ok = XR_HTC_eye_tracker.Interop.GetEyeGazeData(out g);
+                return ok || g != null;
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[ViveEyeLslStreamer] Eye tracker probe failed: {e.GetType().Name}: {e.Message}");
+                return false;
+            }
         }
 
         void Update()
         {
+            if (!eyeTrackerAvailable)
+            {
+                if (!warnedUnavailable) warnedUnavailable = true; // log once, not every frame
+                return;
+            }
+            
             // OpenXR eye tracker — polled API. Returned data is timestamped
             // by the runtime at the moment of acquisition.
             XrSingleEyeGazeDataHTC[] gazes;
