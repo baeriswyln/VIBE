@@ -2,6 +2,7 @@
 using TMPro;
 using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Experiments
 {
@@ -13,14 +14,20 @@ namespace Experiments
     {
         [Header("Tutorial Pages")]
         [TextArea(3, 10)]
-        [Tooltip("Each string becomes one page of instructions. User pinches to advance.")]
-        public string[] pages = new[]
-        {
-            "Welcome!\n\nIn this experiment you will select visual stimuli using your gaze and a pinch gesture.",
-            "Look at a stimulus to highlight it.\nIt will change color when you focus on it.",
-            "To select a stimulus, pinch your thumb and index finger together while looking at it.",
-            "Try it now: pinch to continue."
-        };
+        [Tooltip("Each string becomes one page of instructions.")]
+        public string[] textBeforeCalibration = new[] {""};
+
+        [TextArea(3, 10)] 
+        [Tooltip("Each string becomes one page of instructions.")]
+        public string[] textBeforeStimuliIntroduction = new[] { "" };
+        
+        [TextArea(3, 10)] 
+        [Tooltip("Each string becomes one page of instructions.")]
+        public string[] textStimuliIntroduction = new[] { "" };
+        
+        [TextArea(3, 10)]
+        [Tooltip("Each string becomes one page of instructions.")]
+        public string[] textBeforeExample = new[] {""};
 
         [Header("UI")]
         [Tooltip("World-space Text (TextMeshPro) that will display the current page.")]
@@ -29,13 +36,7 @@ namespace Experiments
         [Tooltip("Optional progress indicator (e.g. '2 / 4').")]
         public TMP_Text progressText;
 
-        [Header("Advance Trigger")]
-        [Tooltip("Minimum seconds a page must be shown before a pinch can advance it (prevents accidental skipping).")]
-        public float minTimePerPage = 1.0f;
-
-        [Header("Auto-advance (Optional)")]
-        [Tooltip("If > 0, automatically advance after this many seconds (in addition to pinch).")]
-        public float autoAdvanceAfterSeconds = 0f;
+        public Interactable stimuliPrefab; 
         
         [SerializeField]
         private KokoroTTS kokoroTTS;
@@ -55,52 +56,73 @@ namespace Experiments
             PinchHandler.Instance.onPinchDetected.RemoveListener(OnPinch);
 
             // Hide the UI
-            if (instructionText != null) instructionText.text = "";
-            if (progressText != null) progressText.text = "";
+            if (instructionText) instructionText.text = "";
+            if (progressText) progressText.text = "";
 
             base.OnEnd();
         }
 
         public override IEnumerator Run()
         {
-            if (instructionText == null)
+            if (!instructionText)
             {
                 Debug.LogError("[TutorialExperiment] No instructionText assigned.");
                 yield break;
             }
+            
+            yield return PlayTextPage(textBeforeCalibration);
+            
+            // calibration step 1: eye tracking
+            Debug.LogWarning("[Calibration] - Perform eye tracking calibration");
+            
+            // ---------------
+            // end calibration
+            // ---------------
+            
+            yield return new WaitUntil(InputSystem.actions.FindAction("ExpConfirm").IsPressed);
+            
+            yield return PlayTextPage(textBeforeStimuliIntroduction);
 
-            for (int i = 0; i < pages.Length; i++)
-            {
-                instructionText.text = pages[i];
-                _ = kokoroTTS.SpeakAsync(MisakiSharp.TextToPhonemes(pages[i]));
+            var baseLoc = 3*Vector3.forward + 1.5f*Vector3.left;
+            
+            var s_default = Instantiate(stimuliPrefab, baseLoc, Quaternion.identity);
+            var s_highlighted = Instantiate(stimuliPrefab, baseLoc + Vector3.right, Quaternion.identity);
+            var s_focused = Instantiate(stimuliPrefab, baseLoc + 2*Vector3.right, Quaternion.identity);
+            var s_selected = Instantiate(stimuliPrefab, baseLoc + 3*Vector3.right, Quaternion.identity);
+            
+            s_highlighted.Highlight();
+            s_focused.Gaze();
+            s_selected.Select();
+            
+            
+            Destroy(s_default.gameObject);
+            Destroy(s_highlighted.gameObject);
+            Destroy(s_focused.gameObject);
+            Destroy(s_selected.gameObject);
 
-                if (progressText != null)
-                    progressText.text = $"{i + 1} / {pages.Length}";
-
-                // Wait the minimum time before accepting input
-                yield return new WaitForSeconds(minTimePerPage);
-
-                // Wait for pinch or auto-advance timeout
-                _pinchedThisFrame = false;
-                float pageStartTime = Time.time;
-
-                while (true)
-                {
-                    if (_pinchedThisFrame)
-                        break;
-
-                    if (autoAdvanceAfterSeconds > 0f &&
-                        Time.time - pageStartTime >= autoAdvanceAfterSeconds)
-                        break;
-
-                    yield return null;
-                }
-
-                // Brief pause for visual feedback
-                yield return new WaitForSeconds(0.2f);
-            }
+            yield return PlayTextPage(textStimuliIntroduction);
+            
+            var s_example = Instantiate(stimuliPrefab, baseLoc + 1.5f*Vector3.right, Quaternion.identity);
+            
+            yield return PlayTextPage(textBeforeExample);
+            
+            // todo: deactivate gaze and pinch before here.
+            
+            // Wait for pinch or auto-advance timeout
+            yield return new WaitUntil(() => s_example.IsSelected);
 
             MarkComplete();
+        }
+
+        private IEnumerator PlayTextPage(string[] pages)
+        {
+            for (var i = 0; i < pages.Length; i++)
+            {
+                instructionText.text = pages[i];
+                yield return kokoroTTS.SpeakAsync(pages[i]);
+                yield return kokoroTTS.WaitForEndOfPlayback();
+
+            }
         }
 
         private void OnPinch()

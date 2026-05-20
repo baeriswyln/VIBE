@@ -319,9 +319,11 @@ namespace Unity.InferenceEngine.TTS.Inference
         {
             switch (punct)
             {
-                case ".":
                 case "!":
+                    return "!";
                 case "?":
+                    return "?";
+                case ".":
                     return ".";
                 case ",":
                 case ";":

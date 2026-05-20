@@ -6,6 +6,7 @@ using Logging;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 namespace Experiments
 {
@@ -22,6 +23,8 @@ namespace Experiments
 
         [Tooltip("Seconds to wait between experiments.")]
         public float gapBetweenExperiments = 1f;
+        
+        public InputActionAsset inputActionAsset;
 
         [Header("Events")] public UnityEvent onSequenceStart;
         public UnityEvent onSequenceComplete;
@@ -59,6 +62,16 @@ namespace Experiments
         {
             if (startOnPlay)
                 StartSequence();
+        }
+
+        private void OnEnable()
+        {
+            inputActionAsset.FindActionMap("Experiment").Enable();
+        }
+
+        private void OnDisable()
+        {
+            inputActionAsset.FindActionMap("Experiment").Disable();
         }
 
         /// <summary>

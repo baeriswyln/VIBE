@@ -64,6 +64,18 @@ public class Interactable : MonoBehaviour
         _isHighlighted = true;
         UpdateColor();
     }
+    
+    public void Gaze()
+    {
+        _isGazed = true;
+        UpdateColor();
+    }
+    
+    public void Select()
+    {
+        _isSelected = true;
+        UpdateColor();
+    }
 
     public void SetInteractableManager(InteractableManager interactableManager)
     {

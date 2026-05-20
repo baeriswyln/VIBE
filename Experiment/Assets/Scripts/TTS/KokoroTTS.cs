@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -61,8 +62,11 @@ namespace Unity.InferenceEngine.TTS.Inference
         /// Synthesize and play. `phonemes` is an already-phonemized string,
         /// e.g. "həlˈoʊ wˈɜːld" — characters in the Kokoro phoneme vocabulary.
         /// </summary>
-        public async Task SpeakAsync(string phonemes)
+        public async Task SpeakAsync(string text)
         {
+            // 0) text -> phoneme chars
+            var phonemes = MisakiSharp.TextToPhonemes(text);
+            
             // 1) phoneme chars → token ids
             var ids = new List<int>(phonemes.Length);
             foreach (var c in phonemes)
@@ -110,6 +114,16 @@ namespace Unity.InferenceEngine.TTS.Inference
             clip.SetData(pcm, 0);
             _audio.clip = clip;
             _audio.Play();
+        }
+
+        public IEnumerator WaitForEndOfPlayback()
+        {
+            yield return new WaitForSeconds(1);
+            while (_audio.isPlaying)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+            yield return new WaitForSeconds(1);
         }
 
         static Dictionary<char,int> ParseVocab(string json)
