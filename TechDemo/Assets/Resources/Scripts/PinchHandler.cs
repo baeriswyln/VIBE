@@ -10,25 +10,20 @@ namespace Resources.Scripts
     /// <summary>
     /// Detects pinch gestures from Ultraleap hand tracking and triggers
     /// selection on the currently gazed stimulus.
-    /// Attach to any GameObject in the scene. Requires a LeapServiceProvider.
+    /// Attach to any GameObject in the scene. Requires a PinchDetector.
     /// </summary>
-    public class PinchAction : MonoBehaviour
+    [RequireComponent(typeof(AudioSource))] [DisallowMultipleComponent]
+    public class PinchHandler : MonoBehaviour
     {
+        public static PinchHandler Instance { get; private set; }
+
         [Header("References")] [Tooltip("The GazeRaycaster that tracks which stimulus is focused.")]
         public GazeRaycaster gazeRaycaster;
 
-        [Tooltip("The Leap Pinch Detector in the scene.")]
-        public Leap.PinchDetector pinchDetector;
+        [Tooltip("The PinchDetector in the scene.")]
+        public PinchDetector pinchDetector;
 
-        [Header("Pinch Settings")] [Tooltip("Which hand to track for pinch.")]
-        public Chirality handedness = Chirality.Right;
-
-        [Tooltip("Pinch strength threshold (0-1). Higher = more closed pinch required.")] [Range(0f, 1f)]
-        public float pinchThreshold = 0.85f;
-
-        [Tooltip("Pinch strength below which the gesture is considered released.")] [Range(0f, 1f)]
-        public float releaseThreshold = 0.5f;
-
+        [Header("Pinch Settings")]
         [Tooltip("Minimum seconds between successive pinch activations (debounce).")]
         public float cooldownTime = 0.2f;
 
@@ -37,17 +32,24 @@ namespace Resources.Scripts
         [Header("Events")] public UnityEvent onPinchDetected;
         public UnityEvent<Interactable> onStimulusClicked;
 
-        private bool _isPinching;
         private float _lastPinchTime;
         private AudioSource _audioSource;
-
-        public AggregationProviderConfidenceInterpolation apci;
-
+        
+        // Singleton initialization
         private void Awake()
         {
             _audioSource = GetComponent<AudioSource>();
             if (_audioSource == null)
                 _audioSource = gameObject.AddComponent<AudioSource>();
+
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
 
         private void OnEnable()
@@ -57,15 +59,19 @@ namespace Resources.Scripts
 
         private void OnDisable()
         {
-            pinchDetector.OnPinchStart -= HandlePinch;
+            pinchDetector.OnPinchEnd -= HandlePinch;
         }
         
-
         private void HandlePinch(Hand hand)
         {
-            _audioSource.PlayOneShot(clickSound, .5f);
-            Debug.Log("pinch");
+            // require a minimum time between pinches
+            if (_lastPinchTime + cooldownTime < Time.time)
+                return;
+            
+            _lastPinchTime = Time.time;
 
+            _audioSource.PlayOneShot(clickSound, .5f);
+            
             // Only select if gaze is confirmed on a target
             if (gazeRaycaster.IsFocusConfirmed && gazeRaycaster.CurrentTarget != null)
             {
@@ -78,6 +84,5 @@ namespace Resources.Scripts
                 onPinchDetected?.Invoke();
             }
         }
-
     }
 }

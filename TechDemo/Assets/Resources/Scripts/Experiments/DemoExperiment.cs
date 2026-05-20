@@ -33,14 +33,14 @@ namespace Resources.Scripts.Experiments
             base.OnBegin();
             _results.Clear();
                 
-            PinchDetector.Instance.onStimulusClicked.AddListener(OnStimulusClicked);
+            PinchHandler.Instance.onStimulusClicked.AddListener(OnStimulusClicked);
 
             if (feedbackText) feedbackText.text = "";
         }
 
         public override void OnEnd()
         {
-            PinchDetector.Instance.onStimulusClicked.RemoveListener(OnStimulusClicked);
+            PinchHandler.Instance.onStimulusClicked.RemoveListener(OnStimulusClicked);
 
             // Clean up any remaining stimuli
             if (spawner)

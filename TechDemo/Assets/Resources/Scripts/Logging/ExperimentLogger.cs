@@ -24,7 +24,7 @@ namespace Resources.Scripts.Logging
 
         [Header("References")]
         public GazeRaycaster gazeRaycaster;
-        public PinchDetector pinchDetector;
+        public PinchHandler pinchHandler;
         
         [Header("LSL Configuration")]
         string StreamName = "LSL4Unity.TechDemo.EventStream";
@@ -77,10 +77,10 @@ namespace Resources.Scripts.Logging
             }
             
             // Auto-subscribe to leap hand tracking events
-            if (pinchDetector != null)
+            if (pinchHandler != null)
             {
-                pinchDetector.onPinchDetected.AddListener(OnPinchDetected);
-                pinchDetector.onStimulusClicked.AddListener(OnStimulusSelected);
+                pinchHandler.onPinchDetected.AddListener(OnPinchDetected);
+                pinchHandler.onStimulusClicked.AddListener(OnStimulusSelected);
             }
             else
             {

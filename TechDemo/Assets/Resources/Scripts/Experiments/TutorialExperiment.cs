@@ -47,12 +47,12 @@ namespace Resources.Scripts.Experiments
         {
             base.OnBegin();
 
-            PinchDetector.Instance.onPinchDetected.AddListener(OnPinch);
+            PinchHandler.Instance.onPinchDetected.AddListener(OnPinch);
         }
 
         public override void OnEnd()
         {
-            PinchDetector.Instance.onPinchDetected.RemoveListener(OnPinch);
+            PinchHandler.Instance.onPinchDetected.RemoveListener(OnPinch);
 
             // Hide the UI
             if (instructionText != null) instructionText.text = "";

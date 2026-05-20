@@ -1289,10 +1289,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.PinchDetector
   gazeRaycaster: {fileID: 1359528791}
-  leapProvider: {fileID: 259854093}
-  handedness: 1
-  pinchThreshold: 0.871
-  releaseThreshold: 0.743
+  pinchDetector: {fileID: 407473971}
   cooldownTime: 0.2
   clickSound: {fileID: 8300000, guid: cef5d2eaf31bece4c93da1d521e64b22, type: 3}
   onPinchDetected:
@@ -1301,7 +1298,6 @@ MonoBehaviour:
   onStimulusClicked:
     m_PersistentCalls:
       m_Calls: []
-  apci: {fileID: 407473968}
 --- !u!114 &968829680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1324,9 +1320,14 @@ MonoBehaviour:
   onPinchDetected:
     m_PersistentCalls:
       m_Calls: []
+    m_CallsDirty: 1
   onStimulusClicked:
     m_PersistentCalls:
       m_Calls: []
+    m_CallsDirty: 1
+  _isPinching: 0
+  _lastPinchTime: 0
+  _audioSource: {fileID: 0}
   apci: {fileID: 0}
 --- !u!114 &968829681
 MonoBehaviour:
@@ -2261,7 +2262,7 @@ MonoBehaviour:
   participantId: P001
   outputFolder: ExperimentLogs
   gazeRaycaster: {fileID: 1359528791}
-  pinchDetector: {fileID: 968829679}
+  pinchHandler: {fileID: 0}
 --- !u!4 &1865475892
 Transform:
   m_ObjectHideFlags: 0
