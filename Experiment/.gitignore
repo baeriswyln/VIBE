@@ -1,0 +1,68 @@
+# =============================================================================
+# UNITY .gitignore  (place at unity1/.gitignore, unity2/.gitignore, etc.)
+# =============================================================================
+
+# Build outputs
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Memory captures & profiler
+[Mm]emory[Cc]aptures/
+[Rr]ecordings/
+
+# Asset meta files should be committed — but ignore OS-generated ones
+# *.meta  ← do NOT ignore, Unity needs these
+
+# Crash reports
+sysinfo.txt
+crashlytics-build.properties
+
+# Package Manager cache (not project-specific)
+/[Pp]ackages/[Pp]ackage[Ll]ock.json
+
+# Unity auto-generated Visual Studio / Rider solution files
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# VS Code (project-level overrides only; root .gitignore handles the rest)
+.vscode/launch.json
+
+# Builds (platform-specific)
+ExportedObj/
+.consulo/
+*.csproj
+*.unityproj
+
+# Streaming assets auto-generated
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/
+
+# Addressables
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/**/[Bb]uildReport
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/**/addressables_content_state.bin
+
+# TextMeshPro (generated atlas cache)
+/[Aa]ssets/TextMesh*Pro/Resources/Fonts & Materials/*.asset
+
+# Burst AOT (generated)
+/[Aa]ssets/[Ss]cripts/Unity.Burst.Cecil*
