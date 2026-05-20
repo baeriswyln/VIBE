@@ -59,18 +59,21 @@ namespace Resources.Scripts
 
         private void OnDisable()
         {
-            pinchDetector.OnPinchEnd -= HandlePinch;
+            pinchDetector.OnPinchStart -= HandlePinch;
         }
         
         private void HandlePinch(Hand hand)
         {
             // require a minimum time between pinches
-            if (_lastPinchTime + cooldownTime < Time.time)
+            if (_lastPinchTime + cooldownTime > Time.time)
+            {
+                Debug.LogWarning("pinch accepted");
                 return;
-            
-            _lastPinchTime = Time.time;
+            }
 
             _audioSource.PlayOneShot(clickSound, .5f);
+            _lastPinchTime = Time.time;
+
             
             // Only select if gaze is confirmed on a target
             if (gazeRaycaster.IsFocusConfirmed && gazeRaycaster.CurrentTarget != null)
