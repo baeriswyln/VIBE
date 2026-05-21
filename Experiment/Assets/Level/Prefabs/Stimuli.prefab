@@ -158,7 +158,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
   highlightColor: {r: 1, g: 0.9, b: 0.3, a: 1}
-  focusColor: {r: 1, g: 0.8, b: 0.5, a: 1}
+  focusColor: {r: 1, g: 0.64769167, b: 0.5019608, a: 1}
   selectedColor: {r: 0.3, g: 1, b: 0.5, a: 1}
   highlightScaleMultiplier: 1.15
   scaleAnimationSpeed: 8

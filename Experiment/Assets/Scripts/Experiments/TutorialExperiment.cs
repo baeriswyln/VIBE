@@ -3,6 +3,7 @@ using TMPro;
 using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace Experiments
 {
@@ -28,6 +29,10 @@ namespace Experiments
         [TextArea(3, 10)]
         [Tooltip("Each string becomes one page of instructions.")]
         public string[] textBeforeExample = new[] {""};
+        
+        [TextArea(3, 10)]
+        [Tooltip("Each string becomes one page of instructions.")]
+        public string[] textEnd = new[] {""};
 
         [Header("UI")]
         [Tooltip("World-space Text (TextMeshPro) that will display the current page.")]
@@ -40,6 +45,9 @@ namespace Experiments
         
         [SerializeField]
         private KokoroTTS kokoroTTS;
+        
+        [SerializeField]
+        private GazeRaycaster gazeRaycaster;
 
         // State
         private bool _pinchedThisFrame;
@@ -64,13 +72,14 @@ namespace Experiments
 
         public override IEnumerator Run()
         {
+            gazeRaycaster.Deactivate();
             if (!instructionText)
             {
                 Debug.LogError("[TutorialExperiment] No instructionText assigned.");
                 yield break;
             }
             
-            yield return PlayTextPage(textBeforeCalibration);
+            yield return PlayTextPages(textBeforeCalibration);
             
             // calibration step 1: eye tracking
             Debug.LogWarning("[Calibration] - Perform eye tracking calibration");
@@ -81,9 +90,9 @@ namespace Experiments
             
             yield return new WaitUntil(InputSystem.actions.FindAction("ExpConfirm").IsPressed);
             
-            yield return PlayTextPage(textBeforeStimuliIntroduction);
+            yield return PlayTextPages(textBeforeStimuliIntroduction);
 
-            var baseLoc = 3*Vector3.forward + 1.5f*Vector3.left;
+            var baseLoc = new Vector3(-1.5f, 0.5f, 3);
             
             var s_default = Instantiate(stimuliPrefab, baseLoc, Quaternion.identity);
             var s_highlighted = Instantiate(stimuliPrefab, baseLoc + Vector3.right, Quaternion.identity);
@@ -94,27 +103,28 @@ namespace Experiments
             s_focused.Gaze();
             s_selected.Select();
             
+            yield return PlayTextPages(textStimuliIntroduction);
             
             Destroy(s_default.gameObject);
             Destroy(s_highlighted.gameObject);
             Destroy(s_focused.gameObject);
             Destroy(s_selected.gameObject);
-
-            yield return PlayTextPage(textStimuliIntroduction);
             
             var s_example = Instantiate(stimuliPrefab, baseLoc + 1.5f*Vector3.right, Quaternion.identity);
             
-            yield return PlayTextPage(textBeforeExample);
+            yield return PlayTextPages(textBeforeExample);
             
-            // todo: deactivate gaze and pinch before here.
+            gazeRaycaster.Activate();
             
-            // Wait for pinch or auto-advance timeout
+            // Wait for pinch on stimulus
             yield return new WaitUntil(() => s_example.IsSelected);
+
+            yield return PlayTextPages(textEnd);
 
             MarkComplete();
         }
 
-        private IEnumerator PlayTextPage(string[] pages)
+        private IEnumerator PlayTextPages(string[] pages)
         {
             for (var i = 0; i < pages.Length; i++)
             {

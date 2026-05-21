@@ -283,7 +283,7 @@ MonoBehaviour:
   m_Camera: {fileID: 1359528789}
   m_OriginBaseGameObject: {fileID: 242690298}
   m_CameraFloorOffsetObject: {fileID: 2144071228}
-  m_RequestedTrackingOriginMode: 0
+  m_RequestedTrackingOriginMode: 1
   m_CameraYOffset: 1.1176
 --- !u!4 &242690301
 Transform:
@@ -535,6 +535,96 @@ MonoBehaviour:
   fingerType: 1
   activateDistance: 0.025
   deactivateDistance: 0.03
+--- !u!1 &560873706
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 560873707}
+  - component: {fileID: 560873709}
+  - component: {fileID: 560873708}
+  m_Layer: 0
+  m_Name: Wall_Transparent (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &560873707
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 560873706}
+  serializedVersion: 2
+  m_LocalRotation: {x: 6.123234e-17, y: 1, z: -6.123234e-17, w: -6.123234e-17}
+  m_LocalPosition: {x: 6.43, y: 1.3716, z: 4.5}
+  m_LocalScale: {x: 1, y: 1, z: 2}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1916182283}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &560873708
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 560873706}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 9c52a7e85c986c2429f4638c6756501c, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &560873709
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 560873706}
+  m_Mesh: {fileID: 6607397599308209861, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
 --- !u!1 &611744582
 GameObject:
   m_ObjectHideFlags: 0
@@ -1370,6 +1460,98 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &1003864399
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1003864400}
+  - component: {fileID: 1003864402}
+  - component: {fileID: 1003864401}
+  m_Layer: 0
+  m_Name: Floor (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1003864400
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1003864399}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 9.95, y: 0, z: 0}
+  m_LocalScale: {x: 286.32373, y: 286.32373, z: 286.32373}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1916182283}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &1003864401
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1003864399}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 7d02519ee5c8cb745b09b59fc3d367fe, type: 2}
+  - {fileID: 2100000, guid: 895b038bf03adba4c951968630c6032d, type: 2}
+  - {fileID: 2100000, guid: 7d02519ee5c8cb745b09b59fc3d367fe, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1003864402
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1003864399}
+  m_Mesh: {fileID: -629719859055844128, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
 --- !u!1 &1354325379
 GameObject:
   m_ObjectHideFlags: 0
@@ -1666,7 +1848,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c4c8cda17cec334ba5de3f231a1bc51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.GazeRaycaster
-  useEyeTracking: 0
+  useEyeTracking: 1
   fallbackToHeadGaze: 1
   gazeEye: 0
   blinkHoldFrames: 2
@@ -1677,9 +1859,8 @@ MonoBehaviour:
   gazeRadius: 0.02
   focusDwellTime: 0
   reticle: {fileID: 650430509}
-  reticleDefaultDistance: 8
+  reticleDefaultDistance: 5
   gazeSmoothingFactor: 10
-  logger: {fileID: 1865475891}
   drawDebugRay: 0
   debugRayWidth: 0.003
   logDebug: 0
@@ -2464,6 +2645,14 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 1.31
       objectReference: {fileID: 0}
+    - target: {fileID: -5078791627627836724, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -4.713
+      objectReference: {fileID: 0}
+    - target: {fileID: -5078791627627836724, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 4.5
+      objectReference: {fileID: 0}
     - target: {fileID: -3783463821402775489, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.63
@@ -2471,6 +2660,10 @@ PrefabInstance:
     - target: {fileID: -3783463821402775489, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: -3783463821402775489, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 4.5
       objectReference: {fileID: 0}
     - target: {fileID: -244420848407841909, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
       propertyPath: m_StaticShadowCaster
@@ -2546,7 +2739,13 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 9c52a7e85c986c2429f4638c6756501c, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
+      insertIndex: 2
+      addedObject: {fileID: 1003864400}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 560873707}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
 --- !u!4 &1916182283 stripped
@@ -2615,18 +2814,20 @@ MonoBehaviour:
   - 'The calibration procedure is now finished, and the experiment is about to start. '
   textStimuliIntroduction:
   - 'During this experiment, you will be looking at a series of highlighted stimuli. 
-    Stimuli are grey balls. A highlighted stimuli is yellow. Once you look at a stimuli,
-    it will turn orange. Once you select the stimuli, it will turn green, and confirmation
-    sound plays.  '
-  - You will be selecting the stimuli by looking at it and using a pinch gesture
+    A stimulus is a blue sphere. A highlighted stimulus is yellow.  '
+  - 'Once you look at a stimulus, it will turn orange. Once you select the stimulus,
+    it will turn green, and confirmation sound plays. '
+  - You will be selecting the stimulus by looking at it and using a pinch gesture
     with your right hand.
   textBeforeExample:
-  - 'Try it out. Look at the stimuli in front of you, and pinch to select the stimuli.
-    The experiment will then start. '
+  - 'Try it out. Look at the stimuli in front of you, and pinch to select the stimuli.  '
+  textEnd:
+  - Well done! The experiment will now start.
   instructionText: {fileID: 1400203280}
   progressText: {fileID: 0}
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   kokoroTTS: {fileID: 775457547}
+  gazeRaycaster: {fileID: 1359528791}
 --- !u!1 &1976708000
 GameObject:
   m_ObjectHideFlags: 0
@@ -2784,7 +2985,7 @@ Transform:
   m_GameObject: {fileID: 2144071228}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.1176, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

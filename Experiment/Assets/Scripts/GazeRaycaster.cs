@@ -25,9 +25,6 @@ using VIVE.OpenXR.EyeTracker;
 ///   - Install VIVE OpenXR Plugin (2.5+) and Unity OpenXR Plugin.
 ///   - In Project Settings > XR Plug-in Management > OpenXR:
 ///       • Enable "Vive XR Eye Tracker (Beta)" in the feature groups.
-///       • Optionally also add the "Eye Gaze Interaction Profile" for fallback.
-///   - Add the scripting define VIVE_OPENXR_EYETRACKER to your project:
-///       Edit > Project Settings > Player > Scripting Define Symbols
 ///   - Attach this script to your Main Camera (XR Origin camera).
 /// </summary>
 public class GazeRaycaster : MonoBehaviour
@@ -73,9 +70,6 @@ public class GazeRaycaster : MonoBehaviour
     public float gazeSmoothingFactor = 5f;
 
     [Header("Debug")] 
-    [Tooltip("Log manager")]
-    public ExperimentLogger logger;
-        
     [Tooltip("Draw gaze ray in Scene view.")]
     public bool drawDebugRay = true;
         
@@ -102,6 +96,7 @@ public class GazeRaycaster : MonoBehaviour
     private Vector3 _smoothedGazeDirection;
     private GazeSource _activeSource = GazeSource.None;
     private GazeSource _prevSource = GazeSource.None;
+    private bool _isActive = true;
 
     // --- Public API ---
 
@@ -124,6 +119,8 @@ public class GazeRaycaster : MonoBehaviour
 
     private void Update()
     {
+        if (!_isActive) return;
+        
         Vector3 rayOrigin;
         Vector3 rayDirection;
         bool gotEyeTracking = false;
@@ -228,6 +225,18 @@ public class GazeRaycaster : MonoBehaviour
             // Debug ray — visible in headset via LineRenderer
             UpdateDebugRay(rayOrigin, didHit ? hit.point : rayOrigin + _smoothedGazeDirection * maxDistance);
         }
+    }
+
+    public void Activate()
+    {
+        _isActive = true;
+        reticle.gameObject.SetActive(true);
+    }
+
+    public void Deactivate()
+    {
+        _isActive = false;
+        reticle.gameObject.SetActive(false);
     }
 
     private void UpdateDebugRay(Vector3 start, Vector3 end)
