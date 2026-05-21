@@ -31,9 +31,20 @@ namespace Unity.InferenceEngine.TTS.Inference
         int        _voiceMaxTokens; // N
         Dictionary<char,int> _vocab;
         AudioSource _audio;
+        
+        // Signleton stuff
+        public static KokoroTTS Instance { get;  private set; } 
 
         void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            
             _audio = GetComponent<AudioSource>();
 
             // --- Load the ONNX model ---
@@ -118,12 +129,18 @@ namespace Unity.InferenceEngine.TTS.Inference
 
         public IEnumerator WaitForEndOfPlayback()
         {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(0.3f);
             while (_audio.isPlaying)
             {
                 yield return new WaitForSeconds(0.1f);
             }
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(0.3f);
+        }
+
+        public IEnumerator SpeakAndWait(string text)
+        {
+            yield return SpeakAsync(text);
+            yield return WaitForEndOfPlayback();
         }
 
         static Dictionary<char,int> ParseVocab(string json)

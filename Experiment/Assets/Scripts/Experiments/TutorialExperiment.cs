@@ -44,9 +44,6 @@ namespace Experiments
         public Interactable stimuliPrefab; 
         
         [SerializeField]
-        private KokoroTTS kokoroTTS;
-        
-        [SerializeField]
         private GazeRaycaster gazeRaycaster;
 
         // State
@@ -118,6 +115,7 @@ namespace Experiments
             // Wait for pinch on stimulus
             yield return new WaitUntil(() => s_example.IsSelected);
 
+            Destroy(s_example.gameObject);
             yield return PlayTextPages(textEnd);
 
             MarkComplete();
@@ -128,9 +126,7 @@ namespace Experiments
             for (var i = 0; i < pages.Length; i++)
             {
                 instructionText.text = pages[i];
-                yield return kokoroTTS.SpeakAsync(pages[i]);
-                yield return kokoroTTS.WaitForEndOfPlayback();
-
+                yield return KokoroTTS.Instance.SpeakAndWait(pages[i]);
             }
         }
 
