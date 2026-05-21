@@ -32,14 +32,7 @@ namespace Experiments
         
         [TextArea(3, 10)]
         [Tooltip("Each string becomes one page of instructions.")]
-        public string[] textEnd = new[] {""};
-
-        [Header("UI")]
-        [Tooltip("World-space Text (TextMeshPro) that will display the current page.")]
-        public TMP_Text instructionText;
-
-        [Tooltip("Optional progress indicator (e.g. '2 / 4').")]
-        public TMP_Text progressText;
+        public string[] textAfterExample = new[] {""};
 
         public Interactable stimuliPrefab; 
         
@@ -60,17 +53,13 @@ namespace Experiments
         {
             PinchHandler.Instance.onPinchDetected.RemoveListener(OnPinch);
 
-            // Hide the UI
-            if (instructionText) instructionText.text = "";
-            if (progressText) progressText.text = "";
-
             base.OnEnd();
         }
 
         public override IEnumerator Run()
         {
             gazeRaycaster.Deactivate();
-            if (!instructionText)
+            if (!trialInfoText)
             {
                 Debug.LogError("[TutorialExperiment] No instructionText assigned.");
                 yield break;
@@ -119,15 +108,6 @@ namespace Experiments
             yield return PlayTextPages(textEnd);
 
             MarkComplete();
-        }
-
-        private IEnumerator PlayTextPages(string[] pages)
-        {
-            for (var i = 0; i < pages.Length; i++)
-            {
-                instructionText.text = pages[i];
-                yield return KokoroTTS.Instance.SpeakAndWait(pages[i]);
-            }
         }
 
         private void OnPinch()

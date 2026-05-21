@@ -19,35 +19,7 @@ namespace Experiments
     /// </summary>
     public class DemoExperiment : StimuliExperiment
     {
-        // --- State ---
-        private Interactable _currentTarget;
-        private Interactable _selectedStimulus;
-        // -------------------------------------------------------------------
 
-        public override void OnBegin()
-        {
-            base.OnBegin();
-            _results.Clear();
-                
-            PinchHandler.Instance.onStimulusClicked.AddListener(OnStimulusClicked);
-
-            if (feedbackText) feedbackText.text = "";
-        }
-
-        public override void OnEnd()
-        {
-            PinchHandler.Instance.onStimulusClicked.RemoveListener(OnStimulusClicked);
-
-            // Clean up any remaining stimuli
-            if (spawner)
-                spawner.DestroyStimuli();
-
-            // Clear UI
-            if (trialInfoText) trialInfoText.text = "";
-            if (feedbackText) feedbackText.text = "";
-
-            base.OnEnd();
-        }
 
         public override IEnumerator Run()
         {
@@ -62,9 +34,7 @@ namespace Experiments
             for (int trial = 1; trial <= numberOfTrials; trial++)
             {
                 yield return StartCoroutine(RunSingleTrial(trial));
-
-                if (interTrialInterval > 0f)
-                    yield return new WaitForSeconds(interTrialInterval);
+                yield return WaitForNextStimulus();
             }
             spawner.DestroyStimuli();
 
@@ -76,10 +46,7 @@ namespace Experiments
         private IEnumerator RunSingleTrial(int trialNumber)
         {
             // --- Setup ---
-            if (trialInfoText)
-                trialInfoText.text = $"Trial {trialNumber} / {numberOfTrials}";
-
-            if (feedbackText) feedbackText.text = "";
+            if (trialInfoText) trialInfoText.text = "";
 
             // Pick a random stimulus as the target
             var spawned = spawner.spawnedStimuli;
@@ -93,9 +60,6 @@ namespace Experiments
             _currentTarget.Highlight();
 
             _selectedStimulus = null;
-
-            // Brief preview so the user notices the target
-            yield return new WaitForSeconds(previewDuration);
 
             float responseStart = Time.time;
 

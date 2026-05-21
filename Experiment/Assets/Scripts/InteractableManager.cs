@@ -59,6 +59,45 @@ public class InteractableManager : MonoBehaviour
             }
         }
     }
+    
+    public void SpawnStimulusInCircle(int count, Vector3 center, float radius)
+    {
+        _spawnedStimuli = new List<Interactable>();
+        _spawnedStimuliPositions = new List<Vector3>();
+
+        if (count <= 0)
+            return;
+
+        // Special case: a single object goes at the center.
+        if (count == 1)
+        {
+            var stimulus = Instantiate(stimuliPrefab, center, Quaternion.identity);
+            _spawnedStimuli.Add(stimulus);
+            _spawnedStimuliPositions.Add(center);
+            return;
+        }
+
+        // Distribute evenly around the circle.
+        // Start angle of 90° puts the first object at the top, and going
+        // clockwise gives the intuitive left/right and top/bottom layouts.
+        float angleStep = 360f / count;
+
+        for (int i = 0; i < count; i++)
+        {
+            float angleDeg = i * angleStep;
+            float angleRad = angleDeg * Mathf.Deg2Rad;
+
+            Vector3 offset = new Vector3(
+                Mathf.Cos(angleRad) * radius,
+                Mathf.Sin(angleRad) * radius,
+                0f
+            );
+
+            var stimulus = Instantiate(stimuliPrefab, center+offset, Quaternion.identity);
+            _spawnedStimuli.Add(stimulus);
+            _spawnedStimuliPositions.Add(center+offset);
+        }
+    }
 
     public void DestroyStimuli()
     {

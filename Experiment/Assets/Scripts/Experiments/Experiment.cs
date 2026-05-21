@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using TMPro;
+using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,6 +16,18 @@ namespace Experiments
         [Header("Experiment Info")]
         [Tooltip("Display name for this experiment (used in logs).")]
         public string experimentName = "Unnamed Experiment";
+        
+        [TextArea(3, 10)]
+        [Tooltip("Each string becomes one page of instructions.")]
+        public string[] textStart = new[] {""};
+        
+        [TextArea(3, 10)]
+        [Tooltip("Each string becomes one page of instructions.")]
+        public string[] textEnd = new[] {""};
+        
+        [Header("Feedback UI (Optional)")]
+        [Tooltip("World-space text for trial info (e.g. 'Trial 3 / 20').")]
+        public TMP_Text trialInfoText;
 
         [Header("Events")]
         public UnityEvent onExperimentStart;
@@ -32,6 +46,7 @@ namespace Experiments
         {
             IsRunning = true;
             IsComplete = false;
+            if(trialInfoText) trialInfoText.text = "";
             Debug.Log($"[Experiment] Starting: {experimentName}");
             onExperimentStart?.Invoke();
         }
@@ -49,6 +64,7 @@ namespace Experiments
         {
             IsRunning = false;
             IsComplete = true;
+            if(trialInfoText) trialInfoText.text = "";
             Debug.Log($"[Experiment] Completed: {experimentName}");
             onExperimentComplete?.Invoke();
         }
@@ -59,6 +75,17 @@ namespace Experiments
         protected void MarkComplete()
         {
             IsComplete = true;
+        }
+        
+        
+        protected IEnumerator PlayTextPages(string[] pages)
+        {
+            if (trialInfoText) trialInfoText.gameObject.SetActive(true);
+            for (var i = 0; i < pages.Length; i++)
+            {
+                if(trialInfoText) trialInfoText.text = pages[i];
+                yield return KokoroTTS.Instance.SpeakAndWait(pages[i]);
+            }
         }
     }
 }

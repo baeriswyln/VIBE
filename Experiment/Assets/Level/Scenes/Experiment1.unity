@@ -312,6 +312,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 284363917}
+  - component: {fileID: 284363918}
   m_Layer: 0
   m_Name: ExperimentStatic
   m_TagString: Untagged
@@ -334,6 +335,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1976708001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &284363918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 284363916}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
+  experimentName: Unnamed Experiment
+  textStart:
+  - 'In this experiment, a single stimulus will appear. Select it once it appears. '
+  textEnd:
+  - 
+  trialInfoText: {fileID: 1400203280}
+  onExperimentStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onExperimentComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  stimuliPerTrial: 1
+  numberOfTrials: 2
+  interTrialIntervalMin: 1
+  interTrialIntervalMax: 5
+  feedbackDuration: 1
+  spawner: {fileID: 1516759628}
+  onTrialComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  spawnCenter: {x: 0, y: 1, z: 5}
+  spawnRadius: 0.5
+  respawnBetweenRounds: 1
 --- !u!1 &286752494
 GameObject:
   m_ObjectHideFlags: 0
@@ -817,6 +854,7 @@ Transform:
   - {fileID: 907244767}
   - {fileID: 68749650}
   - {fileID: 1916182283}
+  - {fileID: 1516759629}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &775457546
@@ -1034,7 +1072,7 @@ Light:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingLayerMask: 1
-  m_Lightmapping: 4
+  m_Lightmapping: 1
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
@@ -2259,6 +2297,60 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1447424866}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1516759627
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1516759629}
+  - component: {fileID: 1516759628}
+  m_Layer: 0
+  m_Name: StaticInteractableManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1516759628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1516759627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d96abd51fe344c24ebac814e29b15e47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableManager
+  stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
+  spawnBox: {fileID: 0}
+  maxSpawnAttempts: 5
+  minStimuliGap: 0.5
+  useCurvedBounds: 0
+  innerRadius: 1.5
+  outerRadius: 2.5
+  arcAngleDegrees: 90
+  minHeight: 0
+  maxHeight: 1.5
+--- !u!4 &1516759629
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1516759627}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 724500052}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1625652138
 GameObject:
   m_ObjectHideFlags: 0
@@ -2454,6 +2546,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1668606084}
+  - component: {fileID: 1668606085}
   m_Layer: 0
   m_Name: ExperimentTwoPositions
   m_TagString: Untagged
@@ -2476,6 +2569,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1976708001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1668606085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668606083}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
+  experimentName: Unnamed Experiment
+  textStart:
+  - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
+  textEnd:
+  - 
+  trialInfoText: {fileID: 1400203280}
+  onExperimentStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onExperimentComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  stimuliPerTrial: 2
+  numberOfTrials: 2
+  interTrialIntervalMin: 1
+  interTrialIntervalMax: 5
+  feedbackDuration: 1
+  spawner: {fileID: 1516759628}
+  onTrialComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  spawnCenter: {x: 0, y: 1, z: 5}
+  spawnRadius: 0.5
+  respawnBetweenRounds: 0
 --- !u!1 &1865475890
 GameObject:
   m_ObjectHideFlags: 0
@@ -2736,6 +2865,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.TutorialExperiment
   experimentName: Tutorial
+  textStart:
+  - 
+  textEnd:
+  - Well done! The experiment will now start.
+  trialInfoText: {fileID: 1400203280}
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -2759,10 +2893,8 @@ MonoBehaviour:
     with your right hand.
   textBeforeExample:
   - 'Try it out. Look at the stimuli in front of you, and pinch to select the stimuli.  '
-  textEnd:
+  textAfterExample:
   - Well done! The experiment will now start.
-  instructionText: {fileID: 1400203280}
-  progressText: {fileID: 0}
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   gazeRaycaster: {fileID: 1359528791}
 --- !u!1 &1976708000
@@ -2815,10 +2947,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.Experiments.ExperimentManager
   experiments:
   - {fileID: 1960306619}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 284363918}
+  - {fileID: 1668606085}
   startOnPlay: 1
   gapBetweenExperiments: 1
   inputActionAsset: {fileID: -944628639613478452, guid: 68a21abee90971741b8bfa34e55e7891, type: 3}
