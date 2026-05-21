@@ -129,6 +129,7 @@ public class GazeRaycaster : MonoBehaviour
         {
             // Priority 1: VIVE native eye tracker API
             gotEyeTracking = TryGetViveNativeEyeGaze(out rayOrigin, out rayDirection);
+            rayOrigin += transform.parent.position;
 
             // Priority 2: Head gaze fallback
             if (!gotEyeTracking)

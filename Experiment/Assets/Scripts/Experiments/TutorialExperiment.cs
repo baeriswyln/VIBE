@@ -112,9 +112,8 @@ namespace Experiments
             
             var s_example = Instantiate(stimuliPrefab, baseLoc + 1.5f*Vector3.right, Quaternion.identity);
             
-            yield return PlayTextPages(textBeforeExample);
-            
             gazeRaycaster.Activate();
+            yield return PlayTextPages(textBeforeExample);
             
             // Wait for pinch on stimulus
             yield return new WaitUntil(() => s_example.IsSelected);
