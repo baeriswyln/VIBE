@@ -16,7 +16,7 @@ namespace Experiments
         [Header("Tutorial Pages")]
         [TextArea(3, 10)]
         [Tooltip("Each string becomes one page of instructions.")]
-        public string[] textBeforeCalibration = new[] {""};
+        public string[] textBeforeStart = new[] {""};
 
         [TextArea(3, 10)] 
         [Tooltip("Each string becomes one page of instructions.")]
@@ -65,16 +65,11 @@ namespace Experiments
                 yield break;
             }
             
-            yield return PlayTextPages(textBeforeCalibration);
+            yield return PlayTextPages(textBeforeStart);
             
-            // calibration step 1: eye tracking
-            Debug.LogWarning("[Calibration] - Perform eye tracking calibration");
+            yield return new WaitUntil(() => LslBackend.Instance.startReceived);
             
-            // ---------------
-            // end calibration
-            // ---------------
-            
-            yield return new WaitUntil(InputSystem.actions.FindAction("ExpConfirm").IsPressed);
+            yield return PlayTextPages(textStimuliIntroduction);
             
             yield return PlayTextPages(textBeforeStimuliIntroduction);
 

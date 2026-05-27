@@ -7,6 +7,7 @@ requires-python = ">=3.14"
 dependencies = [
     "bleak>=3.0.2",
     "numpy>=2.4.4",
+    "pylsl>=1.18.2",
     "pyttsx3>=2.99",
     "scikit-learn>=1.8.0",
     "sounddevice>=0.5.5",

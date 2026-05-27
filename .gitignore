@@ -4,6 +4,7 @@
 
 # general
 data
+dsi2lsl-win
 
 # OS
 .DS_Store
@@ -16,6 +17,7 @@ Thumbs.db
 desktop.ini
 
 # Editors
+.vs/
 .vscode/
 .idea/
 *.suo

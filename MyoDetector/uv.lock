@@ -90,6 +90,7 @@ source = { editable = "." }
 dependencies = [
     { name = "bleak" },
     { name = "numpy" },
+    { name = "pylsl" },
     { name = "pyttsx3" },
     { name = "scikit-learn" },
     { name = "sounddevice" },
@@ -99,6 +100,7 @@ dependencies = [
 requires-dist = [
     { name = "bleak", specifier = ">=3.0.2" },
     { name = "numpy", specifier = ">=2.4.4" },
+    { name = "pylsl", specifier = ">=1.18.2" },
     { name = "pyttsx3", specifier = ">=2.99" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
     { name = "sounddevice", specifier = ">=0.5.5" },
@@ -140,6 +142,22 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1b/7d/92392ff7815c21062bea51aa7b87d45576f649f16458d78b7cf94b9ab2e6/pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29", size = 103492, upload-time = "2026-01-21T14:26:51.89Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992", size = 48172, upload-time = "2026-01-21T14:26:50.693Z" },
+]
+
+[[package]]
+name = "pylsl"
+version = "1.18.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a9/22/f7f331841138351653388797c8b786f7d50dbfb96ab7d5c3faf8b79ea1b6/pylsl-1.18.2.tar.gz", hash = "sha256:e0f591bc9722d976c3cd3721c958ef3d9fc2b2bbe32e9218609a6f6070349a88", size = 42759, upload-time = "2026-04-22T04:21:32.707Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/79/27/4daf3a230344ce9bd25b9a68cd674819deaaedb994a141d61a2d17ca6823/pylsl-1.18.2-py2.py3-none-any.whl", hash = "sha256:0758d45b13aa97beb806884ec607648fe6568505b04c3ce152bfea214a4f06c2", size = 42949, upload-time = "2026-04-22T04:21:33.431Z" },
+    { url = "https://files.pythonhosted.org/packages/6e/7f/9f19c023dfb770ffe23031e05251e64fcf3f3bfc4f51d16d352b8e58f5ec/pylsl-1.18.2-py2.py3-none-macosx_11_0_universal2.whl", hash = "sha256:dd459aaa36af808cca4e4046ae926b42886fdd9672b219bfd4dd154010ca1c8b", size = 662393, upload-time = "2026-04-22T04:21:31.549Z" },
+    { url = "https://files.pythonhosted.org/packages/64/08/c2ae65d3fe8d1cfaa4be05617a6f6af71342ba0dc1750363b929098065b7/pylsl-1.18.2-py2.py3-none-manylinux_2_35_x86_64.whl", hash = "sha256:f0331fed141cf19be65017e6529edff79b8505b4781e9e1838c95de5d072ade4", size = 1043264, upload-time = "2026-04-22T04:21:30.201Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/b1/e599a7327376e29847dd00b33f127b9238e76d9aedd27eae6eb9ff77a190/pylsl-1.18.2-py2.py3-none-win32.whl", hash = "sha256:2f9f50aa16510600066e43628a1b66ac6b6a32b321de3000824f9c60e26cfbfa", size = 272611, upload-time = "2026-04-22T04:21:28.666Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/a8/8ccb88b3cd65140e57966472038baa0cebb56bde5e86ad51852faed99cad/pylsl-1.18.2-py2.py3-none-win_amd64.whl", hash = "sha256:3ea2693417c7d79766cebf967250fde78aa1a3ad2b198e40246d36f549dbfde1", size = 307506, upload-time = "2026-04-22T04:21:35.177Z" },
 ]
 
 [[package]]

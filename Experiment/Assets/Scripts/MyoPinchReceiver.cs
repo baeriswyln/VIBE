@@ -6,7 +6,7 @@ using UnityEngine;
 public class MyoPinchReceiver : MonoBehaviour
 {
     [Header("LSL Stream")] [Tooltip("Stream name as published by the Python bridge.")]
-    public string streamName = "MyoPinch";
+    public string streamName = "Experiment.VIBE.MyoPinch";
 
     [Tooltip("Seconds to wait per resolve attempt before retrying.")]
     public double resolveTimeout = 2.0;

@@ -302,7 +302,7 @@ public class ViveEyeLslStreamer : MonoBehaviour
     private void BuildGazeOutlet()
     {
         var info = new StreamInfo(
-            name:           "ViveOpenXR_Gaze",
+            name:           "Experiment.VIBE.ViveOpenXR_Gaze",
             type:           "Gaze",
             channel_count:  N_CHANNELS,
             nominal_srate:  nominalRateHz,
@@ -331,7 +331,7 @@ public class ViveEyeLslStreamer : MonoBehaviour
     private void BuildEventOutlet()
     {
         var info = new StreamInfo(
-            name:           "ViveOpenXR_Events",
+            name:           "Experiment.VIBE.ViveOpenXR_Events",
             type:           "Markers",
             channel_count:  1,
             nominal_srate:  0.0,

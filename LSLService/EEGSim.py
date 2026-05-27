@@ -5,7 +5,7 @@ from mne_lsl.lsl import StreamInfo, StreamOutlet
 
 # --- EEG Stream ---
 eeg_info = StreamInfo(
-    name="SimulatedEEG",
+    name="Experiment.VIBE.EEG",
     stype="EEG",
     n_channels=8,
     sfreq=256.0,

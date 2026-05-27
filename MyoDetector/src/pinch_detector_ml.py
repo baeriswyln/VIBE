@@ -570,11 +570,11 @@ def make_emitter(dry_run):
     from pylsl import StreamInfo, StreamOutlet, local_clock
 
     info = StreamInfo(
-        name="MyoPinch", type="Markers", channel_count=1,
+        name="Experiment.VIBE.MyoPinch", type="Markers", channel_count=1,
         nominal_srate=0, channel_format="string", source_id="myo-pinch-ml-01",
     )
     outlet = StreamOutlet(info)
-    print("LSL outlet 'MyoPinch' is live. Waiting for consumers…")
+    print("LSL outlet 'Experiment.VIBE.MyoPinch' is live. Waiting for consumers…")
     return (lambda label: outlet.push_sample([label], timestamp=local_clock())), \
            (lambda: None)
 

@@ -8,10 +8,9 @@ import json
 import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-from mne_lsl.lsl import resolve_streams
 from mne_lsl.stream import StreamLSL
 from mne_lsl.lsl import StreamInlet, resolve_streams
+from mne_lsl.lsl import StreamInfo as _LSLStreamInfo, StreamOutlet as _LSLStreamOutlet
 
 if len(sys.argv) < 2:
     print("Usage: python LSLLiveViewLogger.py <subject_id> [use_eeg_sim]")
@@ -151,6 +150,43 @@ plt.tight_layout()
 
 # Track which marker timestamps we've already drawn
 drawn_marker_ts = set()
+
+# check that all required streams are available
+REQUIRED_MARKER_STREAMS = [
+    "Experiment.VIBE.ViveOpenXR_Events",
+    "Experiment.VIBE.MyoPinch",
+    "Experiment.VIBE.GameEventStream",
+]
+BACKEND_STREAM_NAME = "Experiment.VIBE.Backend.Logger"
+MSG_READY = "logger_ready"
+STREAM_CHECK_TIMEOUT = 10.0
+
+print("Verifying required marker streams are available...")
+_check_deadline = time.time() + STREAM_CHECK_TIMEOUT
+_found_names = set()
+while time.time() < _check_deadline:
+    _present = {s.name for s in resolve_streams(timeout=2.0)}
+    _found_names = {n for n in REQUIRED_MARKER_STREAMS if n in _present}
+    if len(_found_names) == len(REQUIRED_MARKER_STREAMS):
+        break
+if len(_found_names) != len(REQUIRED_MARKER_STREAMS):
+    _missing = [n for n in REQUIRED_MARKER_STREAMS if n not in _found_names]
+    print(f"Required marker stream(s) not found: {_missing}")
+    sys.exit(1)
+print("All required marker streams are available.")
+
+# Publish readiness on the backend stream so the orchestrator can proceed.
+_backend_info = _LSLStreamInfo(
+    name=BACKEND_STREAM_NAME,
+    stype="Markers",
+    n_channels=1,
+    sfreq=0.0,
+    dtype="string",
+    source_id="lsl_live_view_logger",
+)
+_backend_outlet = _LSLStreamOutlet(_backend_info)
+time.sleep(.5) # wait for outlet to be ready
+_backend_outlet.push_sample([MSG_READY])
 
 print("Plotting — close the window to stop.")
 

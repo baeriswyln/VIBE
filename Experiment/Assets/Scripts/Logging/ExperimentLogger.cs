@@ -25,7 +25,7 @@ namespace Logging
         public GazeRaycaster gazeRaycaster;
         
         [Header("LSL Configuration")]
-        string StreamName = "LSL4Unity.TechDemo.EventStream";
+        string StreamName = "Experiment.VIBE.GameEventStream";
         string StreamType = "Markers";
         private StreamOutlet outlet;
         private string[] sample = { "" };
