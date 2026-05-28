@@ -167,13 +167,13 @@ MonoBehaviour:
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   spawnBox: {fileID: 1447424868}
   maxSpawnAttempts: 5
-  minStimuliGap: 0.5
+  minStimuliGap: 0.3
   useCurvedBounds: 1
   innerRadius: 4.9
   outerRadius: 5.1
-  arcAngleDegrees: 90
-  minHeight: 0.2
-  maxHeight: 2
+  arcAngleDegrees: 45
+  minHeight: 0.4
+  maxHeight: 1.8
 --- !u!1 &242690298
 GameObject:
   m_ObjectHideFlags: 0
@@ -1052,7 +1052,7 @@ MonoBehaviour:
   experimentName: RandomLarge
   textStart:
   - In this experiment, you will be shown ten stimuli at random positions. Select
-    the one that is highlighted.
+    the one that is highlighted. Slight head movemets might be needed.
   textEnd:
   - Round finished, 20 seconds break.
   trialInfoText: {fileID: 1400203280}
@@ -1387,7 +1387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LslBackend
   sourceId: UnityBackend
-  inletStreamName: Experiment.VIBE.Backend.Launcher
+  inletStreamName: Experiment.VIBE.Backend.Orchestrator
   outletStreamName: Experiment.VIBE.Backend.Game
   resolveTimeout: 2
   retryInterval: 1
@@ -3279,14 +3279,12 @@ MonoBehaviour:
   - {fileID: 2103927501}
   - {fileID: 1352681745}
   - {fileID: 794301598}
-  - {fileID: 921482486}
-  - {fileID: 1587765989}
   - {fileID: 1668606085}
   - {fileID: 2103927501}
   - {fileID: 1352681745}
   - {fileID: 794301598}
-  - {fileID: 921482486}
-  - {fileID: 1587765989}
+  - {fileID: 1352681745}
+  - {fileID: 794301598}
   startOnPlay: 1
   gapBetweenExperiments: 20
   inputActionAsset: {fileID: -944628639613478452, guid: 68a21abee90971741b8bfa34e55e7891, type: 3}
