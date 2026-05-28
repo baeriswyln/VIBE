@@ -29,8 +29,17 @@ namespace Experiments
                 yield break;
             }
 
-            
-            spawner.SpawnStimuli(stimuliPerTrial);
+            while (true)
+            {
+                spawner.SpawnStimuli(stimuliPerTrial);
+                var spawned = spawner.spawnedStimuli;
+                if (spawned == null || spawned.Count != stimuliPerTrial)
+                {
+                    ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned."));
+                    break;
+                }
+                spawner.DestroyStimuli();
+            }
             for (int trial = 1; trial <= numberOfTrials; trial++)
             {
                 yield return StartCoroutine(RunSingleTrial(trial));
@@ -50,12 +59,6 @@ namespace Experiments
 
             // Pick a random stimulus as the target
             var spawned = spawner.spawnedStimuli;
-            if (spawned == null || spawned.Count != stimuliPerTrial)
-            {
-                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned for trial {trialNumber}."));
-                yield break;
-            }
-
             _currentTarget = spawned[Random.Range(0, spawned.Count)];
             _currentTarget.Highlight();
 
