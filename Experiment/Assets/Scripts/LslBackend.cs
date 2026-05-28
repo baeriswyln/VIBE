@@ -50,7 +50,7 @@ public class LslBackend : MonoBehaviour
 
     private void OnEnable()
     {
-        // StartCoroutine(BuildBackendInlet());
+        StartCoroutine(BuildBackendInlet());
     }
 
     void Update()
