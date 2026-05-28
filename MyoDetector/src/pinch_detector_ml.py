@@ -76,7 +76,7 @@ STEP_MS         = 60         # how often we re-classify (sliding window stride)
 STEP_SAMPLES    = max(1, int(EMG_RATE_HZ * STEP_MS / 1000))
 ON_CONSEC       = 2          # consecutive "pinch" predictions to fire pinch_start
 OFF_CONSEC      = 3          # consecutive "rest" predictions to fire pinch_end
-PROB_THRESHOLD  = 0.65       # min P(pinch) to count a sample as positive
+PROB_THRESHOLD  = 0.9       # min P(pinch) to count a sample as positive
 DEBOUNCE_S      = 0.10
 MAX_PINCH_S     = 8.0
 HEARTBEAT_S     = 5.0
@@ -132,9 +132,17 @@ class Cue:
             print(f"[cue] play failed: {e}")
 
     # public API ──────────────────────────────────────────────────
-    def prep(self):     self._play(self._low)
-    def go(self):       self._play(self._high)
-    def done(self):     self._play(self._done)
+    def prep(self):
+        self._play(self._low)
+        print("ready")
+
+    def go(self):
+        self._play(self._high)
+        print("go")
+
+    def done(self):
+        self._play(self._done)
+        print("done")
 
     def say(self, text):
         print(f"[say] {text}")
