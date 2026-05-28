@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 68749650}
   - component: {fileID: 68749651}
   m_Layer: 0
-  m_Name: Interactables Small
+  m_Name: RoundSpawnAreaSmall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -169,11 +169,11 @@ MonoBehaviour:
   maxSpawnAttempts: 5
   minStimuliGap: 0.5
   useCurvedBounds: 1
-  innerRadius: 1.5
-  outerRadius: 2.5
+  innerRadius: 4.9
+  outerRadius: 5.1
   arcAngleDegrees: 90
-  minHeight: 0
-  maxHeight: 1.5
+  minHeight: 0.2
+  maxHeight: 2
 --- !u!1 &242690298
 GameObject:
   m_ObjectHideFlags: 0
@@ -347,11 +347,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  experimentName: Unnamed Experiment
+  experimentName: Static
   textStart:
   - 'In this experiment, a single stimulus will appear. Select it once it appears. '
   textEnd:
-  - 
+  - Round finished, 20 seconds break.
   trialInfoText: {fileID: 1400203280}
   onExperimentStart:
     m_PersistentCalls:
@@ -360,14 +360,15 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   stimuliPerTrial: 1
-  numberOfTrials: 2
-  interTrialIntervalMin: 1
-  interTrialIntervalMax: 5
+  numberOfTrials: 20
+  interTrialIntervalMin: 2
+  interTrialIntervalMax: 6
   feedbackDuration: 1
   spawner: {fileID: 1516759628}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
+  currentPinchSource: 0
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
   respawnBetweenRounds: 1
@@ -660,7 +661,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
+  m_LocalScale: {x: 0.02, y: 0.02, z: 0.02}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1359528786}
@@ -903,7 +904,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 1245986021}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -1004,6 +1005,73 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &794301596
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 794301597}
+  - component: {fileID: 794301598}
+  m_Layer: 0
+  m_Name: ExperimentRandomLarge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &794301597
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 794301596}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1976708001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &794301598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 794301596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dec6ef6bd4463b844ac07324caede425, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentRandom
+  experimentName: RandomLarge
+  textStart:
+  - In this experiment, you will be shown ten stimuli at random positions. Select
+    the one that is highlighted.
+  textEnd:
+  - Round finished, 20 seconds break.
+  trialInfoText: {fileID: 1400203280}
+  onExperimentStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onExperimentComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  stimuliPerTrial: 10
+  numberOfTrials: 20
+  interTrialIntervalMin: 2
+  interTrialIntervalMax: 6
+  feedbackDuration: 1
+  spawner: {fileID: 907244768}
+  onTrialComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  currentPinchSource: 0
 --- !u!1 &876147906
 GameObject:
   m_ObjectHideFlags: 0
@@ -1142,7 +1210,7 @@ GameObject:
   - component: {fileID: 907244767}
   - component: {fileID: 907244768}
   m_Layer: 0
-  m_Name: Interactables
+  m_Name: RoundSpawnAreaLarge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1157,7 +1225,7 @@ Transform:
   m_GameObject: {fileID: 907244766}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1181,11 +1249,80 @@ MonoBehaviour:
   maxSpawnAttempts: 5
   minStimuliGap: 0.5
   useCurvedBounds: 1
-  innerRadius: 1.5
-  outerRadius: 2.5
+  innerRadius: 4.9
+  outerRadius: 5.1
   arcAngleDegrees: 90
-  minHeight: 0
-  maxHeight: 1.5
+  minHeight: 0.2
+  maxHeight: 2
+--- !u!1 &921482484
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 921482485}
+  - component: {fileID: 921482486}
+  m_Layer: 0
+  m_Name: ExperimentMyoTwoPositions
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &921482485
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921482484}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1976708001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &921482486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921482484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
+  experimentName: MyoTwoPositions
+  textStart:
+  - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
+  textEnd:
+  - Round finished, 20 seconds break.
+  trialInfoText: {fileID: 1400203280}
+  onExperimentStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onExperimentComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  stimuliPerTrial: 2
+  numberOfTrials: 20
+  interTrialIntervalMin: 2
+  interTrialIntervalMax: 6
+  feedbackDuration: 1
+  spawner: {fileID: 1516759628}
+  onTrialComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  currentPinchSource: 1
+  spawnCenter: {x: 0, y: 1, z: 5}
+  spawnRadius: 0.5
+  respawnBetweenRounds: 0
 --- !u!1 &928532299
 GameObject:
   m_ObjectHideFlags: 0
@@ -1302,8 +1439,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.PinchDetector
   gazeRaycaster: {fileID: 1359528791}
   pinchDetector: {fileID: 407473971}
+  myoPinchReceiver: {fileID: 968829681}
   cooldownTime: 0.2
   clickSound: {fileID: 8300000, guid: cef5d2eaf31bece4c93da1d521e64b22, type: 3}
+  currentPinchSource: 0
   onPinchDetected:
     m_PersistentCalls:
       m_Calls: []
@@ -1322,8 +1461,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80ab18bded4d32a47bea5b626347e2eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.MyoPinchReceiver
-  streamName: MyoPinch
-  resolveTimeout: 2
+  streamName: Experiment.VIBE.MyoPinch
+  resolveTimeout: 0
   retryInterval: 1
   logEvents: 1
 --- !u!82 &968829682
@@ -1515,6 +1654,101 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1003864399}
   m_Mesh: {fileID: -629719859055844128, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
+--- !u!83 &1245986021
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: KokoroOutput
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 24000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
+--- !u!1 &1352681743
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1352681744}
+  - component: {fileID: 1352681745}
+  m_Layer: 0
+  m_Name: ExperimentRandomSmall
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1352681744
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1352681743}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1976708001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1352681745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1352681743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dec6ef6bd4463b844ac07324caede425, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentRandom
+  experimentName: RandomSmall
+  textStart:
+  - In this experiment, you will be shown five stimuli at random positions. Select
+    the one that is highlighted.
+  textEnd:
+  - Round finished, 20 seconds break.
+  trialInfoText: {fileID: 1400203280}
+  onExperimentStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onExperimentComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  stimuliPerTrial: 5
+  numberOfTrials: 20
+  interTrialIntervalMin: 2
+  interTrialIntervalMax: 6
+  feedbackDuration: 1
+  spawner: {fileID: 68749651}
+  onTrialComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  currentPinchSource: 0
 --- !u!1 &1354325379
 GameObject:
   m_ObjectHideFlags: 0
@@ -2369,6 +2603,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 724500052}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1587765987
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1587765988}
+  - component: {fileID: 1587765989}
+  m_Layer: 0
+  m_Name: ExperimentMyoFourPositions
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1587765988
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1587765987}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1976708001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1587765989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1587765987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
+  experimentName: MyoFourPositions
+  textStart:
+  - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
+  textEnd:
+  - Round finished, 20 seconds break.
+  trialInfoText: {fileID: 1400203280}
+  onExperimentStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onExperimentComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  stimuliPerTrial: 4
+  numberOfTrials: 20
+  interTrialIntervalMin: 2
+  interTrialIntervalMax: 6
+  feedbackDuration: 1
+  spawner: {fileID: 1516759628}
+  onTrialComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  currentPinchSource: 1
+  spawnCenter: {x: 0, y: 1, z: 5}
+  spawnRadius: 0.5
+  respawnBetweenRounds: 0
 --- !u!1 &1625652138
 GameObject:
   m_ObjectHideFlags: 0
@@ -2599,11 +2902,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  experimentName: Unnamed Experiment
+  experimentName: TwoPositions
   textStart:
   - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
   textEnd:
-  - 
+  - Round finished, 20 seconds break.
   trialInfoText: {fileID: 1400203280}
   onExperimentStart:
     m_PersistentCalls:
@@ -2612,14 +2915,15 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   stimuliPerTrial: 2
-  numberOfTrials: 2
-  interTrialIntervalMin: 1
-  interTrialIntervalMax: 5
+  numberOfTrials: 20
+  interTrialIntervalMin: 2
+  interTrialIntervalMax: 6
   feedbackDuration: 1
   spawner: {fileID: 1516759628}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
+  currentPinchSource: 0
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
   respawnBetweenRounds: 0
@@ -2896,8 +3200,7 @@ MonoBehaviour:
       m_Calls: []
   textBeforeStart:
   - The experiment is being prepared and will start soon. Please wait.
-  textBeforeStimuliIntroduction:
-  - Setup is ready.
+  textBeforeStimuliIntroduction: []
   textStimuliIntroduction:
   - 'During this experiment, you will be looking at a series of highlighted stimuli. 
     A stimulus is a blue sphere. A highlighted stimulus is yellow.  '
@@ -2908,7 +3211,13 @@ MonoBehaviour:
   textBeforeExample:
   - 'Try it out. Look at the stimuli in front of you, and pinch to select the stimuli.  '
   textAfterExample:
-  - Well done! The experiment will now start.
+  - 'Well done! The experiment contains multiple sessions. During each session, you
+    will observe 20 events. '
+  - 'Inbetween the sessions you have 20 seconds to relax. During this time you can
+    freely move your hand. '
+  - 'Be sure to return into the original position after relaxing. '
+  - 'Try not to move your body too much during the entire experiment. '
+  - The experiment will now start.
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   gazeRaycaster: {fileID: 1359528791}
 --- !u!1 &1976708000
@@ -2945,6 +3254,10 @@ Transform:
   - {fileID: 284363917}
   - {fileID: 1668606084}
   - {fileID: 2103927500}
+  - {fileID: 1352681744}
+  - {fileID: 794301597}
+  - {fileID: 921482485}
+  - {fileID: 1587765988}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1976708002
@@ -2963,8 +3276,19 @@ MonoBehaviour:
   - {fileID: 1960306619}
   - {fileID: 284363918}
   - {fileID: 1668606085}
+  - {fileID: 2103927501}
+  - {fileID: 1352681745}
+  - {fileID: 794301598}
+  - {fileID: 921482486}
+  - {fileID: 1587765989}
+  - {fileID: 1668606085}
+  - {fileID: 2103927501}
+  - {fileID: 1352681745}
+  - {fileID: 794301598}
+  - {fileID: 921482486}
+  - {fileID: 1587765989}
   startOnPlay: 1
-  gapBetweenExperiments: 1
+  gapBetweenExperiments: 20
   inputActionAsset: {fileID: -944628639613478452, guid: 68a21abee90971741b8bfa34e55e7891, type: 3}
   onSequenceStart:
     m_PersistentCalls:
@@ -3051,6 +3375,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2103927500}
+  - component: {fileID: 2103927501}
   m_Layer: 0
   m_Name: ExperimentFourPositions
   m_TagString: Untagged
@@ -3073,6 +3398,43 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1976708001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2103927501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2103927499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
+  experimentName: FourPositions
+  textStart:
+  - 'In this experiment, you will be shown four stimuli. Select the one that is highlighted. '
+  textEnd:
+  - Round finished, 20 seconds break.
+  trialInfoText: {fileID: 1400203280}
+  onExperimentStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onExperimentComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  stimuliPerTrial: 4
+  numberOfTrials: 20
+  interTrialIntervalMin: 2
+  interTrialIntervalMax: 6
+  feedbackDuration: 1
+  spawner: {fileID: 1516759628}
+  onTrialComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  currentPinchSource: 0
+  spawnCenter: {x: 0, y: 1, z: 5}
+  spawnRadius: 0.5
+  respawnBetweenRounds: 0
 --- !u!1 &2144071228
 GameObject:
   m_ObjectHideFlags: 0

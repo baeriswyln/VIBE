@@ -67,11 +67,13 @@ namespace Experiments
         private void OnEnable()
         {
             inputActionAsset.FindActionMap("Experiment").Enable();
+            // InputSystem.actions.FindAction("ExpNext").performed += SkipCurrent;
         }
 
         private void OnDisable()
         {
-            inputActionAsset.FindActionMap("Experiment").Disable();
+            InputSystem.actions.FindAction("ExpNext").performed -= SkipCurrent;
+            // inputActionAsset.FindActionMap("Experiment").Disable();
         }
 
         /// <summary>
@@ -98,7 +100,7 @@ namespace Experiments
         /// Skip the currently running experiment and move to the next one.
         /// Useful for debugging or a skip button.
         /// </summary>
-        public void SkipCurrent()
+        public void SkipCurrent(InputAction.CallbackContext context)
         {
             if (CurrentExperiment != null)
             {

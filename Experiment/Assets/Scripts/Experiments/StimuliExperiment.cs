@@ -32,6 +32,8 @@ namespace Experiments
         [Header("Events")]
         public UnityEvent<TrialResult> onTrialComplete;
         
+        public PinchHandler.PinchSource currentPinchSource = PinchHandler.PinchSource.Leap;
+        
         // --- State ---
         protected Interactable _currentTarget;
         protected Interactable _selectedStimulus;
@@ -55,6 +57,7 @@ namespace Experiments
         {
             base.OnBegin();
             _results.Clear();
+            PinchHandler.Instance.currentPinchSource = currentPinchSource;
             PinchHandler.Instance.onStimulusClicked.AddListener(OnStimulusClicked);
         }
 

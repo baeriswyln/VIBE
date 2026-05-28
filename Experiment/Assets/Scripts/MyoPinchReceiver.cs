@@ -33,7 +33,7 @@ public class MyoPinchReceiver : MonoBehaviour
 
     void OnEnable()
     {
-        //StartCoroutine(ResolveLoop());
+        StartCoroutine(ResolveLoop());
     }
 
     void OnDisable()

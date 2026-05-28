@@ -12,6 +12,11 @@ using UnityEngine.Events;
 [RequireComponent(typeof(AudioSource))] [DisallowMultipleComponent]
 public class PinchHandler : MonoBehaviour
 {
+    public enum PinchSource {
+        Leap,
+        Myo,
+    }
+    
     public static PinchHandler Instance { get; private set; }
 
     [Header("References")] [Tooltip("The GazeRaycaster that tracks which stimulus is focused.")]
@@ -19,12 +24,18 @@ public class PinchHandler : MonoBehaviour
 
     [Tooltip("The PinchDetector in the scene.")]
     public PinchDetector pinchDetector;
+    
+    [Tooltip("The MyoPinchReceiver in the scene.")]
+    public MyoPinchReceiver myoPinchReceiver;
 
     [Header("Pinch Settings")]
     [Tooltip("Minimum seconds between successive pinch activations (debounce).")]
     public float cooldownTime = 0.2f;
 
     [Tooltip("Click sound")] public AudioClip clickSound;
+    
+    [Tooltip("Select origin of the pinch events")]
+    public PinchSource currentPinchSource = PinchSource.Leap;
 
     [Header("Events")] public UnityEvent onPinchDetected;
     public UnityEvent<Interactable> onStimulusClicked;
@@ -51,15 +62,27 @@ public class PinchHandler : MonoBehaviour
 
     private void OnEnable()
     {
-        pinchDetector.OnPinchStart += HandlePinch;
+        pinchDetector.OnPinchStart += HandleLeapPinch;
+        myoPinchReceiver.OnPinchStart += HandleMyoPinch;
     }
 
     private void OnDisable()
     {
-        pinchDetector.OnPinchStart -= HandlePinch;
+        pinchDetector.OnPinchStart -= HandleLeapPinch;
+        myoPinchReceiver.OnPinchStart -= HandleMyoPinch;
+    }
+    
+    private void HandleMyoPinch()
+    {
+        if(currentPinchSource == PinchSource.Myo) HandlePinch();
+    }
+
+    private void HandleLeapPinch(Hand hand)
+    {
+        if(currentPinchSource == PinchSource.Leap) HandlePinch();
     }
         
-    private void HandlePinch(Hand hand)
+    private void HandlePinch()
     {
         // require a minimum time between pinches
         if (_lastPinchTime + cooldownTime > Time.time)

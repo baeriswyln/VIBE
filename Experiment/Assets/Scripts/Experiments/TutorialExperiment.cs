@@ -67,9 +67,7 @@ namespace Experiments
             
             yield return PlayTextPages(textBeforeStart);
             
-            yield return new WaitUntil(() => LslBackend.Instance.startReceived);
-            
-            yield return PlayTextPages(textStimuliIntroduction);
+            yield return new WaitUntil(() => LslBackend.Instance.startReceived || InputSystem.actions.FindAction("ExpConfirm").IsPressed());
             
             yield return PlayTextPages(textBeforeStimuliIntroduction);
 

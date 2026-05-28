@@ -113,8 +113,16 @@ namespace Unity.InferenceEngine.TTS.Inference
             _worker.SetInput("input_ids", inputIds);
             _worker.SetInput("style",     styleTensor);
             _worker.SetInput("speed",     speedTensor);
-            _worker.Schedule();
-
+            // _worker.Schedule();
+            var schedule = _worker.ScheduleIterable();
+            int step = 0;
+            while (schedule.MoveNext())
+            {
+                // dispatch a few layers per frame, then let the engine breathe
+                if (++step % 40 == 0)
+                    await Task.Yield();   // returns control to main loop, resumes next frame
+            }
+            
             // 6) read back the waveform asynchronously
             var output = _worker.PeekOutput() as Tensor<float>;
             using var cpu = await output.ReadbackAndCloneAsync();
@@ -139,7 +147,8 @@ namespace Unity.InferenceEngine.TTS.Inference
 
         public IEnumerator SpeakAndWait(string text)
         {
-            yield return SpeakAsync(text);
+            var task = SpeakAsync(text);
+            yield return new WaitUntil(() => task.IsCompleted);
             yield return WaitForEndOfPlayback();
         }
 

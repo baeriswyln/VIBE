@@ -17,7 +17,7 @@ namespace Experiments
     ///   5. Brief feedback + pause
     ///   6. Clear and start the next trial
     /// </summary>
-    public class DemoExperiment : StimuliExperiment
+    public class ExperimentRandom : StimuliExperiment
     {
 
 
