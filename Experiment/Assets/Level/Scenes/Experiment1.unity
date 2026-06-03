@@ -166,8 +166,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.InteractableManager
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   spawnBox: {fileID: 1447424868}
-  maxSpawnAttempts: 5
-  minStimuliGap: 0.3
+  maxSpawnAttempts: 20
+  minStimuliGap: 0.2
   useCurvedBounds: 1
   innerRadius: 4.9
   outerRadius: 5.1
@@ -1278,8 +1278,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.InteractableManager
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   spawnBox: {fileID: 1406548672}
-  maxSpawnAttempts: 5
-  minStimuliGap: 0.5
+  maxSpawnAttempts: 20
+  minStimuliGap: 0.2
   useCurvedBounds: 1
   innerRadius: 4.9
   outerRadius: 5.1

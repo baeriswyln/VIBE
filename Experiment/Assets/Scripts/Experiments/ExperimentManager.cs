@@ -181,12 +181,14 @@ namespace Experiments
                 // Disable all other experiments' GameObjects so they don't interfere
                 SetOnlyActive(exp);
 
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_START", $"{_currentIndex}:{exp.experimentName}"));
                 exp.OnBegin();
                 onExperimentStarted?.Invoke(exp);
 
                 yield return StartCoroutine(exp.Run());
 
                 exp.OnEnd();
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_END", $"{_currentIndex}:{exp.experimentName}"));
                 onExperimentFinished?.Invoke(exp);
 
                 if (gapBetweenExperiments > 0f && !exp.endScheduled && !exp.skipEndOfExperimentPause)

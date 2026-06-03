@@ -44,7 +44,7 @@ namespace Experiments
                 ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned."));
                 spawner.DestroyStimuli();
             }
-            for (int trial = 1; trial <= numberOfTrials; trial++)
+            for (int trial = 0; trial < numberOfTrials; trial++)
             {
                 yield return StartCoroutine(RunSingleTrial(trial));
                 if(endScheduled)
