@@ -28,16 +28,19 @@ namespace Experiments
                 ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, "No spawner assigned."));
                 yield break;
             }
+            
+            yield return PlayTextPages(textStart);
+            if(trialInfoText) trialInfoText.gameObject.SetActive(false);
 
             while (true)
             {
                 spawner.SpawnStimuli(stimuliPerTrial);
                 var spawned = spawner.spawnedStimuli;
-                if (spawned == null || spawned.Count != stimuliPerTrial)
+                if (spawned != null && spawned.Count == stimuliPerTrial)
                 {
-                    ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned."));
                     break;
                 }
+                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned."));
                 spawner.DestroyStimuli();
             }
             for (int trial = 1; trial <= numberOfTrials; trial++)
@@ -46,58 +49,9 @@ namespace Experiments
                 yield return WaitForNextStimulus();
             }
             spawner.DestroyStimuli();
-
+            yield return PlayTextPages(textEnd);
             ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name, $"Finished: {_results.Count} events."));
-
             MarkComplete();
-        }
-
-        private IEnumerator RunSingleTrial(int trialNumber)
-        {
-            // --- Setup ---
-            if (trialInfoText) trialInfoText.text = "";
-
-            // Pick a random stimulus as the target
-            var spawned = spawner.spawnedStimuli;
-            _currentTarget = spawned[Random.Range(0, spawned.Count)];
-            _currentTarget.Highlight();
-
-            _selectedStimulus = null;
-
-            float responseStart = Time.time;
-
-            // --- Wait for correct stimulus click ---
-            while (!(_selectedStimulus && _selectedStimulus == _currentTarget)) 
-            {
-                yield return null;
-            }
-
-            float responseTime = Time.time - responseStart;
-
-            // --- Evaluate result ---
-            var result = new TrialResult
-            {
-                TrialNumber = trialNumber,
-                TargetId = _currentTarget.StimulusId,
-                TargetPosition =  _currentTarget.transform.position,
-                ResponseTime = responseTime,
-            };
-            _results.Add(result);
-            onTrialComplete?.Invoke(result);
-
-            ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name, $"trial={trialNumber} target={result.TargetId}  rt={result.ResponseTime:F3}s"));
-            
-            yield return new WaitForSeconds(feedbackDuration);
-
-            // --- Cleanup ---
-            spawner.ResetAll();
-            _currentTarget = null;
-        }
-
-
-        private void OnStimulusClicked(Interactable clicked)
-        {
-            _selectedStimulus = clicked;
         }
         
     }

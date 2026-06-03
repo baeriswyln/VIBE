@@ -67,13 +67,13 @@ namespace Experiments
         private void OnEnable()
         {
             inputActionAsset.FindActionMap("Experiment").Enable();
-            // InputSystem.actions.FindAction("ExpNext").performed += SkipCurrent;
+            InputSystem.actions.FindAction("ExpNext").performed += SkipCurrent;
         }
 
         private void OnDisable()
         {
             InputSystem.actions.FindAction("ExpNext").performed -= SkipCurrent;
-            // inputActionAsset.FindActionMap("Experiment").Disable();
+            inputActionAsset.FindActionMap("Experiment").Disable();
         }
 
         /// <summary>
