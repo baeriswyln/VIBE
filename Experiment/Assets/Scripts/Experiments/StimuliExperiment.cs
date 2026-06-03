@@ -92,7 +92,7 @@ namespace Experiments
             var spawned = spawner.spawnedStimuli;
             if (spawned == null || spawned.Count != stimuliPerTrial)
             {
-                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned for trial {trialNumber}."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(experimentName, $"Not enough Stimuli spawned for trial {trialNumber}."));
                 yield break;
             }
 
@@ -123,7 +123,7 @@ namespace Experiments
             _results.Add(result);
             onTrialComplete?.Invoke(result);
 
-            ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name, $"trial={trialNumber} target={result.TargetId}  rt={result.ResponseTime:F3}s"));
+            ExperimentLogger.Instance.Log(new ExperimentLog(experimentName, $"trial={trialNumber} target={result.TargetId}  rt={result.ResponseTime:F3}s"));
             
             yield return new WaitForSeconds(feedbackDuration);
 

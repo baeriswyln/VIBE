@@ -25,7 +25,7 @@ namespace Experiments
         {
             if (!spawner)
             {
-                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, "No spawner assigned."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(experimentName, "No spawner assigned."));
                 yield break;
             }
             
@@ -41,7 +41,7 @@ namespace Experiments
                 {
                     break;
                 }
-                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, $"Not enough Stimuli spawned."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(experimentName, $"Not enough Stimuli spawned."));
                 spawner.DestroyStimuli();
             }
             for (int trial = 0; trial < numberOfTrials; trial++)
@@ -56,7 +56,7 @@ namespace Experiments
             }
             spawner.DestroyStimuli();
             yield return PlayTextPages(textEnd);
-            ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name, $"Finished: {_results.Count} events."));
+            ExperimentLogger.Instance.Log(new ExperimentLog(experimentName, $"Finished: {_results.Count} events."));
             MarkComplete();
         }
         

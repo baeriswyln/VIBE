@@ -16,7 +16,7 @@ namespace Experiments
         {
             if (!spawner)
             {
-                ExperimentLogger.Instance.Error(new ExperimentLog(GetType().Name, "No spawner assigned."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(experimentName, "No spawner assigned."));
                 yield break;
             }
 
@@ -40,7 +40,7 @@ namespace Experiments
             
             spawner.DestroyStimuli();
             yield return PlayTextPages(textEnd);
-            ExperimentLogger.Instance.Log(new ExperimentLog(GetType().Name, $"Finished: {_results.Count} events."));
+            ExperimentLogger.Instance.Log(new ExperimentLog(experimentName, $"Finished: {_results.Count} events."));
             MarkComplete();
         }
     }
