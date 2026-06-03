@@ -96,9 +96,9 @@ def build_default_config(subject_id: str) -> dict:
                     "..\\dsi2lsl-win\\dsi2lsl.exe",
                     "--port=COM15",
                     "--lsl-stream-name=Experiment.VIBE.EEG",
+                    "--reference=Pz"
                 ],
                 "lsl_stream": "Experiment.VIBE.EEG",
-                "skip_launch": True,
             },
             {
                 "label": "MyoDetector",
