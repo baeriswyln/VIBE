@@ -31,6 +31,7 @@ namespace Experiments
             
             yield return PlayTextPages(textStart);
             if(trialInfoText) trialInfoText.gameObject.SetActive(false);
+            if(endScheduled) yield break;
 
             while (true)
             {
@@ -46,6 +47,11 @@ namespace Experiments
             for (int trial = 1; trial <= numberOfTrials; trial++)
             {
                 yield return StartCoroutine(RunSingleTrial(trial));
+                if(endScheduled)
+                {
+                    spawner.DestroyStimuli();
+                    yield break;
+                }
                 yield return WaitForNextStimulus();
             }
             spawner.DestroyStimuli();

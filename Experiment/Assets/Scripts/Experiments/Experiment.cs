@@ -3,6 +3,7 @@ using TMPro;
 using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace Experiments
 {
@@ -32,12 +33,15 @@ namespace Experiments
         [Header("Events")]
         public UnityEvent onExperimentStart;
         public UnityEvent onExperimentComplete;
+        public bool skipEndOfExperimentPause = false;
 
         /// <summary>True while this experiment is actively running.</summary>
         public bool IsRunning { get; private set; }
 
         /// <summary>True when this experiment has finished.</summary>
         public bool IsComplete { get; private set; }
+
+        [HideInInspector] public bool endScheduled = false;
 
         /// <summary>
         /// Called by the runner before Run(). Override for one-time setup.
@@ -46,6 +50,7 @@ namespace Experiments
         {
             IsRunning = true;
             IsComplete = false;
+            endScheduled = false;
             if(trialInfoText) trialInfoText.text = "";
             Debug.Log($"[Experiment] Starting: {experimentName}");
             onExperimentStart?.Invoke();
@@ -81,7 +86,7 @@ namespace Experiments
         protected IEnumerator PlayTextPages(string[] pages)
         {
             if (trialInfoText) trialInfoText.gameObject.SetActive(true);
-            for (var i = 0; i < pages.Length; i++)
+            for (var i = 0; i < pages.Length && !endScheduled; i++)
             {
                 if(trialInfoText) trialInfoText.text = pages[i];
                 yield return KokoroTTS.Instance.SpeakAndWait(pages[i]);

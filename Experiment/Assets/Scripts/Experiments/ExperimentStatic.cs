@@ -28,6 +28,11 @@ namespace Experiments
             for (var i = 0; i < numberOfTrials; i++)
             {
                 yield return RunSingleTrial(i);
+                if(endScheduled)
+                {
+                    spawner.DestroyStimuli();
+                    yield break;
+                }
                 if(respawnBetweenRounds) spawner.DestroyStimuli();
                 yield return WaitForNextStimulus();
                 if(respawnBetweenRounds) spawner.SpawnStimulusInCircle(stimuliPerTrial, spawnCenter, spawnRadius);

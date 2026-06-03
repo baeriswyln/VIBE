@@ -41,6 +41,8 @@ namespace Experiments
 
         // State
         private bool _pinchedThisFrame;
+        
+        
 
         public override void OnBegin()
         {
@@ -67,8 +69,7 @@ namespace Experiments
             
             yield return PlayTextPages(textBeforeStart);
             
-            yield return new WaitUntil(() => LslBackend.Instance.startReceived);
-            // yield return new WaitUntil(() => LslBackend.Instance.startReceived || InputSystem.actions.FindAction("ExpConfirm").IsPressed());
+            yield return new WaitUntil(() => LslBackend.Instance.startReceived || InputSystem.actions.FindAction("ExpConfirm").IsPressed() || endScheduled) ;
             
             yield return PlayTextPages(textBeforeStimuliIntroduction);
 
@@ -96,7 +97,7 @@ namespace Experiments
             yield return PlayTextPages(textBeforeExample);
             
             // Wait for pinch on stimulus
-            yield return new WaitUntil(() => s_example.IsSelected);
+            yield return new WaitUntil(() => s_example.IsSelected || endScheduled);
 
             Destroy(s_example.gameObject);
             yield return PlayTextPages(textEnd);

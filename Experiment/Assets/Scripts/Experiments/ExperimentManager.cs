@@ -25,6 +25,9 @@ namespace Experiments
         public float gapBetweenExperiments = 1f;
         
         public InputActionAsset inputActionAsset;
+        
+        [SerializeField] private GazeRaycaster gazeRaycaster;
+        [SerializeField] private GameObject pauseUi;
 
         [Header("Events")] public UnityEvent onSequenceStart;
         public UnityEvent onSequenceComplete;
@@ -34,6 +37,7 @@ namespace Experiments
         // State
         private int _currentIndex = -1;
         private bool _isRunning;
+        private bool _isPaused = false;
 
         DateTime sessionStartUtc = DateTime.UtcNow;
         Stopwatch stopwatch = Stopwatch.StartNew();
@@ -68,10 +72,16 @@ namespace Experiments
         {
             inputActionAsset.FindActionMap("Experiment").Enable();
             InputSystem.actions.FindAction("ExpNext").performed += SkipCurrent;
+            InputSystem.actions.FindAction("ExpPrevious").performed += GoToPrevious;
+            InputSystem.actions.FindAction("ExpRestart").performed += RestartCurrent;
+            InputSystem.actions.FindAction("ExpPause").performed += TogglePause;
         }
 
         private void OnDisable()
         {
+            InputSystem.actions.FindAction("ExpPause").performed -= TogglePause;
+            InputSystem.actions.FindAction("ExpRestart").performed -= RestartCurrent;
+            InputSystem.actions.FindAction("ExpPrevious").performed -= GoToPrevious;
             InputSystem.actions.FindAction("ExpNext").performed -= SkipCurrent;
             inputActionAsset.FindActionMap("Experiment").Disable();
         }
@@ -105,7 +115,51 @@ namespace Experiments
             if (CurrentExperiment != null)
             {
                 ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_SKIP", CurrentExperiment.experimentName));
-                CurrentExperiment.OnEnd();
+                CurrentExperiment.endScheduled = true;
+            }
+        }
+
+        public void RestartCurrent(InputAction.CallbackContext context)
+        {
+            if (CurrentExperiment != null)
+            {
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_RESTART", CurrentExperiment.experimentName));
+                CurrentExperiment.endScheduled = true;
+                _currentIndex -= 1;
+            }
+        }
+        
+        public void GoToPrevious(InputAction.CallbackContext context)
+        {
+            if (CurrentExperiment != null)
+            {
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_PREVIOUS", CurrentExperiment.experimentName));
+                CurrentExperiment.endScheduled = true;
+                _currentIndex = Math.Max(-1, _currentIndex-2);
+            }
+        }
+
+        public void TogglePause(InputAction.CallbackContext context)
+        {
+            if (CurrentExperiment != null)
+            {
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("TOGGLE_PAUSE", CurrentExperiment.experimentName));
+
+                if (_isPaused)
+                {
+                    Time.timeScale = 1;
+                    AudioListener.pause = false;
+                    gazeRaycaster.Activate();
+                    pauseUi.SetActive(false);
+                }
+                else
+                {
+                    Time.timeScale = 0;
+                    AudioListener.pause = true;
+                    gazeRaycaster.Deactivate();
+                    pauseUi.SetActive(true);
+                }
+                _isPaused = !_isPaused;
             }
         }
 
@@ -135,7 +189,7 @@ namespace Experiments
                 exp.OnEnd();
                 onExperimentFinished?.Invoke(exp);
 
-                if (gapBetweenExperiments > 0f)
+                if (gapBetweenExperiments > 0f && !exp.endScheduled && !exp.skipEndOfExperimentPause)
                     yield return new WaitForSeconds(gapBetweenExperiments);
             }
 

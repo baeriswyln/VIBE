@@ -104,8 +104,9 @@ namespace Experiments
             float responseStart = Time.time;
 
             // --- Wait for correct stimulus click ---
-            while (!(_selectedStimulus && _selectedStimulus == _currentTarget)) 
+            while (!(_selectedStimulus && _selectedStimulus == _currentTarget))
             {
+                if (endScheduled) yield break;
                 yield return null;
             }
 
