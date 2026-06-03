@@ -7,8 +7,9 @@ import os
 import json
 import subprocess
 import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")  # explicit backend so we can control window behaviour
 import matplotlib.pyplot as plt
-from mne_lsl.stream import StreamLSL
 from mne_lsl.lsl import StreamInlet, resolve_streams
 from mne_lsl.lsl import StreamInfo as _LSLStreamInfo, StreamOutlet as _LSLStreamOutlet
 
@@ -18,7 +19,21 @@ if len(sys.argv) < 2:
 SUBJECT_ID = sys.argv[1]
 USE_EEG_SIM = len(sys.argv) > 2 and sys.argv[2] == "use_eeg_sim"
 
-MARKER_COLORS = ["#ff6b6b", "#6bffb8", "#6bb8ff", "#ffb86b", "#d96bff"]
+MARKER_COLORS = ["#c0392b", "#27ae60", "#2980b9", "#e67e22", "#8e44ad"]
+
+# Channels to hide from the visualization
+HIDDEN_CHANNELS = {"X1", "X2", "X3", "TRG"}
+
+# Display order — channels are shown top-to-bottom in this sequence.
+# Any channel present in the stream but absent from this list is appended at the end.
+CHANNEL_ORDER = [
+    "Fp1", "Fp2", "Fz", "F3", "F4", "F7", "F8",
+    "Cz", "C3", "C4", "T3", "T4", "T5", "T6", "P3", "P4",
+    "O1", "O2", "A1", "A2",
+]
+
+# Amplitude scale applied only in the visualisation.
+VIS_AMPLITUDE_SCALE = 0.25
 
 # --- Output directory (created early so gaze/marker/eeg setup can all use it) ---
 _ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -43,9 +58,9 @@ if eeg_stream_info is None:
         _sim_proc.terminate()
     sys.exit(1)
 print(f"Found EEG stream: {eeg_stream_info.name}")
-eeg = StreamLSL(name=eeg_stream_info.name, bufsize=5.0)
-eeg.connect(acquisition_delay=0.05)
-eeg_correction = eeg._inlet.time_correction(timeout=5.0)
+eeg_inlet = StreamInlet(eeg_stream_info)
+eeg_inlet.open_stream()
+eeg_correction = eeg_inlet.time_correction(timeout=5.0)
 
 print("Discovering marker and gaze streams...")
 all_streams = resolve_streams(timeout=2.0)
@@ -68,24 +83,17 @@ def get_channel_names_log_metadata(info, file_prefix):
     try:
         csv_path = os.path.join(_data_dir, f"{file_prefix}_{info.name}_{_ts}_metadata.txt")
         f = open(csv_path, "w", newline="\n")
-        # w = csv.writer(f)
         channels = info.get_channel_names()
         info_meta = info.get_channel_info()
         f.write("Channels: " + str(channels) + "\n")
         f.write("Types: " + str(info.get_channel_types()) + "\n")
         f.write("Units: " + str(info.get_channel_units()) + "\n")
         f.write("Info: "  + json.dumps(info_meta.to_json_dict()) + "\n")
-
         f.close()
-
         return channels
-
     except Exception as e:
         print(e)
         exit()
-        pass
-
-    return [f"ch_{i}" for i in range(info.n_channels)]
 
 gaze_inlets = []
 gaze_corrections = []
@@ -108,11 +116,11 @@ for s in gaze_streams_info:
 if not gaze_inlets:
     print("No gaze streams found, continuing without gaze logging.")
 
-eeg_ch_names   = get_channel_names_log_metadata(eeg._inlet.get_sinfo(), "eeg")
+eeg_ch_names   = get_channel_names_log_metadata(eeg_inlet.get_sinfo(), "eeg")
 eeg_n_channels = len(eeg_ch_names)
 
 # --- CSV logging setup ---
-_eeg_csv = open(os.path.join(_data_dir, f"eeg_{eeg._inlet.get_sinfo().name}_{_ts}.csv"), "w", newline="")
+_eeg_csv = open(os.path.join(_data_dir, f"eeg_{eeg_inlet.get_sinfo().name}_{_ts}.csv"), "w", newline="")
 _marker_csv = open(os.path.join(_data_dir, f"markers_{_ts}.csv"), "w", newline="")
 _eeg_writer = csv.writer(_eeg_csv)
 _marker_writer = csv.writer(_marker_csv)
@@ -123,32 +131,54 @@ WINDOW_SEC = 5.0          # how many seconds to show
 SPACING    = 40.0         # vertical spacing between channels (µV)
 REFRESH    = 0.05         # plot refresh interval (s)
 
+# --- Visible channel indices in DSI display order ---
+_ch_index = {name: i for i, name in enumerate(eeg_ch_names)}
+_ordered   = [name for name in CHANNEL_ORDER
+              if name in _ch_index and name not in HIDDEN_CHANNELS]
+_remainder = [name for name in eeg_ch_names
+              if name not in set(CHANNEL_ORDER) and name not in HIDDEN_CHANNELS]
+vis_names   = _ordered + _remainder
+vis_indices = [_ch_index[name] for name in vis_names]
+n_vis       = len(vis_indices)
+
+# DC offset per channel to center signals (estimated on a window)
+DC_ALPHA     = 0.001   # EMA coefficient (smaller = slower drift correction)
+dc_offset    = np.zeros(eeg_n_channels)
+
 # --- Figure setup ---
 fig, ax = plt.subplots(figsize=(14, 8))
-ax.set_facecolor("#1a1a2e")
-fig.patch.set_facecolor("#1a1a2e")
+ax.set_facecolor("#111111")
+fig.patch.set_facecolor("#111111")
 
-ax.set_title("Live EEG + Markers", color="white", fontsize=14, pad=10)
-ax.set_xlabel("Time (s)", color="white")
-ax.set_ylabel("Channel", color="white")
-ax.tick_params(colors="white")
+# Prevent the window from stealing focus on every draw
+fig.canvas.manager.window.wm_attributes("-topmost", False)
+try:
+    # Works on most Tk builds — open without grabbing focus
+    fig.canvas.manager.window.attributes("-alpha", 1.0)
+    fig.canvas.manager.window.lower()   # push behind other windows initially
+except Exception:
+    pass
+
+ax.set_title("Live EEG", color="#aaaaaa", fontsize=12, pad=10)
+ax.set_xlabel("Time (s)", color="#888888")
+ax.set_ylabel("Channel", color="#888888")
+ax.tick_params(colors="#888888")
 for spine in ax.spines.values():
-    spine.set_edgecolor("#444466")
+    spine.set_edgecolor("#333333")
 
-# Y-axis: one tick per channel
-ax.set_yticks([i * SPACING for i in range(eeg_n_channels)])
-ax.set_yticklabels(eeg_ch_names, color="white", fontsize=9)
+# Y-axis: one tick per visible channel
+ax.set_yticks([i * SPACING for i in range(n_vis)])
+ax.set_yticklabels(vis_names, color="#aaaaaa", fontsize=9)
 
-# Pre-create line objects (one per channel) and marker lines list
-colors = plt.cm.cool(np.linspace(0, 1, eeg_n_channels))
-lines  = [ax.plot([], [], lw=0.8, color=colors[i])[0] for i in range(eeg_n_channels)]
-marker_lines = []   # vertical lines added dynamically
+# Pre-create line objects
+LINE_COLOR = "#4caf7d"
+lines  = [ax.plot([], [], lw=0.7, color=LINE_COLOR, alpha=0.85)[0] for _ in range(n_vis)]
+marker_lines = []
 marker_texts = []
 
 plt.ion()
 plt.tight_layout()
 
-# Track which marker timestamps we've already drawn
 drawn_marker_ts = set()
 
 # check that all required streams are available
@@ -192,32 +222,51 @@ print("Plotting — close the window to stop.")
 
 all_marker_ts = []
 
+EEG_BUFFER_SAMPLES = int(eeg_inlet.get_sinfo().sfreq * WINDOW_SEC)
+eeg_buf_data = np.zeros((eeg_n_channels, EEG_BUFFER_SAMPLES))
+eeg_buf_ts   = np.zeros(EEG_BUFFER_SAMPLES)
+
 while plt.fignum_exists(fig.number):
     # --- Fetch EEG ---
-    eeg_data, eeg_ts = eeg.get_data(winsize=WINDOW_SEC)
-    eeg_ts = eeg_ts + eeg_correction
-
+    eeg_chunk, eeg_ts = eeg_inlet.pull_chunk(timeout=0.0)
     if eeg_ts.size == 0:
         plt.pause(REFRESH)
         continue
 
-    t_start = eeg_ts[0]
-    t_rel   = eeg_ts - t_start      # relative time axis starting at 0
+    eeg_ts    = np.array(eeg_ts) + eeg_correction
+    eeg_chunk = np.array(eeg_chunk)   # shape: (n_samples, n_channels)
 
-    # --- Log new EEG samples to CSV ---
-    new_mask = eeg_ts > _last_eeg_ts
-    if new_mask.any():
-        for j in np.where(new_mask)[0]:
-            _eeg_writer.writerow([eeg_ts[j]] + eeg_data[:, j].tolist())
-        _last_eeg_ts = float(eeg_ts[new_mask][-1])
+    n_new = len(eeg_ts)
+    sfreq = eeg_inlet.get_sinfo().sfreq
 
-    # Update EEG lines
-    for i, line in enumerate(lines):
-        offset = i * SPACING
-        line.set_data(t_rel, eeg_data[i] + offset)
+    # Reconstruct evenly-spaced timestamps anchored to the last sample
+    t_last           = eeg_ts[-1]
+    reconstructed_ts = t_last - np.arange(n_new - 1, -1, -1) / sfreq
+
+    # Update DC offset estimate (exponential moving average per channel)
+    for j in range(n_new):
+        dc_offset += DC_ALPHA * (eeg_chunk[j] - dc_offset)
+
+    # Ring buffer update
+    eeg_buf_data = np.roll(eeg_buf_data, -n_new, axis=1)
+    eeg_buf_ts   = np.roll(eeg_buf_ts,   -n_new)
+    eeg_buf_data[:, -n_new:] = eeg_chunk.T
+    eeg_buf_ts[  -n_new:]    = reconstructed_ts
+
+    # CSV logging (raw, uncorrected data)
+    for j in range(n_new):
+        _eeg_writer.writerow([reconstructed_ts[j]] + eeg_chunk[j].tolist())
+    _last_eeg_ts = float(reconstructed_ts[-1])
+
+    # --- Plot visible channels with DC offset removed and amplitude scaled ---
+    t_start = eeg_buf_ts[0]
+    t_rel   = eeg_buf_ts - t_start
+    for plot_i, ch_i in enumerate(vis_indices):
+        centred = (eeg_buf_data[ch_i] - dc_offset[ch_i]) * VIS_AMPLITUDE_SCALE
+        lines[plot_i].set_data(t_rel, centred + plot_i * SPACING)
 
     ax.set_xlim(0, WINDOW_SEC)
-    ax.set_ylim(-SPACING, eeg_n_channels * SPACING)
+    ax.set_ylim(-SPACING, n_vis * SPACING)
 
     # --- Log gaze samples ---
     for inlet, correction, writer in zip(gaze_inlets, gaze_corrections, gaze_writers):
@@ -228,8 +277,7 @@ while plt.fignum_exists(fig.number):
                 writer.writerow([t] + list(row))
 
     # --- Fetch markers ---
-    # 1. Collect new markers into the absolute timestamp list
-    for i, (inlet, correction) in enumerate(zip(marker_inlets, marker_corrections)):
+    for idx, (inlet, correction) in enumerate(zip(marker_inlets, marker_corrections)):
         samples, ts = inlet.pull_chunk(timeout=0.0)
         for t, s in zip(ts, samples):
             print(f"{t} [{inlet.name}]: {s}")
@@ -237,40 +285,38 @@ while plt.fignum_exists(fig.number):
             corrected = np.array(ts) + correction
             for t, s in zip(corrected.tolist(), samples):
                 _marker_writer.writerow([t, inlet.name, s])
-            all_marker_ts.extend([(t,i) for t in corrected.tolist()])
+            all_marker_ts.extend([(t, idx) for t in corrected.tolist()])
 
-    # 2. Clear old marker lines (they get redrawn below)
+    # Clear old marker lines
     for ml in marker_lines:
         ml.remove()
     marker_lines.clear()
-
     for mt in marker_texts:
         mt.remove()
     marker_texts.clear()
 
-    # 3. Redraw all markers that fall within the current visible window
-    for ts, stream_idx in all_marker_ts:
-        t_rel_mk = ts - t_start
+    # Redraw markers within the visible window
+    for mts, stream_idx in all_marker_ts:
+        t_rel_mk = mts - t_start
         color = MARKER_COLORS[stream_idx % len(MARKER_COLORS)]
         if 0 <= t_rel_mk <= WINDOW_SEC:
-            vline = ax.axvline(x=t_rel_mk, color=color, lw=1.5, linestyle="--", alpha=0.85)
-            txt = ax.text(t_rel_mk + 0.05, (eeg_n_channels - 0.7) * SPACING,
-                    "stim", color="#ff6b6b", fontsize=8, alpha=0.9)
+            vline = ax.axvline(x=t_rel_mk, color=color, lw=1.0, linestyle="--", alpha=0.6)
+            txt   = ax.text(t_rel_mk + 0.05, (n_vis - 0.7) * SPACING,
+                            "stim", color="#aaaaaa", fontsize=8, alpha=0.7)
             marker_lines.append(vline)
             marker_texts.append(txt)
 
-    # 4. Prune markers older than the visible window to avoid unbounded list growth
-    all_marker_ts = [(ts, i) for ts, i in all_marker_ts if ts >= eeg_ts[0]]
+    # Prune old markers
+    all_marker_ts = [(mts, i) for mts, i in all_marker_ts if mts >= eeg_buf_ts[0]]
 
-    # Refresh legend only once
     if len(drawn_marker_ts) == 1:
-        ax.legend(loc="upper right", facecolor="#2a2a4a", labelcolor="white", fontsize=9)
+        ax.legend(loc="upper right", facecolor="#222222", labelcolor="#aaaaaa", fontsize=9)
 
     fig.canvas.draw()
     fig.canvas.flush_events()
     plt.pause(REFRESH)
 
-eeg.disconnect()
+eeg_inlet.close_stream()
 for inlet in marker_inlets:
     inlet.close_stream()
 for inlet, f in zip(gaze_inlets, gaze_csvs):
