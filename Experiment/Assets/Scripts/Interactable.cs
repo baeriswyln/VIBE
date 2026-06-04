@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,6 +8,9 @@ public class Interactable : MonoBehaviour
     [Header("Visual Feedback")]
     [Tooltip("Color to apply when the stimulus is highlighted.")]
     public Color highlightColor = new Color(1f, 0.9f, 0.3f, 1f);
+    
+    [Tooltip("Color to apply when the stimulus is highlighted, but should only be gazed at.")]
+    public Color highlightNegativeColor = new Color(1f, 0.2f, 0.2f, 1f);
         
     [Tooltip("Color to apply when the user gazes at this stimulus.")]
     public Color focusColor = new Color(1f, 0.8f, 0.5f, 1f);
@@ -21,14 +25,15 @@ public class Interactable : MonoBehaviour
     public float scaleAnimationSpeed = 8f;
 
     [Header("Events")]
-    public UnityEvent onGazeEnter;
-    public UnityEvent onGazeExit;
-    public UnityEvent onSelected;
+    public Action<Interactable> onGazeEnter;
+    public Action<Interactable> onGazeExit;
+    public Action<Interactable> onSelected;
  
     // State
     private bool _isGazed;
     private bool _isSelected;
     private bool _isHighlighted;
+    private bool _isHighlightedNegative;
     private Vector3 _originalScale;
     private Color _originalColor;
     private Renderer _renderer;
@@ -42,6 +47,7 @@ public class Interactable : MonoBehaviour
     public bool IsGazed => _isGazed;
     public bool IsSelected => _isSelected;
     public bool IsHighlighted => _isHighlighted;
+    public bool IsHighlightedNegative => _isHighlightedNegative;
 
     void Awake()
     {
@@ -59,9 +65,10 @@ public class Interactable : MonoBehaviour
             StimulusId = gameObject.name;
     }
 
-    public void Highlight()
+    public void Highlight(bool negative = false)
     {
-        _isHighlighted = true;
+        _isHighlighted = !negative;
+        _isHighlightedNegative = negative;
         UpdateColor();
     }
     
@@ -87,7 +94,7 @@ public class Interactable : MonoBehaviour
     {
         _isGazed = true;
         UpdateColor();
-        onGazeEnter?.Invoke();
+        onGazeEnter?.Invoke(this);
     }
  
     /// <summary>Called by GazeRaycaster when gaze exits this object.</summary>
@@ -97,7 +104,7 @@ public class Interactable : MonoBehaviour
  
         // Revert to selected color or original
         UpdateColor();
-        onGazeExit?.Invoke();
+        onGazeExit?.Invoke(this);
     }
  
     /// <summary>Called by PinchDetector when the user performs a pinch while gazing.</summary>
@@ -105,15 +112,15 @@ public class Interactable : MonoBehaviour
     {
         _isSelected = true;
         UpdateColor();
-        onSelected?.Invoke();
+        onSelected?.Invoke(this);
     }
  
     /// <summary>Resets this stimulus to its default visual state.</summary>
     public void ResetState()
     {
         _isSelected = false;
-        _isGazed = false;
         _isHighlighted = false;
+        _isHighlightedNegative = false;
         UpdateColor();
         transform.localScale = _originalScale;
     }
@@ -122,6 +129,7 @@ public class Interactable : MonoBehaviour
     {
         var color = _originalColor;
         color = _isHighlighted ? highlightColor : color;
+        color = _isHighlightedNegative ? highlightNegativeColor : color;
         color = _isGazed ? focusColor : color;
         color = _isSelected ? selectedColor : color;
             
@@ -139,7 +147,7 @@ public class Interactable : MonoBehaviour
         var pos = transform.position;
         return JsonConvert.SerializeObject(new
         {
-            StimulusId, IsHighlighted, IsSelected, IsGazed,
+            StimulusId, IsHighlighted, IsHighlightedNegative, IsSelected, IsGazed,
             Position = new { x = pos.x, y = pos.y, z = pos.z },
         });
     }
