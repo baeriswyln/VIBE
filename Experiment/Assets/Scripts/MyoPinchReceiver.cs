@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using LSL;
 using UnityEngine;
 
@@ -49,12 +50,14 @@ public class MyoPinchReceiver : MonoBehaviour
     {
         while (inlet == null && isActiveAndEnabled)
         {
-            // resolve_stream blocks the calling thread; LSL's internal timeout
-            // keeps it short. We yield between attempts so Unity stays responsive.
-            StreamInfo[] results = LSL.LSL.resolve_stream(
-                "name", streamName, 1, resolveTimeout);
-
-            if (results != null && results.Length > 0)
+            // resolve_stream blocks the calling thread -> delegate to thread
+            Task<StreamInfo[]> resolveTask = Task.Run(() =>
+                LSL.LSL.resolve_stream("name", streamName, 1, resolveTimeout));
+            
+            yield return new WaitUntil(() => resolveTask.IsCompleted);
+            
+            StreamInfo[] results = resolveTask.Result;
+            if (results is { Length: > 0 })
             {
                 inlet = new StreamInlet(results[0]);
                 inlet.open_stream();
