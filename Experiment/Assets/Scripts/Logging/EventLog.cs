@@ -1,4 +1,5 @@
 ﻿using System;
+using Experiments;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -31,10 +32,12 @@ namespace Logging
         }
 
         public static string[] GetCsvHeaders()
-            => new[] { "Timestamp", "Severity", "EventType", "EventName", "Payload" };
+            => new[] { "Timestamp", "Severity", "EventType", "EventName", "ExperimentName", "Payload" };
 
         public string[] ToCsvEntry()
-            => new[] { timestamp.ToString("O"), Severity.ToString(), eventType, GetPayload() };
+            => new[] { timestamp.ToString("O"), Severity.ToString(), eventType,
+                ExperimentManager.Instance.CurrentExperiment?.experimentName ?? String.Empty,
+                GetPayload() };
 
         public string ToLslEntry()
         {
@@ -44,6 +47,7 @@ namespace Logging
                 EventType = eventType,
                 EventName = eventName,
                 Severity = Severity.ToString(),
+                ExperimentName = ExperimentManager.Instance.CurrentExperiment?.experimentName ?? String.Empty,
                 Payload = new JRaw(GetPayload()),
             });
         }
