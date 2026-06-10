@@ -42,7 +42,9 @@ public class PinchHandler : MonoBehaviour
 
     private float _lastPinchTime;
     private AudioSource _audioSource;
-        
+
+    public bool Active { get; set; } = true;
+
     // Singleton initialization
     private void Awake()
     {
@@ -84,6 +86,8 @@ public class PinchHandler : MonoBehaviour
         
     private void HandlePinch()
     {
+        if(!Active) return;
+        
         // require a minimum time between pinches
         if (_lastPinchTime + cooldownTime > Time.time)
         {
