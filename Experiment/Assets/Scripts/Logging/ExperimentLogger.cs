@@ -59,7 +59,7 @@ namespace Logging
             _filePath = Path.Combine(dir, $"log_{participantId}_{timestamp}.csv");
 
             // CSV header
-            File.WriteAllText(_filePath, EventLog.GetCsvHeaders() + "\n");
+            File.WriteAllText(_filePath, string.Join(", ", EventLog.GetCsvHeaders()) + "\n");
 
             Debug.Log($"[ExperimentLogger] Logging to: {_filePath}");
 
@@ -138,7 +138,7 @@ namespace Logging
             try
             {
                 log.LogToConsole();
-                File.AppendAllText(_filePath, log.ToCsvEntry() + "\n");
+                File.AppendAllText(_filePath, string.Join(", ", log.ToCsvEntry()) + "\n");
                 
                 sample[0] = log.ToLslEntry();
                 outlet.push_sample(sample, ts > 0 ? ts : LSL.LSL.local_clock());
