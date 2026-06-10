@@ -19,13 +19,10 @@ Usage:
     python myo_pinch_ml.py detect                    # stream pinch markers to LSL
     python myo_pinch_ml.py detect --dry-run          # detect without LSL
 
-Requires: dl-myo, pylsl, numpy, scikit-learn, sounddevice, pyttsx3
-    pip install dl-myo pylsl numpy scikit-learn sounddevice pyttsx3
-
 Design notes
 ------------
 * No vibration is used as a cue. We use audio beeps (low pitch = prepare,
-  high pitch = pinch NOW) and offline TTS for spoken instructions.
+  high pitch = pinch NOW).
 * Each calibration trial captures a fixed-length window of EMG starting
   just before the high beep — discrete pinches, cleaner labels for ML.
 * Rest samples are gathered from the inter-trial gaps.
@@ -38,7 +35,6 @@ Design notes
 
 import argparse
 import asyncio
-import json
 import os
 import pickle
 import sys
@@ -48,7 +44,7 @@ from collections import deque
 
 import numpy as np
 
-from myo import MyoClient, EMGMode, SleepMode, ClassifierMode, IMUMode
+from myo import MyoClient
 from myo.types import *
 
 CONFIG_FILE = "myo_pinch_ml_config.json"
@@ -76,7 +72,7 @@ STEP_MS         = 60         # how often we re-classify (sliding window stride)
 STEP_SAMPLES    = max(1, int(EMG_RATE_HZ * STEP_MS / 1000))
 ON_CONSEC       = 2          # consecutive "pinch" predictions to fire pinch_start
 OFF_CONSEC      = 3          # consecutive "rest" predictions to fire pinch_end
-PROB_THRESHOLD  = 0.9       # min P(pinch) to count a sample as positive
+PROB_THRESHOLD  = 0.9        # min P(pinch) to count a sample as positive
 DEBOUNCE_S      = 0.10
 MAX_PINCH_S     = 8.0
 HEARTBEAT_S     = 5.0
@@ -93,19 +89,11 @@ class Cue:
 
     def __init__(self):
         self._sd = None
-        self._tts = None
         try:
             import sounddevice as sd
             self._sd = sd
         except Exception as e:
             print(f"[cue] sounddevice unavailable ({e}); beeps will be silent.")
-
-        try:
-            import pyttsx3
-            self._tts = pyttsx3.init()
-            self._tts.setProperty("rate", 175)
-        except Exception as e:
-            print(f"[cue] pyttsx3 unavailable ({e}); will print instead of speak.")
 
         # Pre-render tones so beeps fire with low jitter.
         self._low  = self._tone(freq=440.0,  ms=180)   # A4 — "prepare"
@@ -146,19 +134,7 @@ class Cue:
 
     def say(self, text):
         print(f"[say] {text}")
-        if self._tts is None:
-            return
-        # pyttsx3 blocks; do it in a thread so we can keep the audio loop alive.
-        def _run():
-            try:
-                self._tts.say(text)
-                self._tts.runAndWait()
-            except Exception as e:
-                print(f"[cue] tts failed: {e}")
-        t = threading.Thread(target=_run, daemon=True)
-        t.start()
-        t.join(timeout=8.0)  # don't hang forever if a driver misbehaves
-
+        
 
 # ─────────────────────────────────────────────────────────────────────
 # Myo client. Identical wiring to the reference; we just route samples
