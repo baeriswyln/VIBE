@@ -529,7 +529,7 @@ MonoBehaviour:
   stimuliPerTrial: 2
   numberOfTrials: 20
   interTrialIntervalMin: 1
-  interTrialIntervalMax: 4
+  interTrialIntervalMax: 3
   feedbackDuration: 0.5
   pNegativeHighlight: 0.6
   gazeMinTime: 0.5
@@ -1174,7 +1174,7 @@ MonoBehaviour:
   stimuliPerTrial: 10
   numberOfTrials: 20
   interTrialIntervalMin: 2
-  interTrialIntervalMax: 4
+  interTrialIntervalMax: 3
   feedbackDuration: 0.5
   pNegativeHighlight: 0
   gazeMinTime: 0.2
@@ -1412,6 +1412,8 @@ MonoBehaviour:
   experimentName: MyoTwoPositions
   textStart:
   - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
+  - 'This round requires the handheld pinch preventer. You''ll think about doing
+    an actual pinch, but will only squeeze the gadget. '
   textEnd:
   - Round finished, short break.
   trialInfoText: {fileID: 1400203280}
@@ -1426,7 +1428,7 @@ MonoBehaviour:
   stimuliPerTrial: 2
   numberOfTrials: 20
   interTrialIntervalMin: 1
-  interTrialIntervalMax: 4
+  interTrialIntervalMax: 3
   feedbackDuration: 0.5
   pNegativeHighlight: 0
   gazeMinTime: 0.2
@@ -1831,7 +1833,7 @@ MonoBehaviour:
   stimuliPerTrial: 5
   numberOfTrials: 20
   interTrialIntervalMin: 2
-  interTrialIntervalMax: 4
+  interTrialIntervalMax: 3
   feedbackDuration: 0.5
   pNegativeHighlight: 0
   gazeMinTime: 0.2
@@ -2742,6 +2744,8 @@ MonoBehaviour:
   experimentName: MyoFourPositions
   textStart:
   - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
+  - 'This round requires the handheld pinch preventer. You''ll think about doing
+    an actual pinch, but will only squeeze the gadget. '
   textEnd:
   - Round finished, short break.
   trialInfoText: {fileID: 1400203280}
@@ -2756,7 +2760,7 @@ MonoBehaviour:
   stimuliPerTrial: 4
   numberOfTrials: 20
   interTrialIntervalMin: 1
-  interTrialIntervalMax: 4
+  interTrialIntervalMax: 3
   feedbackDuration: 0.5
   pNegativeHighlight: 0
   gazeMinTime: 0.2
@@ -3027,6 +3031,64 @@ MonoBehaviour:
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
   respawnBetweenRounds: 0
+--- !u!1 &1743579585
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1743579586}
+  - component: {fileID: 1743579587}
+  m_Layer: 0
+  m_Name: End
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1743579586
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1743579585}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1976708001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1743579587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1743579585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03c7e594ddce4e0287d34a52c6173761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentEmpty
+  experimentName: End
+  textStart:
+  - 
+  textEnd:
+  - 'This is the end of the experiment. Thank you for participating. '
+  trialInfoText: {fileID: 1400203280}
+  onExperimentStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onExperimentComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  skipEndOfExperimentPause: 1
+  endScheduled: 0
 --- !u!1 &1818747167
 GameObject:
   m_ObjectHideFlags: 0
@@ -3606,14 +3668,17 @@ MonoBehaviour:
   endScheduled: 0
   textBeforeStart:
   - The experiment is being prepared and will start soon. Please wait.
-  textBeforeStimuliIntroduction: []
+  textBeforeStimuliIntroduction:
+  - 'During this experiment, the electrical activity in your brain will be measured.  '
+  - 'Try to reduce head movements and general body movements to a minimum, this will
+    improve the measurements. '
   textStimuliIntroduction:
   - 'During this experiment, you will be looking at a series of highlighted stimuli. 
     A stimulus is a blue sphere. A highlighted stimulus is yellow.  '
   - 'Once you look at a stimulus, it will turn orange. Once you select the stimulus,
     it will turn green, and confirmation sound plays. '
-  - You will be selecting the stimulus by looking at it and using a pinch gesture
-    with your right hand.
+  - You will be selecting the highlighted stimulus by looking at it and using a pinch
+    gesture with your right hand.
   textBeforeExample:
   - 'Try it out. Look at the stimuli in front of you, and pinch to select the stimuli.  '
   textAfterExample:
@@ -3727,6 +3792,7 @@ Transform:
   - {fileID: 794301597}
   - {fileID: 921482485}
   - {fileID: 1587765988}
+  - {fileID: 1743579586}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1976708002
@@ -3742,19 +3808,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.Experiments.ExperimentManager
   experiments:
-  - {fileID: 2008080124}
   - {fileID: 1960306619}
   - {fileID: 284363918}
   - {fileID: 1668606085}
   - {fileID: 2103927501}
   - {fileID: 1352681745}
   - {fileID: 794301598}
-  - {fileID: 1668606085}
-  - {fileID: 2103927501}
   - {fileID: 1352681745}
   - {fileID: 794301598}
-  - {fileID: 1352681745}
-  - {fileID: 794301598}
+  - {fileID: 302136879}
+  - {fileID: 2008080124}
+  - {fileID: 302136879}
+  - {fileID: 921482486}
+  - {fileID: 1587765989}
+  - {fileID: 284363918}
+  - {fileID: 1743579587}
   startOnPlay: 1
   gapBetweenExperiments: 20
   inputActionAsset: {fileID: -944628639613478452, guid: 68a21abee90971741b8bfa34e55e7891, type: 3}
@@ -3820,7 +3888,7 @@ MonoBehaviour:
   stimuliPerTrial: 4
   numberOfTrials: 20
   interTrialIntervalMin: 1
-  interTrialIntervalMax: 4
+  interTrialIntervalMax: 3
   feedbackDuration: 0.5
   pNegativeHighlight: 0.6
   gazeMinTime: 0.5
