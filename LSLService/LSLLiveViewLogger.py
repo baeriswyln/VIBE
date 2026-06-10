@@ -134,7 +134,7 @@ _marker_writer.writerow(["timestamp", "stream", "value"])
 _last_eeg_ts = -1.0
 WINDOW_SEC = 5.0          # how many seconds to show
 SPACING    = 40.0         # vertical spacing between channels (µV)
-REFRESH    = 0.05         # plot refresh interval (s)
+REFRESH    = 0.10         # plot refresh interval (s)
 
 # --- Visible channel indices in DSI display order ---
 _ch_index = {name: i for i, name in enumerate(eeg_ch_names)}
@@ -322,6 +322,7 @@ try:
         fig.canvas.draw()
         fig.canvas.flush_events()
         plt.pause(REFRESH)
+        _marker_csv.flush()
 finally:
     eeg_inlet.close_stream()
     for inlet in marker_inlets:
