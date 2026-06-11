@@ -69,6 +69,7 @@ public class Interactable : MonoBehaviour
     {
         _isHighlighted = !negative;
         _isHighlightedNegative = negative;
+        _isSelected = false;
         UpdateColor();
     }
     
