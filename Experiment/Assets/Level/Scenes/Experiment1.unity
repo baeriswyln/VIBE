@@ -349,7 +349,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
   experimentName: Static
   textStart:
-  - 'In this experiment, a single stimulus will appear. Select it once it appears. '
+  - 'In this round, a single stimulus will appear. Select it once it appears. '
   textEnd:
   - Round finished, short break.
   trialInfoText: {fileID: 1400203280}
@@ -512,7 +512,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
   experimentName: TwoPositions
   textStart:
-  - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
+  - 'In this round, you will be shown two stimuli. Select the one that is highlighted. '
   - 'If the highlighted stimulus is red, look at it for a short amount of time without
     pinching. '
   textEnd:
@@ -1158,8 +1158,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentRandom
   experimentName: RandomLarge
   textStart:
-  - In this experiment, you will be shown ten stimuli at random positions. Select
-    the one that is highlighted. Slight head movemets might be needed.
+  - In this round, you will be shown ten stimuli at random positions. Select the
+    one that is highlighted. Slight head movemets might be needed.
   textEnd:
   - Round finished, short break.
   trialInfoText: {fileID: 1400203280}
@@ -1411,7 +1411,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
   experimentName: MyoTwoPositions
   textStart:
-  - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
+  - 'In this round, you will be shown two stimuli. Select the one that is highlighted. '
   - 'This round requires the handheld pinch preventer. You''ll think about doing
     an actual pinch, but will only squeeze the gadget. '
   textEnd:
@@ -1817,8 +1817,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentRandom
   experimentName: RandomSmall
   textStart:
-  - In this experiment, you will be shown five stimuli at random positions. Select
-    the one that is highlighted.
+  - In this round, you will be shown five stimuli at random positions. Select the
+    one that is highlighted.
   textEnd:
   - Round finished, short break.
   trialInfoText: {fileID: 1400203280}
@@ -2743,7 +2743,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
   experimentName: MyoFourPositions
   textStart:
-  - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
+  - 'In this round, you will be shown two stimuli. Select the one that is highlighted. '
   - 'This round requires the handheld pinch preventer. You''ll think about doing
     an actual pinch, but will only squeeze the gadget. '
   textEnd:
@@ -3004,7 +3004,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
   experimentName: TwoPositions
   textStart:
-  - 'In this experiment, you will be shown two stimuli. Select the one that is highlighted. '
+  - 'In this round, you will be shown two stimuli. Select the one that is highlighted. '
   textEnd:
   - Round finished, short break.
   trialInfoText: {fileID: 1400203280}
@@ -3656,7 +3656,7 @@ MonoBehaviour:
   textStart:
   - 
   textEnd:
-  - Well done! The experiment will now start.
+  - The experiment will now start.
   trialInfoText: {fileID: 1400203280}
   onExperimentStart:
     m_PersistentCalls:
@@ -3673,22 +3673,20 @@ MonoBehaviour:
   - 'Try to reduce head movements and general body movements to a minimum, this will
     improve the measurements. '
   textStimuliIntroduction:
-  - 'During this experiment, you will be looking at a series of highlighted stimuli. 
-    A stimulus is a blue sphere. A highlighted stimulus is yellow.  '
+  - 'You will be looking at a series of highlighted stimuli.  A stimulus is a blue
+    sphere. A highlighted stimulus is yellow.  '
   - 'Once you look at a stimulus, it will turn orange. Once you select the stimulus,
-    it will turn green, and confirmation sound plays. '
+    it will turn green, and a confirmation sound plays. '
   - You will be selecting the highlighted stimulus by looking at it and using a pinch
     gesture with your right hand.
   textBeforeExample:
-  - 'Try it out. Look at the stimuli in front of you, and pinch to select the stimuli.  '
+  - 'Try it out. Look at the stimulus in front of you, and pinch to select.  '
   textAfterExample:
-  - 'Well done! The experiment contains multiple sessions. During each session, you
-    will observe 20 events. '
-  - 'Inbetween the sessions you have 20 seconds to relax. During this time you can
-    freely move your hand. '
+  - 'Well done! The experiment contains multiple rounds. During each round, you will
+    observe 20 events. '
+  - 'Inbetween the rounds you have 20 seconds to relax. During this time you can
+    freely move your hand, and rest your eyes. '
   - 'Be sure to return into the original position after relaxing. '
-  - 'Try not to move your body too much during the entire experiment. '
-  - The experiment will now start.
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   gazeRaycaster: {fileID: 1359528791}
 --- !u!1 &1975376541
@@ -3871,7 +3869,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
   experimentName: FourPositionsGaze
   textStart:
-  - 'In this experiment, you will be shown four stimuli. Select the one that is highlighted. '
+  - 'In this round, you will be shown four stimuli. Select the one that is highlighted. '
   - 'If the highlighted stimulus is red, look at it for a short amount of time without
     pinching. '
   textEnd:
@@ -4025,7 +4023,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
   experimentName: FourPositions
   textStart:
-  - 'In this experiment, you will be shown four stimuli. Select the one that is highlighted. '
+  - 'In this round, you will be shown four stimuli. Select the one that is highlighted. '
   textEnd:
   - Round finished, short break.
   trialInfoText: {fileID: 1400203280}

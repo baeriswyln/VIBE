@@ -100,6 +100,8 @@ namespace Experiments
             yield return new WaitUntil(() => s_example.IsSelected || endScheduled);
 
             Destroy(s_example.gameObject);
+            
+            yield return PlayTextPages(textAfterExample);
             yield return PlayTextPages(textEnd);
 
             MarkComplete();
