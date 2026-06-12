@@ -2890,7 +2890,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 1
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -2908,7 +2908,7 @@ Transform:
   m_GameObject: {fileID: 1663320278}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 1, z: -0.46}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4039,7 +4039,7 @@ MonoBehaviour:
   numberOfTrials: 20
   interTrialIntervalMin: 2
   interTrialIntervalMax: 6
-  feedbackDuration: 0.5
+  feedbackDuration: 5
   pNegativeHighlight: 0
   gazeMinTime: 0.2
   spawner: {fileID: 1516759628}
