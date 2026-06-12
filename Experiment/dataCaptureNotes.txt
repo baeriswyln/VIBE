@@ -1,0 +1,25 @@
+subject 5
+- both measurements good
+
+subject 6
+- eye tracking not working -> head movements
+- bad signals on electrode (T5)
+- 9h20: hand tracking failed for short time
+
+
+subject 7
+- noisy
+- bad signals on electrode (T5)
+
+
+subject 8
+- O1, O2, T5 bad contact. all others work well
+- pinch too sensitive? wait a little when hand enters before detecting pinches. longer delay
+- signals look good
+- eye tracking was not great. head movements required
+
+
+subject 9 
+- horrible eeg (at lest from a couple of electrodes.)
+- otherwise good experiment
+- lost hand tracking for last round
