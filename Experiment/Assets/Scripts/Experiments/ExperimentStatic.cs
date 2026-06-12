@@ -25,6 +25,7 @@ namespace Experiments
             
             spawner.SpawnStimulusInCircle(stimuliPerTrial, spawnCenter, spawnRadius);
 
+            PinchHandler.Instance.Active = true;
             for (var i = 0; i < numberOfTrials; i++)
             {
                 yield return RunSingleTrial(i);
@@ -37,6 +38,7 @@ namespace Experiments
                 yield return WaitForNextStimulus();
                 if(respawnBetweenRounds) spawner.SpawnStimulusInCircle(stimuliPerTrial, spawnCenter, spawnRadius);
             }
+            PinchHandler.Instance.Active = false;
             
             spawner.DestroyStimuli();
             yield return PlayTextPages(textEnd);

@@ -44,6 +44,7 @@ namespace Experiments
                 ExperimentLogger.Instance.Error(new ExperimentLog(experimentName, $"Not enough Stimuli spawned."));
                 spawner.DestroyStimuli();
             }
+            PinchHandler.Instance.Active = true;
             for (int trial = 0; trial < numberOfTrials; trial++)
             {
                 yield return StartCoroutine(RunSingleTrial(trial));
@@ -54,6 +55,8 @@ namespace Experiments
                 }
                 yield return WaitForNextStimulus();
             }
+            PinchHandler.Instance.Active = false;
+            
             spawner.DestroyStimuli();
             yield return PlayTextPages(textEnd);
             ExperimentLogger.Instance.Log(new ExperimentLog(experimentName, $"Finished: {_results.Count} events."));

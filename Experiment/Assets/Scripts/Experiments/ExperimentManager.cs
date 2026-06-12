@@ -166,6 +166,7 @@ namespace Experiments
         private IEnumerator RunAllExperiments()
         {
             _isRunning = true;
+            PinchHandler.Instance.Active = false;
             onSequenceStart?.Invoke();
             ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_START", ""));
 
@@ -185,9 +186,7 @@ namespace Experiments
                 exp.OnBegin();
                 onExperimentStarted?.Invoke(exp);
 
-                PinchHandler.Instance.Active = true;
                 yield return StartCoroutine(exp.Run());
-                PinchHandler.Instance.Active = false;
 
                 exp.OnEnd();
                 ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_END", $"{_currentIndex}:{exp.experimentName}"));
