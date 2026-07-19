@@ -1,9 +1,8 @@
 ﻿using System.Collections;
-using TMPro;
+using System.Collections.Generic;
 using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace Experiments
 {
@@ -14,22 +13,9 @@ namespace Experiments
     /// </summary>
     public abstract class Experiment : MonoBehaviour
     {
-        [Header("Experiment Info")]
-        [Tooltip("Display name for this experiment (used in logs).")]
-        public string experimentName = "Unnamed Experiment";
+        public ExperimentConfig config;
         
-        [TextArea(3, 10)]
-        [Tooltip("Each string becomes one page of instructions.")]
-        public string[] textStart = new[] {""};
         
-        [TextArea(3, 10)]
-        [Tooltip("Each string becomes one page of instructions.")]
-        public string[] textEnd = new[] {""};
-        
-        [Header("Feedback UI (Optional)")]
-        [Tooltip("World-space text for trial info (e.g. 'Trial 3 / 20').")]
-        public TMP_Text trialInfoText;
-
         [Header("Events")]
         public UnityEvent onExperimentStart;
         public UnityEvent onExperimentComplete;
@@ -43,6 +29,11 @@ namespace Experiments
 
         [HideInInspector] public bool endScheduled = false;
 
+        protected Experiment(ExperimentConfig config)
+        {
+            this.config = config;
+        }
+
         /// <summary>
         /// Called by the runner before Run(). Override for one-time setup.
         /// </summary>
@@ -51,8 +42,6 @@ namespace Experiments
             IsRunning = true;
             IsComplete = false;
             endScheduled = false;
-            if(trialInfoText) trialInfoText.text = "";
-            Debug.Log($"[Experiment] Starting: {experimentName}");
             onExperimentStart?.Invoke();
         }
 
@@ -69,8 +58,6 @@ namespace Experiments
         {
             IsRunning = false;
             IsComplete = true;
-            if(trialInfoText) trialInfoText.text = "";
-            Debug.Log($"[Experiment] Completed: {experimentName}");
             onExperimentComplete?.Invoke();
         }
 
@@ -82,15 +69,40 @@ namespace Experiments
             IsComplete = true;
         }
         
-        
-        protected IEnumerator PlayTextPages(string[] pages)
+    }
+    
+    public enum ExperimentType
+    {
+        Static,
+        Random,
+    }
+
+    [System.Serializable]
+    public class ExperimentConfig
+    {
+        public ExperimentType type;
+        public int numberOfStimuli;
+        public int numberOfTrials = 12;
+        public bool hasVirtualHand;
+        public bool hasVisualFeedback;
+        public bool hasAuditoryFeedback;
+        public int numberOfErrors = 0;
+        public bool pinchIsHinted;
+        public int numberOfObserveStimuli = 0;
+        public bool isChoiceStimuli;
+
+        public void CreateExperimentFromSelfAndAddToList(List<Experiment> list)
         {
-            if (trialInfoText) trialInfoText.gameObject.SetActive(true);
-            for (var i = 0; i < pages.Length && !endScheduled; i++)
+            switch (type)
             {
-                if(trialInfoText) trialInfoText.text = pages[i];
-                yield return KokoroTTS.Instance.SpeakAndWait(pages[i]);
+                case ExperimentType.Static:
+                    list.Add(new ExperimentStatic(this));
+                    break;
+                case ExperimentType.Random:
+                    list.Add(new ExperimentRandom(this));
+                    break;
             }
         }
+        
     }
 }

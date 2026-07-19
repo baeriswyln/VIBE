@@ -2,6 +2,7 @@ using System;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
+using Random = UnityEngine.Random;
 
 public class Interactable : MonoBehaviour
 {
@@ -17,6 +18,10 @@ public class Interactable : MonoBehaviour
  
     [Tooltip("Color to apply when the stimulus is selected (clicked).")]
     public Color selectedColor = new Color(0.3f, 1f, 0.5f, 1f);
+    
+    public MeshRenderer meshRenderer;
+    public Material outlineMaterial;
+    public Material normalMaterial;
  
     [Tooltip("Scale multiplier when gazed at.")]
     public float highlightScaleMultiplier = 1.15f;
@@ -34,10 +39,12 @@ public class Interactable : MonoBehaviour
     private bool _isSelected;
     private bool _isHighlighted;
     private bool _isHighlightedNegative;
+    private bool _visuallyConfirmSelect;
     private Vector3 _originalScale;
     private Color _originalColor;
     private Renderer _renderer;
     private MaterialPropertyBlock _propBlock;
+    private Material _outlineInstance;
         
     private InteractableManager _interactableManager;
         
@@ -49,11 +56,18 @@ public class Interactable : MonoBehaviour
     public bool IsHighlighted => _isHighlighted;
     public bool IsHighlightedNegative => _isHighlightedNegative;
 
+    public bool VisuallyConfirmSelect
+    {
+        set => _visuallyConfirmSelect = value;
+    }
+
+
     void Awake()
     {
         _originalScale = transform.localScale;
         _renderer = GetComponentInChildren<Renderer>();
         _propBlock = new MaterialPropertyBlock();
+        _outlineInstance = new Material(outlineMaterial);
  
         if (_renderer != null)
         {
@@ -90,6 +104,19 @@ public class Interactable : MonoBehaviour
         _interactableManager = interactableManager;
     }
 
+    public void RandomizeColor()
+    {
+        // generate a constraint random color. Colors should be bright and not washed-out, hence the limits. 
+        var randomColor = Random.ColorHSV(
+            0f, 1f, // Full Hue spectrum
+            0.6f, 1f, // Saturation, vivid colors
+            0.8f, 1f  // value, bright colors
+        );
+        
+        _originalColor = randomColor;
+        UpdateColor();
+    }
+
     /// <summary>Called by GazeRaycaster when gaze enters this object.</summary>
     public void OnGazeEnter()
     {
@@ -108,7 +135,7 @@ public class Interactable : MonoBehaviour
         onGazeExit?.Invoke(this);
     }
  
-    /// <summary>Called by PinchDetector when the user performs a pinch while gazing.</summary>
+    /// <summary>Called by PinchHandler when the user performs a pinch while gazing.</summary>
     public void OnSelect()
     {
         _isSelected = true;
@@ -129,10 +156,11 @@ public class Interactable : MonoBehaviour
     private void UpdateColor()
     {
         var color = _originalColor;
-        color = _isHighlighted ? highlightColor : color;
-        color = _isHighlightedNegative ? highlightNegativeColor : color;
-        color = _isGazed ? focusColor : color;
-        color = _isSelected ? selectedColor : color;
+        color = _isSelected && _visuallyConfirmSelect ? selectedColor : color;
+
+        Color? outlineColor = _isHighlighted ? highlightColor : null;
+        outlineColor = _isHighlightedNegative ? highlightNegativeColor : outlineColor;
+        outlineColor = _isGazed ? focusColor : outlineColor;
             
             
         if (_renderer == null) return;
@@ -140,7 +168,19 @@ public class Interactable : MonoBehaviour
         _renderer.GetPropertyBlock(_propBlock);
         _propBlock.SetColor("_Color", color);
         _propBlock.SetColor("_BaseColor", color); // URP/HDRP
+        SetOutline(outlineColor);
         _renderer.SetPropertyBlock(_propBlock);
+    }
+
+    private void SetOutline(Color? outlineColor)
+    {
+        if (outlineColor != null)
+        {
+            _outlineInstance.color = (Color)outlineColor;
+            meshRenderer.materials = new Material[] { normalMaterial, _outlineInstance };
+        }
+        else
+            meshRenderer.materials = new Material[] { normalMaterial };
     }
 
     public string ToJSON()

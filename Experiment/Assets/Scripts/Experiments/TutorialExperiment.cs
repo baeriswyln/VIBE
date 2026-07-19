@@ -41,8 +41,11 @@ namespace Experiments
 
         // State
         private bool _pinchedThisFrame;
-        
-        
+
+        public TutorialExperiment(ExperimentConfig config) : base(config)
+        {
+        }
+
 
         public override void OnBegin()
         {
@@ -61,17 +64,12 @@ namespace Experiments
         public override IEnumerator Run()
         {
             gazeRaycaster.Deactivate();
-            if (!trialInfoText)
-            {
-                Debug.LogError("[TutorialExperiment] No instructionText assigned.");
-                yield break;
-            }
             
-            yield return PlayTextPages(textBeforeStart);
+            yield return ExperimentManager.Instance.PlayTextPages(textBeforeStart);
             
             yield return new WaitUntil(() => LslBackend.Instance.startReceived || InputSystem.actions.FindAction("ExpConfirm").IsPressed() || endScheduled) ;
             
-            yield return PlayTextPages(textBeforeStimuliIntroduction);
+            yield return ExperimentManager.Instance.PlayTextPages(textBeforeStimuliIntroduction);
 
             var baseLoc = new Vector3(-1.5f, 0.5f, 3);
             
@@ -84,7 +82,7 @@ namespace Experiments
             s_focused.Gaze();
             s_selected.Select();
             
-            yield return PlayTextPages(textStimuliIntroduction);
+            yield return ExperimentManager.Instance.PlayTextPages(textStimuliIntroduction);
             
             Destroy(s_default.gameObject);
             Destroy(s_highlighted.gameObject);
@@ -95,7 +93,7 @@ namespace Experiments
             
             gazeRaycaster.Activate();
             PinchHandler.Instance.Active = true;
-            yield return PlayTextPages(textBeforeExample);
+            yield return ExperimentManager.Instance.PlayTextPages(textBeforeExample);
             
             // Wait for pinch on stimulus
             yield return new WaitUntil(() => s_example.IsSelected || endScheduled);
@@ -103,8 +101,7 @@ namespace Experiments
 
             Destroy(s_example.gameObject);
             
-            yield return PlayTextPages(textAfterExample);
-            yield return PlayTextPages(textEnd);
+            yield return ExperimentManager.Instance.PlayTextPages(textAfterExample);
 
             MarkComplete();
         }

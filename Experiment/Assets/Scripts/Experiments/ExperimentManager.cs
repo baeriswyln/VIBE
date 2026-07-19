@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Logging;
 using Newtonsoft.Json;
+using TMPro;
+using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -13,9 +15,26 @@ namespace Experiments
     public class ExperimentManager : MonoBehaviour
     {
         public static ExperimentManager Instance { get; private set; }
+
+        [Header("Experiments")] 
+        public Experiment tutorial;
+        public ExperimentConfig controlExperiment;
+        public List<ExperimentConfig> experimentConfigs;
+        private List<Experiment> _experimentPlaylist;
         
-        [Header("Experiment Sequence")] [Tooltip("Experiments will run in this order.")]
-        public List<Experiment> experiments = new List<Experiment>();
+        [Header("General Experiment Configuration")]
+        [Tooltip("Seconds to wait between trials.")]
+        public float interTrialIntervalMin = .5f;
+        public float interTrialIntervalMax = 2.5f;
+
+        [Tooltip("Seconds to show feedback (correct/incorrect) before moving on.")]
+        public float feedbackDuration = 0.5f;
+        
+        [Tooltip("Time required gazing at an interactable to activate the negative highlight condition.")]
+        public float gazeMinTime = 0.2f;
+        
+        [Header("References")] [Tooltip("StimulusSpawner that handles placing the stimuli.")]
+        public InteractableManager spawner;
 
         [Header("Start Behaviour")]
         [Tooltip("Start the sequence automatically on Play. If false, call StartSequence() manually.")]
@@ -26,8 +45,11 @@ namespace Experiments
         
         public InputActionAsset inputActionAsset;
         
+        [Header("UI Elements")]
         [SerializeField] private GazeRaycaster gazeRaycaster;
         [SerializeField] private GameObject pauseUi;
+        [SerializeField] private TMP_Text instructionTextUi;
+        [SerializeField] private TMP_Text progress;
 
         [Header("Events")] public UnityEvent onSequenceStart;
         public UnityEvent onSequenceComplete;
@@ -39,15 +61,12 @@ namespace Experiments
         private bool _isRunning;
         private bool _isPaused = false;
 
-        DateTime sessionStartUtc = DateTime.UtcNow;
-        Stopwatch stopwatch = Stopwatch.StartNew();
-
         public bool IsRunning => _isRunning;
         public int CurrentIndex => _currentIndex;
 
         public Experiment CurrentExperiment =>
-            (_currentIndex >= 0 && _currentIndex < experiments.Count)
-                ? experiments[_currentIndex]
+            (_currentIndex >= 0 && _currentIndex < _experimentPlaylist.Count)
+                ? _experimentPlaylist[_currentIndex]
                 : null;
 
         // Singleton initialization
@@ -97,11 +116,17 @@ namespace Experiments
                 return;
             }
 
-            if (experiments.Count == 0)
+            if (_experimentPlaylist.Count == 0)
             {
                 ExperimentLogger.Instance.Error(new ExperimentManagerLog("NO_EXPERIMENT", "No experiments assigned."));
                 return;
             }
+
+            _experimentPlaylist = new List<Experiment>();
+            
+            _experimentPlaylist.Add(tutorial);
+            controlExperiment.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
+            foreach (var cfg in experimentConfigs) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
 
             StartCoroutine(RunAllExperiments());
         }
@@ -114,7 +139,7 @@ namespace Experiments
         {
             if (CurrentExperiment != null)
             {
-                ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_SKIP", CurrentExperiment.experimentName));
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_SKIP", CurrentExperiment.ToString()));
                 CurrentExperiment.endScheduled = true;
             }
         }
@@ -123,7 +148,7 @@ namespace Experiments
         {
             if (CurrentExperiment != null)
             {
-                ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_RESTART", CurrentExperiment.experimentName));
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_RESTART", CurrentExperiment.ToString()));
                 CurrentExperiment.endScheduled = true;
                 _currentIndex -= 1;
             }
@@ -133,7 +158,7 @@ namespace Experiments
         {
             if (CurrentExperiment != null)
             {
-                ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_PREVIOUS", CurrentExperiment.experimentName));
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_PREVIOUS", CurrentExperiment.ToString()));
                 CurrentExperiment.endScheduled = true;
                 _currentIndex = Math.Max(-1, _currentIndex-2);
             }
@@ -143,7 +168,7 @@ namespace Experiments
         {
             if (CurrentExperiment != null)
             {
-                ExperimentLogger.Instance.Log(new ExperimentManagerLog("TOGGLE_PAUSE", CurrentExperiment.experimentName));
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("TOGGLE_PAUSE", CurrentExperiment.ToString()));
 
                 if (_isPaused)
                 {
@@ -170,9 +195,9 @@ namespace Experiments
             onSequenceStart?.Invoke();
             ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_START", ""));
 
-            for (_currentIndex = 0; _currentIndex < experiments.Count; _currentIndex++)
+            for (_currentIndex = 0; _currentIndex < _experimentPlaylist.Count; _currentIndex++)
             {
-                Experiment exp = experiments[_currentIndex];
+                Experiment exp = _experimentPlaylist[_currentIndex];
                 if (!exp)
                 {
                     ExperimentLogger.Instance.Warn(new ExperimentManagerLog("MISSING_EXPERIMENT", $"Experiment at index {_currentIndex} is null, skipping."));
@@ -182,14 +207,14 @@ namespace Experiments
                 // Disable all other experiments' GameObjects so they don't interfere
                 SetOnlyActive(exp);
 
-                ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_START", $"{_currentIndex}:{exp.experimentName}"));
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_START", $"{_currentIndex}:{exp.ToString()}"));
                 exp.OnBegin();
                 onExperimentStarted?.Invoke(exp);
 
                 yield return StartCoroutine(exp.Run());
 
                 exp.OnEnd();
-                ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_END", $"{_currentIndex}:{exp.experimentName}"));
+                ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_END", $"{_currentIndex}:{exp.ToString()}"));
                 onExperimentFinished?.Invoke(exp);
 
                 if (gapBetweenExperiments > 0f && !exp.endScheduled && !exp.skipEndOfExperimentPause)
@@ -202,14 +227,51 @@ namespace Experiments
             ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_COMPLETE", ""));
         }
 
+        public IEnumerator PlayExperimentInstructions(ExperimentConfig config)
+        {
+            var pages = new List<string>();
+            
+            if (config.isChoiceStimuli)
+                pages.Add("Select the stimulus with the color you like most amongst the colors shown.");
+            else
+            {
+                var text = "Select the highlighted stimulus.";
+                if (config.numberOfObserveStimuli > 0) text += " A stimulus highlighted red should only be observed. Look at such a stimulus for approximately half a second without pinching.";
+                pages.Add(text);
+            }
+            
+            if (config.pinchIsHinted)
+                pages.Add("Pinches should only be hinted in this round. Only think about pinching and execute a small hinted movement without actually pinching.");
+            
+            if (config.hasAuditoryFeedback && config.hasVisualFeedback)
+                pages.Add("A successful select will be confirmed visually and auditorially.");
+            if (config.hasAuditoryFeedback && !config.hasVisualFeedback)
+                pages.Add("A successful select will be confirmed auditorially.");
+            if (!config.hasAuditoryFeedback && config.hasVisualFeedback)
+                pages.Add("A successful select will be confirmed visually.");
+            
+            yield return PlayTextPages(pages.ToArray());
+        }
+
+        public IEnumerator PlayTextPages(string[] pages)
+        {
+            if (instructionTextUi) instructionTextUi.gameObject.SetActive(true);
+            for (var i = 0; i < pages.Length && !CurrentExperiment.endScheduled; i++)
+            {
+                if(instructionTextUi) instructionTextUi.text = pages[i];
+                yield return KokoroTTS.Instance.SpeakAndWait(pages[i]);
+            }
+            if (instructionTextUi) instructionTextUi.gameObject.SetActive(false);
+        }
+
         /// <summary>
         /// Enables the given experiment's GameObject and disables all others.
         /// </summary>
         private void SetOnlyActive(Experiment active)
         {
-            foreach (var exp in experiments)
+            foreach (var exp in _experimentPlaylist)
             {
-                if (exp == null) continue;
+                if (!exp) continue;
                 exp.gameObject.SetActive(exp == active);
             }
         }

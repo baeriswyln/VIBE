@@ -1,6 +1,8 @@
-﻿using Leap;
+﻿using Experiments;
+using Leap;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 // Requires the Ultraleap Unity Plugin (com.ultraleap.tracking)
 
@@ -42,6 +44,7 @@ public class PinchHandler : MonoBehaviour
 
     private float _lastPinchTime;
     private AudioSource _audioSource;
+    public bool hideNextPinch;
 
     public bool Active { get; set; } = true;
 
@@ -66,12 +69,19 @@ public class PinchHandler : MonoBehaviour
     {
         pinchDetector.OnPinchStart += HandleLeapPinch;
         myoPinchReceiver.OnPinchStart += HandleMyoPinch;
+        InputSystem.actions.FindAction("ExpPause").performed += HandleKeyboardPinch;
     }
 
     private void OnDisable()
     {
         pinchDetector.OnPinchStart -= HandleLeapPinch;
         myoPinchReceiver.OnPinchStart -= HandleMyoPinch;
+        InputSystem.actions.FindAction("ExpPause").performed -= HandleKeyboardPinch;
+    }
+
+    private void HandleKeyboardPinch(InputAction.CallbackContext ctx)
+    {
+        HandlePinch();
     }
     
     private void HandleMyoPinch()
@@ -91,11 +101,14 @@ public class PinchHandler : MonoBehaviour
         // require a minimum time between pinches
         if (_lastPinchTime + cooldownTime > Time.time)
         {
-            Debug.LogWarning("pinch accepted");
+            Debug.LogWarning("pinch skipped");
             return;
         }
 
-        _audioSource.PlayOneShot(clickSound, .5f);
+        // don't play sound if the pinch should be hidden, or no auditory feedback is required.
+        if (!hideNextPinch && ExperimentManager.Instance.CurrentExperiment.config.hasAuditoryFeedback) 
+            _audioSource.PlayOneShot(clickSound, .5f);
+        
         _lastPinchTime = Time.time;
 
             
@@ -103,8 +116,17 @@ public class PinchHandler : MonoBehaviour
         if (gazeRaycaster.IsFocusConfirmed && gazeRaycaster.CurrentTarget != null)
         {
             Interactable target = gazeRaycaster.CurrentTarget;
-            target.OnSelect();
-            onStimulusClicked?.Invoke(target);
+            if (!hideNextPinch)
+            {
+                target.OnSelect();
+                onStimulusClicked?.Invoke(target);
+            }
+            else
+            {
+                // todo
+                Debug.LogError("the hidden pinches are not logged yet");
+            }
+            hideNextPinch = false;
         }
         else
         {

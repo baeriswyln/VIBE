@@ -19,33 +19,39 @@ namespace Experiments
     /// </summary>
     public class ExperimentRandom : StimuliExperiment
     {
-
+        public ExperimentRandom(ExperimentConfig config) : base(config)
+        {
+        }
 
         public override IEnumerator Run()
         {
+            var spawner = ExperimentManager.Instance.spawner;
+            
             if (!spawner)
             {
-                ExperimentLogger.Instance.Error(new ExperimentLog(experimentName, "No spawner assigned."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(ToString(), "No spawner assigned."));
                 yield break;
             }
-            
-            yield return PlayTextPages(textStart);
-            if(trialInfoText) trialInfoText.gameObject.SetActive(false);
+
+            yield return ExperimentManager.Instance.PlayExperimentInstructions(config);
             if(endScheduled) yield break;
 
             while (true)
             {
-                spawner.SpawnStimuli(stimuliPerTrial);
+                spawner.SpawnStimuli(config);
+                if (config.isChoiceStimuli) spawner.RandomizeColors();
+                
                 var spawned = spawner.spawnedStimuli;
-                if (spawned != null && spawned.Count == stimuliPerTrial)
+                if (spawned != null && spawned.Count == config.numberOfStimuli)
                 {
                     break;
                 }
-                ExperimentLogger.Instance.Error(new ExperimentLog(experimentName, $"Not enough Stimuli spawned."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(ToString(), $"Not enough Stimuli spawned."));
                 spawner.DestroyStimuli();
             }
+            
             PinchHandler.Instance.Active = true;
-            for (int trial = 0; trial < numberOfTrials; trial++)
+            for (int trial = 0; trial < config.numberOfTrials; trial++)
             {
                 yield return StartCoroutine(RunSingleTrial(trial));
                 if(endScheduled)
@@ -54,12 +60,13 @@ namespace Experiments
                     yield break;
                 }
                 yield return WaitForNextStimulus();
+                if (config.isChoiceStimuli) spawner.RandomizeColors();
             }
             PinchHandler.Instance.Active = false;
             
             spawner.DestroyStimuli();
-            yield return PlayTextPages(textEnd);
-            ExperimentLogger.Instance.Log(new ExperimentLog(experimentName, $"Finished: {_results.Count} events."));
+            // yield return PlayTextPages(textEnd);
+            ExperimentLogger.Instance.Log(new ExperimentLog(ToString(), $"Finished: {_results.Count} events."));
             MarkComplete();
         }
         

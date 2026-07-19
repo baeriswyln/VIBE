@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Experiments;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class InteractableManager : MonoBehaviour
 {
@@ -37,20 +39,21 @@ public class InteractableManager : MonoBehaviour
     {
     }
 
-    public void SpawnStimuli(int nbStimuli)
+    public void SpawnStimuli(ExperimentConfig config)
     {
         _spawnedStimuli = new List<Interactable>();
         _spawnedStimuliPositions = new List<Vector3>();
 
-        for (int i = 0; i < nbStimuli; i++)
+        for (int i = 0; i < config.numberOfStimuli; i++)
         {
             Vector3? position = TryGetValidPosition(_spawnedStimuliPositions);
 
             if (position.HasValue)
             {
-                var stimuli = Instantiate(stimuliPrefab, position.Value, Quaternion.identity);
-                stimuli.SetInteractableManager(this);
-                _spawnedStimuli.Add(stimuli);
+                var stimulus = Instantiate(stimuliPrefab, position.Value, Quaternion.identity);
+                stimulus.SetInteractableManager(this);
+                stimulus.VisuallyConfirmSelect = config.hasVisualFeedback;
+                _spawnedStimuli.Add(stimulus);
                 _spawnedStimuliPositions.Add(position.Value);
             }
             else
@@ -60,29 +63,30 @@ public class InteractableManager : MonoBehaviour
         }
     }
     
-    public void SpawnStimulusInCircle(int count, Vector3 center, float radius)
+    public void SpawnStimulusInCircle(ExperimentConfig config, Vector3 center, float radius)
     {
         _spawnedStimuli = new List<Interactable>();
         _spawnedStimuliPositions = new List<Vector3>();
 
-        if (count <= 0)
+        if (config.numberOfStimuli <= 0)
             return;
 
         // Special case: a single object goes at the center.
-        if (count == 1)
+        if (config.numberOfStimuli == 1)
         {
             var stimulus = Instantiate(stimuliPrefab, center, Quaternion.identity);
             _spawnedStimuli.Add(stimulus);
             _spawnedStimuliPositions.Add(center);
+            stimulus.VisuallyConfirmSelect = config.hasVisualFeedback;
             return;
         }
 
         // Distribute evenly around the circle.
         // Start angle of 90° puts the first object at the top, and going
         // clockwise gives the intuitive left/right and top/bottom layouts.
-        float angleStep = 360f / count;
+        float angleStep = 360f / config.numberOfStimuli;
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < config.numberOfStimuli; i++)
         {
             float angleDeg = i * angleStep;
             float angleRad = angleDeg * Mathf.Deg2Rad;
@@ -94,6 +98,7 @@ public class InteractableManager : MonoBehaviour
             );
 
             var stimulus = Instantiate(stimuliPrefab, center+offset, Quaternion.identity);
+            stimulus.VisuallyConfirmSelect = config.hasVisualFeedback;
             _spawnedStimuli.Add(stimulus);
             _spawnedStimuliPositions.Add(center+offset);
         }
@@ -115,6 +120,13 @@ public class InteractableManager : MonoBehaviour
         {
             stimuli.ResetState();
         }
+    }
+
+
+
+    public void RandomizeColors()
+    {
+        foreach (var stimuli in _spawnedStimuli) stimuli.RandomizeColor();
     }
 
     Vector3? TryGetValidPosition(List<Vector3> existing)

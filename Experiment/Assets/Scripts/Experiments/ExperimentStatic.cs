@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Leap;
 using Logging;
 using UnityEngine;
 
@@ -10,23 +11,32 @@ namespace Experiments
         [Header("Stimulus Spawn Configuration")]
         public Vector3 spawnCenter = new(0, 1, 5);
         public float spawnRadius;
-        public bool respawnBetweenRounds = true;
         
+        private bool _respawnBetweenRounds = true;
+
+        public ExperimentStatic(ExperimentConfig config) : base(config)
+        {
+        }
+
         public override IEnumerator Run()
         {
+            _respawnBetweenRounds = config.numberOfStimuli == 1;
+            
+            var spawner = ExperimentManager.Instance.spawner; 
             if (!spawner)
             {
-                ExperimentLogger.Instance.Error(new ExperimentLog(experimentName, "No spawner assigned."));
+                ExperimentLogger.Instance.Error(new ExperimentLog(ToString(), "No spawner assigned."));
                 yield break;
             }
 
-            yield return PlayTextPages(textStart);
-            if(trialInfoText) trialInfoText.gameObject.SetActive(false);
+            yield return ExperimentManager.Instance.PlayExperimentInstructions(config);
+            if (endScheduled) yield break;
             
-            spawner.SpawnStimulusInCircle(stimuliPerTrial, spawnCenter, spawnRadius);
+            spawner.SpawnStimulusInCircle(config, spawnCenter, spawnRadius);
+            if (config.isChoiceStimuli) spawner.RandomizeColors();
 
             PinchHandler.Instance.Active = true;
-            for (var i = 0; i < numberOfTrials; i++)
+            for (var i = 0; i < config.numberOfTrials; i++)
             {
                 yield return RunSingleTrial(i);
                 if(endScheduled)
@@ -34,15 +44,16 @@ namespace Experiments
                     spawner.DestroyStimuli();
                     yield break;
                 }
-                if(respawnBetweenRounds) spawner.DestroyStimuli();
+                if(_respawnBetweenRounds) spawner.DestroyStimuli();
                 yield return WaitForNextStimulus();
-                if(respawnBetweenRounds) spawner.SpawnStimulusInCircle(stimuliPerTrial, spawnCenter, spawnRadius);
+                if(_respawnBetweenRounds) spawner.SpawnStimulusInCircle(config, spawnCenter, spawnRadius);
+                if (config.isChoiceStimuli) spawner.RandomizeColors();
             }
             PinchHandler.Instance.Active = false;
             
             spawner.DestroyStimuli();
-            yield return PlayTextPages(textEnd);
-            ExperimentLogger.Instance.Log(new ExperimentLog(experimentName, $"Finished: {_results.Count} events."));
+            // yield return PlayTextPages(textEnd);
+            ExperimentLogger.Instance.Log(new ExperimentLog(ToString(), $"Finished: {_results.Count} events."));
             MarkComplete();
         }
     }

@@ -36,7 +36,7 @@ namespace Logging
 
         public string[] ToCsvEntry()
             => new[] { timestamp.ToString("O"), Severity.ToString(), eventType,
-                ExperimentManager.Instance.CurrentExperiment?.experimentName ?? String.Empty,
+                ExperimentManager.Instance.CurrentExperiment?.ToString() ?? String.Empty,
                 GetPayload() };
 
         public string ToLslEntry()
@@ -47,7 +47,7 @@ namespace Logging
                 EventType = eventType,
                 EventName = eventName,
                 Severity = Severity.ToString(),
-                ExperimentName = ExperimentManager.Instance.CurrentExperiment?.experimentName ?? String.Empty,
+                ExperimentName = ExperimentManager.Instance.CurrentExperiment?.ToString() ?? String.Empty,
                 Payload = new JRaw(GetPayload()),
             });
         }

@@ -3821,6 +3821,144 @@ MonoBehaviour:
   - {fileID: 1587765989}
   - {fileID: 284363918}
   - {fileID: 1743579587}
+  controlExperiment:
+    type: 0
+    hasVirtualHand: 1
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  experimentConfigs:
+  - type: 1
+    hasVirtualHand: 1
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 1
+    hasVirtualHand: 1
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 1
+    hasVirtualHand: 1
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 0
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 1
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 1
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 0
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 1
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 1
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 1
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 1
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 1
+    pinchIsHinted: 1
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 1
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 1
+    isChoiceStimuli: 0
+  - type: 1
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 1
+  - type: 2
+    hasVirtualHand: 1
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 2
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 1
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 2
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 0
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 2
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 2
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 1
+    pinchIsHinted: 1
+    hasObserveStimuli: 0
+    isChoiceStimuli: 0
+  - type: 2
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    includesErrors: 0
+    pinchIsHinted: 0
+    hasObserveStimuli: 1
+    isChoiceStimuli: 0
   startOnPlay: 1
   gapBetweenExperiments: 20
   inputActionAsset: {fileID: -944628639613478452, guid: 68a21abee90971741b8bfa34e55e7891, type: 3}

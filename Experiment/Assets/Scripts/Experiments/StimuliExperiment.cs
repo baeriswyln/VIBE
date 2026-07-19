@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Leap;
 using Logging;
 using TMPro;
 using UnityEngine;
@@ -11,28 +12,6 @@ namespace Experiments
 {
     public abstract class StimuliExperiment : Experiment
     {
-        [Header("Trial Configuration")] [Tooltip("How many stimuli to spawn per trial.")]
-        public int stimuliPerTrial = 1;
-
-        [Tooltip("Number of trials to run.")] public int numberOfTrials = 20;
-
-        [Tooltip("Seconds to wait between trials.")]
-        public float interTrialIntervalMin = .5f;
-
-        public float interTrialIntervalMax = 2.5f;
-
-        [Tooltip("Seconds to show feedback (correct/incorrect) before moving on.")]
-        public float feedbackDuration = 0.5f;
-
-        [Tooltip("Probability of a negative highlight (only gaze, don't pinch).")]
-        public float pNegativeHighlight = 0.0f;
-
-        [Tooltip("Time required gazing at an interactable to activate the negative highlight condition.")]
-        public float gazeMinTime = 0.2f;
-
-        [Header("References")] [Tooltip("StimulusSpawner that handles placing the stimuli.")]
-        public InteractableManager spawner;
-
         [Header("Events")] public UnityEvent<TrialResult> onTrialComplete;
 
         public PinchHandler.PinchSource currentPinchSource = PinchHandler.PinchSource.Leap;
@@ -42,6 +21,10 @@ namespace Experiments
         protected Interactable _selectedStimulus;
         protected Interactable _gazedStimulus;
         protected float _gazedStimulusStart;
+        
+        // --- Stimuli order --
+        protected List<bool> _errorList;
+        protected List<bool> _observableList;
 
         public struct TrialResult
         {
@@ -58,6 +41,24 @@ namespace Experiments
         /// <summary>Read-only access to the full trial history.</summary>
         public IReadOnlyList<TrialResult> Results => _results;
 
+        protected StimuliExperiment(ExperimentConfig config) : base(config)
+        {
+            _errorList = new List<bool>();
+            _observableList = new List<bool>();
+            
+            if (config != null)
+            {
+                for (var i = 0; i < config.numberOfStimuli; i++)
+                {
+                    _errorList.Add(i < config.numberOfErrors);
+                    _observableList.Add(i < config.numberOfObserveStimuli);
+                }
+
+                _errorList.Shuffle();
+                _observableList.Shuffle();
+            }
+        }
+
         public override void OnBegin()
         {
             base.OnBegin();
@@ -71,22 +72,22 @@ namespace Experiments
             PinchHandler.Instance.onStimulusClicked.RemoveListener(OnStimulusClicked);
 
             // Clean up any remaining stimuli
-            if (spawner)
-                spawner.DestroyStimuli();
+            if (ExperimentManager.Instance.spawner)
+                ExperimentManager.Instance.spawner.DestroyStimuli();
 
             base.OnEnd();
         }
 
         protected IEnumerator WaitForNextStimulus()
         {
-            if (interTrialIntervalMax == 0)
+            if (ExperimentManager.Instance.interTrialIntervalMax == 0)
                 yield break;
 
-            if (interTrialIntervalMin == interTrialIntervalMax)
-                yield return new WaitForSeconds(interTrialIntervalMin);
+            if (ExperimentManager.Instance.interTrialIntervalMin == ExperimentManager.Instance.interTrialIntervalMax)
+                yield return new WaitForSeconds(ExperimentManager.Instance.interTrialIntervalMin);
             else
             {
-                var secondsToWait = Random.Range(interTrialIntervalMin, interTrialIntervalMax);
+                var secondsToWait = Random.Range(ExperimentManager.Instance.interTrialIntervalMin, ExperimentManager.Instance.interTrialIntervalMax);
                 yield return new WaitForSeconds(secondsToWait);
             }
         }
@@ -94,24 +95,44 @@ namespace Experiments
         protected IEnumerator RunSingleTrial(int trialNumber)
         {
             // Pick a random stimulus as the target
-            var spawned = spawner.spawnedStimuli;
-            if (spawned == null || spawned.Count != stimuliPerTrial)
+            var spawned = ExperimentManager.Instance.spawner.spawnedStimuli;
+            if (spawned == null || spawned.Count != config.numberOfStimuli)
             {
-                ExperimentLogger.Instance.Error(new ExperimentLog(experimentName,
+                // todo update log
+                ExperimentLogger.Instance.Error(new ExperimentLog("",
                     $"Not enough Stimuli spawned for trial {trialNumber}."));
                 yield break;
             }
 
-            _currentTarget = spawned[Random.Range(0, spawned.Count)];
+            if (config.isChoiceStimuli) _currentTarget = null;
+            else
+            {
+                _currentTarget = spawned[Random.Range(0, spawned.Count)];
 
-            _currentTarget.onGazeEnter += OnStimulusGazeEnter;
-            _currentTarget.onGazeExit += OnStimulusGazeExit;
-            _currentTarget.Highlight(Random.Range(0f, 1f) < pNegativeHighlight);
+                _currentTarget.onGazeEnter += OnStimulusGazeEnter;
+                _currentTarget.onGazeExit += OnStimulusGazeExit;
+                _currentTarget.Highlight(_observableList[trialNumber]);
+            }
 
             _selectedStimulus = null;
             _gazedStimulus = null;
 
             float responseStart = Time.time;
+            
+            // the first pinch on the target will be ignored (the logs will show it, but the player won't notice it)
+            if (_errorList[trialNumber])
+            {
+                PinchHandler.Instance.hideNextPinch = true;
+                while (!StimulusSuccessCondition())
+                {
+                    if (endScheduled)
+                    {
+                        PinchHandler.Instance.hideNextPinch = false;
+                        yield break;
+                    }
+                    yield return null;
+                }
+            }
 
             // --- Wait for correct stimulus click or highlight ---
             while (!StimulusSuccessCondition())
@@ -120,6 +141,8 @@ namespace Experiments
                 yield return null;
             }
 
+            // make the selected/gazed stimulus the current target - in this case, the player had to choose any stimulus
+            if (!_currentTarget) _currentTarget = _selectedStimulus ? _selectedStimulus : _gazedStimulus;
             _currentTarget.onGazeEnter -= OnStimulusGazeEnter;
             _currentTarget.onGazeExit -= OnStimulusGazeExit;
 
@@ -136,21 +159,25 @@ namespace Experiments
             _results.Add(result);
             onTrialComplete?.Invoke(result);
 
-            ExperimentLogger.Instance.Log(new ExperimentLog(experimentName,
+            ExperimentLogger.Instance.Log(new ExperimentLog("",
                 $"action={(_currentTarget.IsHighlighted ? "select" : "gazeSelect")},trial={trialNumber},target={result.TargetId},rt={result.ResponseTime:F3}s"));
 
-            yield return new WaitForSeconds(feedbackDuration);
+            yield return new WaitForSeconds(ExperimentManager.Instance.feedbackDuration);
 
             // --- Cleanup ---
-            spawner.ResetAll();
+            ExperimentManager.Instance.spawner.ResetAll();
             _currentTarget = null;
         }
 
         private bool StimulusSuccessCondition()
         {
             return
-                (_gazedStimulus && _gazedStimulus.IsHighlightedNegative && Time.time - _gazedStimulusStart > gazeMinTime)
-                || (_selectedStimulus && _selectedStimulus.IsHighlighted);
+                // for negative highlight, success condition is minimum gaze time
+                (_gazedStimulus && _gazedStimulus.IsHighlightedNegative && 
+                 Time.time - _gazedStimulusStart > ExperimentManager.Instance.gazeMinTime) ||
+                // otherwise, wait for highlighted stimulus to be selected, or any stimulus select if the player must
+                // make their own choice.
+                (_selectedStimulus && (_selectedStimulus.IsHighlighted || config.isChoiceStimuli));
         }
 
         private void OnStimulusGazeEnter(Interactable gazed)
