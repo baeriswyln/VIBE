@@ -65,7 +65,7 @@ namespace Experiments
         {
             gazeRaycaster.Deactivate();
             
-            yield return ExperimentManager.Instance.PlayTextPages(textBeforeStart);
+            yield return ExperimentManager.Instance.PlayTextPages(textBeforeStart, false);
             
             yield return new WaitUntil(() => LslBackend.Instance.startReceived || InputSystem.actions.FindAction("ExpConfirm").IsPressed() || endScheduled) ;
             

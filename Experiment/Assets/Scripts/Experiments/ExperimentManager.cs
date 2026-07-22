@@ -9,6 +9,7 @@ using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace Experiments
 {
@@ -16,10 +17,16 @@ namespace Experiments
     {
         public static ExperimentManager Instance { get; private set; }
 
-        [Header("Experiments")] 
-        public Experiment tutorial;
-        public ExperimentConfig controlExperiment;
-        public List<ExperimentConfig> experimentConfigs;
+        [Header("Experiments Session 1")] 
+        public Experiment tutorialSession1;
+        public ExperimentConfig controlExperimentSession1;
+        public List<ExperimentConfig> experimentConfigsSession1;
+        
+        [Header("Experiments Session 2")]
+        public Experiment tutorialSession2;
+        public ExperimentConfig controlExperimentSession2;
+        public List<ExperimentConfig> experimentConfigsSession2;
+        
         private List<Experiment> _experimentPlaylist;
         
         [Header("General Experiment Configuration")]
@@ -35,10 +42,6 @@ namespace Experiments
         
         [Header("References")] [Tooltip("StimulusSpawner that handles placing the stimuli.")]
         public InteractableManager spawner;
-
-        [Header("Start Behaviour")]
-        [Tooltip("Start the sequence automatically on Play. If false, call StartSequence() manually.")]
-        public bool startOnPlay = true;
 
         [Tooltip("Seconds to wait between experiments.")]
         public float gapBetweenExperiments = 1f;
@@ -83,8 +86,6 @@ namespace Experiments
         
         private void Start()
         {
-            if (startOnPlay)
-                StartSequence();
         }
 
         private void OnEnable()
@@ -94,10 +95,14 @@ namespace Experiments
             InputSystem.actions.FindAction("ExpPrevious").performed += GoToPrevious;
             InputSystem.actions.FindAction("ExpRestart").performed += RestartCurrent;
             InputSystem.actions.FindAction("ExpPause").performed += TogglePause;
+            InputSystem.actions.FindAction("ExpStartSession1").performed += StartSequence1;
+            InputSystem.actions.FindAction("ExpStartSession2").performed += StartSequence2;
         }
 
         private void OnDisable()
         {
+            InputSystem.actions.FindAction("ExpStartSession2").performed += StartSequence2;
+            InputSystem.actions.FindAction("ExpStartSession1").performed += StartSequence1;
             InputSystem.actions.FindAction("ExpPause").performed -= TogglePause;
             InputSystem.actions.FindAction("ExpRestart").performed -= RestartCurrent;
             InputSystem.actions.FindAction("ExpPrevious").performed -= GoToPrevious;
@@ -105,30 +110,48 @@ namespace Experiments
             inputActionAsset.FindActionMap("Experiment").Disable();
         }
 
+        public void StartSequence1(InputAction.CallbackContext context)
+        {
+            StartCoroutine(StartSequence(ExperimentSession.Session1));
+        }
+
+        public void StartSequence2(InputAction.CallbackContext context)
+        {
+            StartCoroutine(StartSequence(ExperimentSession.Session2));
+        }
+
         /// <summary>
         /// Begin running the experiment sequence from the first experiment.
         /// </summary>
-        public void StartSequence()
+        public IEnumerator StartSequence(ExperimentSession session)
         {
             if (_isRunning)
             {
                 ExperimentLogger.Instance.Warn(new ExperimentManagerLog("SEQUENCE_ALREADY_RUNNING", ""));
-                return;
-            }
-
-            if (_experimentPlaylist.Count == 0)
-            {
-                ExperimentLogger.Instance.Error(new ExperimentManagerLog("NO_EXPERIMENT", "No experiments assigned."));
-                return;
+                yield break;
             }
 
             _experimentPlaylist = new List<Experiment>();
-            
-            _experimentPlaylist.Add(tutorial);
-            controlExperiment.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
-            foreach (var cfg in experimentConfigs) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
 
-            StartCoroutine(RunAllExperiments());
+            switch (session)
+            {
+                case ExperimentSession.Session1:
+                    yield return PlayTextPages(new []{"Starting session 1"});
+                    _experimentPlaylist.Add(tutorialSession1);
+                    controlExperimentSession1.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
+                    foreach (var cfg in experimentConfigsSession1) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
+                    controlExperimentSession1.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
+                    break;
+                case ExperimentSession.Session2:
+                    yield return PlayTextPages(new []{"Starting session 1"});
+                    _experimentPlaylist.Add(tutorialSession2);
+                    controlExperimentSession2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
+                    foreach (var cfg in experimentConfigsSession2) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
+                    controlExperimentSession2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
+                    break;
+            }
+
+            yield return RunAllExperiments();
         }
 
         /// <summary>
@@ -243,25 +266,18 @@ namespace Experiments
             if (config.pinchIsHinted)
                 pages.Add("Pinches should only be hinted in this round. Only think about pinching and execute a small hinted movement without actually pinching.");
             
-            if (config.hasAuditoryFeedback && config.hasVisualFeedback)
-                pages.Add("A successful select will be confirmed visually and auditorially.");
-            if (config.hasAuditoryFeedback && !config.hasVisualFeedback)
-                pages.Add("A successful select will be confirmed auditorially.");
-            if (!config.hasAuditoryFeedback && config.hasVisualFeedback)
-                pages.Add("A successful select will be confirmed visually.");
-            
             yield return PlayTextPages(pages.ToArray());
         }
 
-        public IEnumerator PlayTextPages(string[] pages)
+        public IEnumerator PlayTextPages(string[] pages, bool hideAfterPlay = true)
         {
             if (instructionTextUi) instructionTextUi.gameObject.SetActive(true);
-            for (var i = 0; i < pages.Length && !CurrentExperiment.endScheduled; i++)
+            for (var i = 0; i < pages.Length && (!CurrentExperiment || !CurrentExperiment.endScheduled); i++)
             {
                 if(instructionTextUi) instructionTextUi.text = pages[i];
                 yield return KokoroTTS.Instance.SpeakAndWait(pages[i]);
             }
-            if (instructionTextUi) instructionTextUi.gameObject.SetActive(false);
+            if (instructionTextUi && hideAfterPlay) instructionTextUi.gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -293,6 +309,12 @@ namespace Experiments
                     Message = _message,
                 });
             }
+        }
+        
+        public enum ExperimentSession
+        {
+            Session1,
+            Session2
         }
     }
 }

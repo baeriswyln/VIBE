@@ -347,12 +347,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  experimentName: Static
-  textStart:
-  - 'In this round, a single stimulus will appear. Select it once it appears. '
-  textEnd:
-  - Round finished, short break.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -361,21 +366,12 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  stimuliPerTrial: 1
-  numberOfTrials: 20
-  interTrialIntervalMin: 2
-  interTrialIntervalMax: 6
-  feedbackDuration: 0.5
-  pNegativeHighlight: 0
-  gazeMinTime: 0.2
-  spawner: {fileID: 1516759628}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
   currentPinchSource: 0
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
-  respawnBetweenRounds: 1
 --- !u!1 &286752494
 GameObject:
   m_ObjectHideFlags: 0
@@ -510,14 +506,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  experimentName: TwoPositions
-  textStart:
-  - 'In this round, you will be shown two stimuli. Select the one that is highlighted. '
-  - 'If the highlighted stimulus is red, look at it for a short amount of time without
-    pinching. '
-  textEnd:
-  - Round finished, short break.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -526,21 +525,12 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  stimuliPerTrial: 2
-  numberOfTrials: 20
-  interTrialIntervalMin: 1
-  interTrialIntervalMax: 3
-  feedbackDuration: 0.5
-  pNegativeHighlight: 0.6
-  gazeMinTime: 0.5
-  spawner: {fileID: 1516759628}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
   currentPinchSource: 0
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
-  respawnBetweenRounds: 0
 --- !u!1 &407473967
 GameObject:
   m_ObjectHideFlags: 0
@@ -1156,13 +1146,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dec6ef6bd4463b844ac07324caede425, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentRandom
-  experimentName: RandomLarge
-  textStart:
-  - In this round, you will be shown ten stimuli at random positions. Select the
-    one that is highlighted. Slight head movemets might be needed.
-  textEnd:
-  - Round finished, short break.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -1171,14 +1165,6 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  stimuliPerTrial: 10
-  numberOfTrials: 20
-  interTrialIntervalMin: 2
-  interTrialIntervalMax: 3
-  feedbackDuration: 0.5
-  pNegativeHighlight: 0
-  gazeMinTime: 0.2
-  spawner: {fileID: 907244768}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
@@ -1409,14 +1395,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  experimentName: MyoTwoPositions
-  textStart:
-  - 'In this round, you will be shown two stimuli. Select the one that is highlighted. '
-  - 'This round requires the handheld pinch preventer. You''ll think about doing
-    an actual pinch, but will only squeeze the gadget. '
-  textEnd:
-  - Round finished, short break.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -1425,21 +1414,12 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  stimuliPerTrial: 2
-  numberOfTrials: 20
-  interTrialIntervalMin: 1
-  interTrialIntervalMax: 3
-  feedbackDuration: 0.5
-  pNegativeHighlight: 0
-  gazeMinTime: 0.2
-  spawner: {fileID: 1516759628}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
   currentPinchSource: 1
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
-  respawnBetweenRounds: 0
 --- !u!1 &928532299
 GameObject:
   m_ObjectHideFlags: 0
@@ -1566,6 +1546,7 @@ MonoBehaviour:
   onStimulusClicked:
     m_PersistentCalls:
       m_Calls: []
+  hideNextPinch: 0
 --- !u!114 &968829681
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1573,7 +1554,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 968829676}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80ab18bded4d32a47bea5b626347e2eb, type: 3}
   m_Name: 
@@ -1815,13 +1796,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dec6ef6bd4463b844ac07324caede425, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentRandom
-  experimentName: RandomSmall
-  textStart:
-  - In this round, you will be shown five stimuli at random positions. Select the
-    one that is highlighted.
-  textEnd:
-  - Round finished, short break.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -1830,14 +1815,6 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  stimuliPerTrial: 5
-  numberOfTrials: 20
-  interTrialIntervalMin: 2
-  interTrialIntervalMax: 3
-  feedbackDuration: 0.5
-  pNegativeHighlight: 0
-  gazeMinTime: 0.2
-  spawner: {fileID: 68749651}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
@@ -2219,9 +2196,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'New Text
+  m_text: 'Welcome! Please wait.
 
-    or somewhat longer '
+
+    EEGPinch Experiment v1.2'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f675742eaf9c20a4f909d78ee7a14fed, type: 2}
   m_sharedMaterial: {fileID: 4687939059374929122, guid: f675742eaf9c20a4f909d78ee7a14fed, type: 2}
@@ -2741,14 +2719,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  experimentName: MyoFourPositions
-  textStart:
-  - 'In this round, you will be shown two stimuli. Select the one that is highlighted. '
-  - 'This round requires the handheld pinch preventer. You''ll think about doing
-    an actual pinch, but will only squeeze the gadget. '
-  textEnd:
-  - Round finished, short break.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -2757,21 +2738,12 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  stimuliPerTrial: 4
-  numberOfTrials: 20
-  interTrialIntervalMin: 1
-  interTrialIntervalMax: 3
-  feedbackDuration: 0.5
-  pNegativeHighlight: 0
-  gazeMinTime: 0.2
-  spawner: {fileID: 1516759628}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
   currentPinchSource: 1
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
-  respawnBetweenRounds: 0
 --- !u!1 &1625652138
 GameObject:
   m_ObjectHideFlags: 0
@@ -3002,12 +2974,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  experimentName: TwoPositions
-  textStart:
-  - 'In this round, you will be shown two stimuli. Select the one that is highlighted. '
-  textEnd:
-  - Round finished, short break.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -3016,21 +2993,12 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  stimuliPerTrial: 2
-  numberOfTrials: 20
-  interTrialIntervalMin: 2
-  interTrialIntervalMax: 6
-  feedbackDuration: 0.5
-  pNegativeHighlight: 0
-  gazeMinTime: 0.2
-  spawner: {fileID: 1516759628}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
   currentPinchSource: 0
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
-  respawnBetweenRounds: 0
 --- !u!1 &1743579585
 GameObject:
   m_ObjectHideFlags: 0
@@ -3075,12 +3043,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03c7e594ddce4e0287d34a52c6173761, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentEmpty
-  experimentName: End
-  textStart:
-  - 
-  textEnd:
-  - 'This is the end of the experiment. Thank you for participating. '
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -3652,12 +3625,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65829d4afdbe4bc49b930de001d4ef5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.TutorialExperiment
-  experimentName: Tutorial
-  textStart:
-  - 
-  textEnd:
-  - The experiment will now start.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -3805,165 +3783,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b03ccd626fa052458fe459c88420929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.Experiments.ExperimentManager
-  experiments:
-  - {fileID: 1960306619}
-  - {fileID: 284363918}
-  - {fileID: 1668606085}
-  - {fileID: 2103927501}
-  - {fileID: 1352681745}
-  - {fileID: 794301598}
-  - {fileID: 1352681745}
-  - {fileID: 794301598}
-  - {fileID: 302136879}
-  - {fileID: 2008080124}
-  - {fileID: 302136879}
-  - {fileID: 921482486}
-  - {fileID: 1587765989}
-  - {fileID: 284363918}
-  - {fileID: 1743579587}
-  controlExperiment:
+  tutorialSession1: {fileID: 1960306619}
+  controlExperimentSession1:
     type: 0
+    numberOfStimuli: 1
+    numberOfTrials: 20
     hasVirtualHand: 1
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
-    includesErrors: 0
+    numberOfErrors: 0
     pinchIsHinted: 0
-    hasObserveStimuli: 0
+    numberOfObserveStimuli: 0
     isChoiceStimuli: 0
-  experimentConfigs:
-  - type: 1
+  experimentConfigsSession1:
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
     hasVirtualHand: 1
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
-    includesErrors: 0
+    numberOfErrors: 0
     pinchIsHinted: 0
-    hasObserveStimuli: 0
+    numberOfObserveStimuli: 0
     isChoiceStimuli: 0
-  - type: 1
-    hasVirtualHand: 1
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 1
-    includesErrors: 0
-    pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 1
+  tutorialSession2: {fileID: 1960306619}
+  controlExperimentSession2:
+    type: 0
+    numberOfStimuli: 1
+    numberOfTrials: 10
     hasVirtualHand: 1
     hasVisualFeedback: 1
-    hasAuditoryFeedback: 0
-    includesErrors: 0
-    pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 1
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
     hasAuditoryFeedback: 1
-    includesErrors: 0
+    numberOfErrors: 0
     pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 1
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
-    hasAuditoryFeedback: 0
-    includesErrors: 0
-    pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 1
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 1
-    includesErrors: 0
-    pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 1
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
-    hasAuditoryFeedback: 1
-    includesErrors: 1
-    pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 1
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
-    hasAuditoryFeedback: 1
-    includesErrors: 1
-    pinchIsHinted: 1
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 1
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
-    hasAuditoryFeedback: 1
-    includesErrors: 0
-    pinchIsHinted: 0
-    hasObserveStimuli: 1
-    isChoiceStimuli: 0
-  - type: 1
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
-    hasAuditoryFeedback: 1
-    includesErrors: 0
-    pinchIsHinted: 0
-    hasObserveStimuli: 0
+    numberOfObserveStimuli: 0
     isChoiceStimuli: 1
-  - type: 2
+  experimentConfigsSession2:
+  - type: 0
+    numberOfStimuli: 1
+    numberOfTrials: 10
     hasVirtualHand: 1
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
-    includesErrors: 0
+    numberOfErrors: 0
     pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 2
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
-    hasAuditoryFeedback: 1
-    includesErrors: 1
-    pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 2
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
-    hasAuditoryFeedback: 0
-    includesErrors: 0
-    pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 2
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 1
-    includesErrors: 0
-    pinchIsHinted: 0
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 2
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
-    hasAuditoryFeedback: 1
-    includesErrors: 1
-    pinchIsHinted: 1
-    hasObserveStimuli: 0
-    isChoiceStimuli: 0
-  - type: 2
-    hasVirtualHand: 0
-    hasVisualFeedback: 1
-    hasAuditoryFeedback: 1
-    includesErrors: 0
-    pinchIsHinted: 0
-    hasObserveStimuli: 1
-    isChoiceStimuli: 0
-  startOnPlay: 1
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+  interTrialIntervalMin: 2
+  interTrialIntervalMax: 5
+  feedbackDuration: 0.5
+  gazeMinTime: 0.2
+  spawner: {fileID: 68749651}
   gapBetweenExperiments: 20
   inputActionAsset: {fileID: -944628639613478452, guid: 68a21abee90971741b8bfa34e55e7891, type: 3}
   gazeRaycaster: {fileID: 1359528791}
   pauseUi: {fileID: 1959111151}
+  instructionTextUi: {fileID: 1400203280}
+  progress: {fileID: 0}
   onSequenceStart:
     m_PersistentCalls:
       m_Calls: []
@@ -4005,14 +3881,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  experimentName: FourPositionsGaze
-  textStart:
-  - 'In this round, you will be shown four stimuli. Select the one that is highlighted. '
-  - 'If the highlighted stimulus is red, look at it for a short amount of time without
-    pinching. '
-  textEnd:
-  - Round finished, short break.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -4021,21 +3900,12 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  stimuliPerTrial: 4
-  numberOfTrials: 20
-  interTrialIntervalMin: 1
-  interTrialIntervalMax: 3
-  feedbackDuration: 0.5
-  pNegativeHighlight: 0.6
-  gazeMinTime: 0.5
-  spawner: {fileID: 1516759628}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
   currentPinchSource: 0
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
-  respawnBetweenRounds: 0
 --- !u!4 &2008080125
 Transform:
   m_ObjectHideFlags: 0
@@ -4159,12 +4029,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  experimentName: FourPositions
-  textStart:
-  - 'In this round, you will be shown four stimuli. Select the one that is highlighted. '
-  textEnd:
-  - Round finished, short break.
-  trialInfoText: {fileID: 1400203280}
+  config:
+    type: 0
+    numberOfStimuli: 0
+    numberOfTrials: 12
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -4173,21 +4048,12 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  stimuliPerTrial: 4
-  numberOfTrials: 20
-  interTrialIntervalMin: 2
-  interTrialIntervalMax: 6
-  feedbackDuration: 5
-  pNegativeHighlight: 0
-  gazeMinTime: 0.2
-  spawner: {fileID: 1516759628}
   onTrialComplete:
     m_PersistentCalls:
       m_Calls: []
   currentPinchSource: 0
   spawnCenter: {x: 0, y: 1, z: 5}
   spawnRadius: 0.5
-  respawnBetweenRounds: 0
 --- !u!1 &2144071228
 GameObject:
   m_ObjectHideFlags: 0
