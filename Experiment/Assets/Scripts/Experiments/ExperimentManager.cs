@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Logging;
 using Newtonsoft.Json;
 using TMPro;
@@ -9,7 +8,6 @@ using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 namespace Experiments
 {
@@ -44,7 +42,8 @@ namespace Experiments
         public float gapBetweenExperiments = 1f;
         
         [Header("References")] [Tooltip("StimulusSpawner that handles placing the stimuli.")]
-        public InteractableManager spawner;
+        public InteractableManager staticSpawner;
+        public InteractableManager randomSpawner;
         public GameObject handVisualizer;
         
         public InputActionAsset inputActionAsset;
@@ -139,16 +138,16 @@ namespace Experiments
                 case ExperimentSession.Session1:
                     yield return PlayTextPages(new []{"Starting session 1"});
                     _experimentPlaylist.Add(tutorialSession1);
-                    controlExperimentSession1.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
-                    foreach (var cfg in experimentConfigsSession1) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
-                    controlExperimentSession1.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
+                    controlExperimentSession1.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
+                    foreach (var cfg in experimentConfigsSession1) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
+                    controlExperimentSession1.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
                     break;
                 case ExperimentSession.Session2:
-                    yield return PlayTextPages(new []{"Starting session 1"});
+                    yield return PlayTextPages(new []{"Starting session 2"});
                     _experimentPlaylist.Add(tutorialSession2);
-                    controlExperimentSession2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
-                    foreach (var cfg in experimentConfigsSession2) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
-                    controlExperimentSession2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist);
+                    controlExperimentSession2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
+                    foreach (var cfg in experimentConfigsSession2) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
+                    controlExperimentSession2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
                     break;
             }
 

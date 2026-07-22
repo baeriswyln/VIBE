@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Leap;
 using Logging;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using Random = UnityEngine.Random;
@@ -41,8 +40,9 @@ namespace Experiments
         /// <summary>Read-only access to the full trial history.</summary>
         public IReadOnlyList<TrialResult> Results => _results;
 
-        protected StimuliExperiment(ExperimentConfig config) : base(config)
+        public override void SetConfig(ExperimentConfig cfg)
         {
+            config = cfg;
             _errorList = new List<bool>();
             _observableList = new List<bool>();
             
@@ -72,8 +72,8 @@ namespace Experiments
             PinchHandler.Instance.onStimulusClicked.RemoveListener(OnStimulusClicked);
 
             // Clean up any remaining stimuli
-            if (ExperimentManager.Instance.spawner)
-                ExperimentManager.Instance.spawner.DestroyStimuli();
+            if (spawner)
+                spawner.DestroyStimuli();
 
             base.OnEnd();
         }
@@ -95,7 +95,7 @@ namespace Experiments
         protected IEnumerator RunSingleTrial(int trialNumber)
         {
             // Pick a random stimulus as the target
-            var spawned = ExperimentManager.Instance.spawner.spawnedStimuli;
+            var spawned = spawner.spawnedStimuli;
             if (spawned == null || spawned.Count != config.numberOfStimuli)
             {
                 // todo update log
@@ -165,7 +165,7 @@ namespace Experiments
             yield return new WaitForSeconds(ExperimentManager.Instance.feedbackDuration);
 
             // --- Cleanup ---
-            ExperimentManager.Instance.spawner.ResetAll();
+            spawner.ResetAll();
             _currentTarget = null;
         }
 

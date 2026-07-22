@@ -19,14 +19,8 @@ namespace Experiments
     /// </summary>
     public class ExperimentRandom : StimuliExperiment
     {
-        public ExperimentRandom(ExperimentConfig config) : base(config)
-        {
-        }
-
         public override IEnumerator Run()
         {
-            var spawner = ExperimentManager.Instance.spawner;
-            
             if (!spawner)
             {
                 ExperimentLogger.Instance.Error(new ExperimentLog(ToString(), "No spawner assigned."));

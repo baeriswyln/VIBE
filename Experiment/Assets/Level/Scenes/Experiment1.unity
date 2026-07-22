@@ -303,75 +303,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1354325380}
   m_LocalEulerAnglesHint: {x: 40, y: 0, z: 0}
---- !u!1 &284363916
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 284363917}
-  - component: {fileID: 284363918}
-  m_Layer: 0
-  m_Name: ExperimentStatic
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &284363917
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 284363916}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1976708001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &284363918
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 284363916}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  config:
-    type: 0
-    numberOfStimuli: 0
-    numberOfTrials: 12
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 0
-    numberOfErrors: 0
-    pinchIsHinted: 0
-    numberOfObserveStimuli: 0
-    isChoiceStimuli: 0
-  onExperimentStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onExperimentComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  skipEndOfExperimentPause: 0
-  endScheduled: 0
-  onTrialComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  currentPinchSource: 0
-  spawnCenter: {x: 0, y: 1, z: 5}
-  spawnRadius: 0.5
 --- !u!1 &286752494
 GameObject:
   m_ObjectHideFlags: 0
@@ -462,75 +393,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 286752494}
   m_CullTransparentMesh: 1
---- !u!1 &302136877
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 302136878}
-  - component: {fileID: 302136879}
-  m_Layer: 0
-  m_Name: ExperimentTwoPositionsGaze
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &302136878
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 302136877}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1976708001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &302136879
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 302136877}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  config:
-    type: 0
-    numberOfStimuli: 0
-    numberOfTrials: 12
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 0
-    numberOfErrors: 0
-    pinchIsHinted: 0
-    numberOfObserveStimuli: 0
-    isChoiceStimuli: 0
-  onExperimentStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onExperimentComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  skipEndOfExperimentPause: 0
-  endScheduled: 0
-  onTrialComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  currentPinchSource: 0
-  spawnCenter: {x: 0, y: 1, z: 5}
-  spawnRadius: 0.5
 --- !u!1 &407473967
 GameObject:
   m_ObjectHideFlags: 0
@@ -1102,73 +964,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &794301596
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 794301597}
-  - component: {fileID: 794301598}
-  m_Layer: 0
-  m_Name: ExperimentRandomLarge
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &794301597
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 794301596}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1976708001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &794301598
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 794301596}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dec6ef6bd4463b844ac07324caede425, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentRandom
-  config:
-    type: 0
-    numberOfStimuli: 0
-    numberOfTrials: 12
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 0
-    numberOfErrors: 0
-    pinchIsHinted: 0
-    numberOfObserveStimuli: 0
-    isChoiceStimuli: 0
-  onExperimentStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onExperimentComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  skipEndOfExperimentPause: 0
-  endScheduled: 0
-  onTrialComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  currentPinchSource: 0
 --- !u!1 &876147906
 GameObject:
   m_ObjectHideFlags: 0
@@ -1351,75 +1146,6 @@ MonoBehaviour:
   arcAngleDegrees: 90
   minHeight: 0.2
   maxHeight: 2
---- !u!1 &921482484
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 921482485}
-  - component: {fileID: 921482486}
-  m_Layer: 0
-  m_Name: ExperimentMyoTwoPositions
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &921482485
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 921482484}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1976708001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &921482486
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 921482484}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  config:
-    type: 0
-    numberOfStimuli: 0
-    numberOfTrials: 12
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 0
-    numberOfErrors: 0
-    pinchIsHinted: 0
-    numberOfObserveStimuli: 0
-    isChoiceStimuli: 0
-  onExperimentStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onExperimentComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  skipEndOfExperimentPause: 0
-  endScheduled: 0
-  onTrialComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  currentPinchSource: 1
-  spawnCenter: {x: 0, y: 1, z: 5}
-  spawnRadius: 0.5
 --- !u!1 &928532299
 GameObject:
   m_ObjectHideFlags: 0
@@ -6333,73 +6059,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8e0fbeda1179e774da6992760eebb4f1, type: 3}
---- !u!1 &1352681743
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1352681744}
-  - component: {fileID: 1352681745}
-  m_Layer: 0
-  m_Name: ExperimentRandomSmall
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1352681744
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1352681743}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1976708001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1352681745
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1352681743}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dec6ef6bd4463b844ac07324caede425, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentRandom
-  config:
-    type: 0
-    numberOfStimuli: 0
-    numberOfTrials: 12
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 0
-    numberOfErrors: 0
-    pinchIsHinted: 0
-    numberOfObserveStimuli: 0
-    isChoiceStimuli: 0
-  onExperimentStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onExperimentComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  skipEndOfExperimentPause: 0
-  endScheduled: 0
-  onTrialComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  currentPinchSource: 0
 --- !u!1 &1354325379
 GameObject:
   m_ObjectHideFlags: 0
@@ -6450,7 +6109,7 @@ GameObject:
   - component: {fileID: 1359528790}
   - component: {fileID: 1359528791}
   m_Layer: 0
-  m_Name: Main Camera
+  m_Name: VR Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7261,7 +6920,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 724500052}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1587765987
+--- !u!1 &1620065020
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7269,22 +6928,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1587765988}
-  - component: {fileID: 1587765989}
+  - component: {fileID: 1620065021}
+  - component: {fileID: 1620065022}
   m_Layer: 0
-  m_Name: ExperimentMyoFourPositions
+  m_Name: TutorialSession2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1587765988
+--- !u!4 &1620065021
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1587765987}
+  m_GameObject: {fileID: 1620065020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -7293,29 +6952,30 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1976708001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1587765989
+--- !u!114 &1620065022
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1587765987}
+  m_GameObject: {fileID: 1620065020}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
+  m_Script: {fileID: 11500000, guid: 95b0ec008ffb4a96a6ddef9bcf366d3f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
+  m_EditorClassIdentifier: Assembly-CSharp::Experiments.TutorialSession2
   config:
     type: 0
     numberOfStimuli: 0
     numberOfTrials: 12
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 0
+    hasVirtualHand: 1
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
+  spawner: {fileID: 0}
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -7324,12 +6984,18 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 0
   endScheduled: 0
-  onTrialComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  currentPinchSource: 1
-  spawnCenter: {x: 0, y: 1, z: 5}
-  spawnRadius: 0.5
+  textBeforeStart:
+  - 
+  textBeforeStimuliIntroduction:
+  - 
+  textStimuliIntroduction:
+  - 
+  textBeforeExample:
+  - 
+  textAfterExample:
+  - 
+  stimuliPrefab: {fileID: 0}
+  gazeRaycaster: {fileID: 0}
 --- !u!1 &1625652138
 GameObject:
   m_ObjectHideFlags: 0
@@ -7447,7 +7113,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
+  m_TargetTexture: {fileID: 8400000, guid: 8a3995363bec7ec48935e36dc1599667, type: 2}
   m_TargetDisplay: 1
   m_TargetEye: 3
   m_HDR: 1
@@ -7501,7 +7167,7 @@ MonoBehaviour:
   m_StopNaN: 0
   m_Dithering: 0
   m_ClearDepth: 1
-  m_AllowXRRendering: 1
+  m_AllowXRRendering: 0
   m_AllowHDROutput: 1
   m_UseScreenCoordOverride: 0
   m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
@@ -7516,75 +7182,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!1 &1668606083
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1668606084}
-  - component: {fileID: 1668606085}
-  m_Layer: 0
-  m_Name: ExperimentTwoPositions
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1668606084
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1668606083}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1976708001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1668606085
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1668606083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  config:
-    type: 0
-    numberOfStimuli: 0
-    numberOfTrials: 12
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 0
-    numberOfErrors: 0
-    pinchIsHinted: 0
-    numberOfObserveStimuli: 0
-    isChoiceStimuli: 0
-  onExperimentStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onExperimentComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  skipEndOfExperimentPause: 0
-  endScheduled: 0
-  onTrialComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  currentPinchSource: 0
-  spawnCenter: {x: 0, y: 1, z: 5}
-  spawnRadius: 0.5
 --- !u!1 &1743579585
 GameObject:
   m_ObjectHideFlags: 0
@@ -7640,6 +7237,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
+  spawner: {fileID: 0}
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -8178,7 +7776,7 @@ GameObject:
   - component: {fileID: 1960306618}
   - component: {fileID: 1960306619}
   m_Layer: 0
-  m_Name: TutorialExperiment
+  m_Name: TutorialSession1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8222,6 +7820,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
+  spawner: {fileID: 0}
   onExperimentStart:
     m_PersistentCalls:
       m_Calls: []
@@ -8344,15 +7943,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1960306618}
-  - {fileID: 284363917}
-  - {fileID: 1668606084}
-  - {fileID: 302136878}
-  - {fileID: 2103927500}
-  - {fileID: 2008080125}
-  - {fileID: 1352681744}
-  - {fileID: 794301597}
-  - {fileID: 921482485}
-  - {fileID: 1587765988}
+  - {fileID: 1620065021}
   - {fileID: 1743579586}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -8391,7 +7982,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
-  tutorialSession2: {fileID: 1960306619}
+  tutorialSession2: {fileID: 1620065022}
   controlExperimentSession2:
     type: 0
     numberOfStimuli: 1
@@ -8419,7 +8010,8 @@ MonoBehaviour:
   feedbackDuration: 0.5
   gazeMinTime: 0.2
   gapBetweenExperiments: 20
-  spawner: {fileID: 68749651}
+  staticSpawner: {fileID: 1516759628}
+  randomSpawner: {fileID: 68749651}
   handVisualizer: {fileID: 1407308815}
   inputActionAsset: {fileID: -944628639613478452, guid: 68a21abee90971741b8bfa34e55e7891, type: 3}
   gazeRaycaster: {fileID: 1359528791}
@@ -8438,75 +8030,6 @@ MonoBehaviour:
   onExperimentFinished:
     m_PersistentCalls:
       m_Calls: []
---- !u!1 &2008080123
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2008080125}
-  - component: {fileID: 2008080124}
-  m_Layer: 0
-  m_Name: ExperimentFourPositionsGaze
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2008080124
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2008080123}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  config:
-    type: 0
-    numberOfStimuli: 0
-    numberOfTrials: 12
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 0
-    numberOfErrors: 0
-    pinchIsHinted: 0
-    numberOfObserveStimuli: 0
-    isChoiceStimuli: 0
-  onExperimentStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onExperimentComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  skipEndOfExperimentPause: 0
-  endScheduled: 0
-  onTrialComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  currentPinchSource: 0
-  spawnCenter: {x: 0, y: 1, z: 5}
-  spawnRadius: 0.5
---- !u!4 &2008080125
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2008080123}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1976708001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2059498349
 GameObject:
   m_ObjectHideFlags: 0
@@ -8571,75 +8094,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1354325380}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2103927499
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2103927500}
-  - component: {fileID: 2103927501}
-  m_Layer: 0
-  m_Name: ExperimentFourPositions
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2103927500
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2103927499}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1976708001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2103927501
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2103927499}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5916781b7a7042e1bbf0a22e19111eff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Experiments.ExperimentStatic
-  config:
-    type: 0
-    numberOfStimuli: 0
-    numberOfTrials: 12
-    hasVirtualHand: 0
-    hasVisualFeedback: 0
-    hasAuditoryFeedback: 0
-    numberOfErrors: 0
-    pinchIsHinted: 0
-    numberOfObserveStimuli: 0
-    isChoiceStimuli: 0
-  onExperimentStart:
-    m_PersistentCalls:
-      m_Calls: []
-  onExperimentComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  skipEndOfExperimentPause: 0
-  endScheduled: 0
-  onTrialComplete:
-    m_PersistentCalls:
-      m_Calls: []
-  currentPinchSource: 0
-  spawnCenter: {x: 0, y: 1, z: 5}
-  spawnRadius: 0.5
 --- !u!1 &2144071228
 GameObject:
   m_ObjectHideFlags: 0

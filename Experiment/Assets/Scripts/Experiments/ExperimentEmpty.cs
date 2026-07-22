@@ -8,10 +8,6 @@ namespace Experiments
     
     
     {
-        public ExperimentEmpty(ExperimentConfig config) : base(config)
-        {
-        }
-
         public override IEnumerator Run()
         {
             // yield return PlayTextPages(textStart);
