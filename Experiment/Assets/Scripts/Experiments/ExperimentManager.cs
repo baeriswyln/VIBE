@@ -40,11 +40,12 @@ namespace Experiments
         [Tooltip("Time required gazing at an interactable to activate the negative highlight condition.")]
         public float gazeMinTime = 0.2f;
         
-        [Header("References")] [Tooltip("StimulusSpawner that handles placing the stimuli.")]
-        public InteractableManager spawner;
-
         [Tooltip("Seconds to wait between experiments.")]
         public float gapBetweenExperiments = 1f;
+        
+        [Header("References")] [Tooltip("StimulusSpawner that handles placing the stimuli.")]
+        public InteractableManager spawner;
+        public GameObject handVisualizer;
         
         public InputActionAsset inputActionAsset;
         
@@ -233,8 +234,11 @@ namespace Experiments
                 ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_START", $"{_currentIndex}:{exp.ToString()}"));
                 exp.OnBegin();
                 onExperimentStarted?.Invoke(exp);
+                handVisualizer.SetActive(exp.config.hasVirtualHand);
 
                 yield return StartCoroutine(exp.Run());
+                
+                handVisualizer.SetActive(false);
 
                 exp.OnEnd();
                 ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_END", $"{_currentIndex}:{exp.ToString()}"));

@@ -83,13 +83,13 @@ namespace Experiments
         public ExperimentType type;
         public int numberOfStimuli;
         public int numberOfTrials = 12;
-        public bool hasVirtualHand;
-        public bool hasVisualFeedback;
-        public bool hasAuditoryFeedback;
+        public bool hasVirtualHand = true;
+        public bool hasVisualFeedback = true;
+        public bool hasAuditoryFeedback = true;
         public int numberOfErrors = 0;
-        public bool pinchIsHinted;
+        public bool pinchIsHinted = false;
         public int numberOfObserveStimuli = 0;
-        public bool isChoiceStimuli;
+        public bool isChoiceStimuli = false;
 
         public void CreateExperimentFromSelfAndAddToList(List<Experiment> list)
         {
