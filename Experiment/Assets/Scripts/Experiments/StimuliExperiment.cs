@@ -104,7 +104,16 @@ namespace Experiments
                 yield break;
             }
 
-            if (config.isChoiceStimuli) _currentTarget = null;
+            // todo: test if choice and gaze is compatible.
+            if (config.isChoiceStimuli)
+            {
+                _currentTarget = null;
+                foreach (var s in spawned)
+                {
+                    s.onGazeEnter += OnStimulusGazeEnter;
+                    s.onGazeExit += OnStimulusGazeExit;
+                }
+            }
             else
             {
                 _currentTarget = spawned[Random.Range(0, spawned.Count)];
@@ -134,6 +143,10 @@ namespace Experiments
                     }
                     yield return null;
                 }
+                // reset state to prepare for real pinch
+                _pinchedStimulus = null;
+                _gazedStimulus = null;
+                PinchHandler.Instance.hideNextPinch = false;
             }
 
             // --- Wait for correct stimulus click or highlight ---
@@ -145,9 +158,11 @@ namespace Experiments
                 yield return null;
             }
 
-            // make the selected/gazed stimulus the current target - in this case, the player had to choose any stimulus
-            selectedStimulus.onGazeEnter -= OnStimulusGazeEnter;
-            selectedStimulus.onGazeExit -= OnStimulusGazeExit;
+            foreach (var s in spawned)
+            {
+                s.onGazeEnter -= OnStimulusGazeEnter;
+                s.onGazeExit -= OnStimulusGazeExit;   
+            }
 
             float responseTime = Time.time - responseStart;
 

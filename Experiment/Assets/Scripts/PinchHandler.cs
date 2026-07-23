@@ -119,14 +119,13 @@ public class PinchHandler : MonoBehaviour
             if (!hideNextPinch)
             {
                 target.OnSelect();
-                onStimulusClicked?.Invoke(target);
             }
             else
             {
                 // todo
                 Debug.LogError("the hidden pinches are not logged yet");
             }
-            hideNextPinch = false;
+            onStimulusClicked?.Invoke(target);
         }
         else
         {

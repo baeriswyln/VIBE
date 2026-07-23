@@ -76,7 +76,7 @@ namespace Experiments
             gazeRaycaster.Activate();
             PinchHandler.Instance.Active = true;
             // 4 rounds of Static_4 normal
-            var cfg1 = new ExperimentConfig(ExperimentType.Static, 4, 4);
+            var cfg1 = new ExperimentConfig(ExperimentType.Static, 4, 4, numberOfErrors:4);
             yield return RunTutorialBlock(cfg1, "TutorialSession1_Block1");
 
             // 4 rounds of Static_4 with "observe"
