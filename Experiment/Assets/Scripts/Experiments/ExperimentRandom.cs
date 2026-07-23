@@ -47,14 +47,16 @@ namespace Experiments
             PinchHandler.Instance.Active = true;
             for (int trial = 0; trial < config.numberOfTrials; trial++)
             {
+                if (config.isChoiceStimuli) spawner.RandomizeColors();
                 yield return StartCoroutine(RunSingleTrial(trial));
                 if(endScheduled)
                 {
                     spawner.DestroyStimuli();
                     yield break;
                 }
-                yield return WaitForNextStimulus();
-                if (config.isChoiceStimuli) spawner.RandomizeColors();
+                // shorter wait after last stimulus
+                if (trial < config.numberOfTrials-1) yield return WaitForNextStimulus();
+                else yield return new WaitForSeconds(1);
             }
             PinchHandler.Instance.Active = false;
             

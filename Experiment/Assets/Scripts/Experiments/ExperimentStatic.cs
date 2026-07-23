@@ -28,21 +28,26 @@ namespace Experiments
             if (endScheduled) yield break;
             
             spawner.SpawnStimulusInCircle(config, spawnCenter, spawnRadius);
-            if (config.isChoiceStimuli) spawner.RandomizeColors();
 
             PinchHandler.Instance.Active = true;
-            for (var i = 0; i < config.numberOfTrials; i++)
+            for (var trial = 0; trial < config.numberOfTrials; trial++)
             {
-                yield return RunSingleTrial(i);
+                if (config.isChoiceStimuli) spawner.RandomizeColors();
+                yield return RunSingleTrial(trial);
                 if(endScheduled)
                 {
                     spawner.DestroyStimuli();
                     yield break;
                 }
-                if(_respawnBetweenRounds) spawner.DestroyStimuli();
-                yield return WaitForNextStimulus();
-                if(_respawnBetweenRounds) spawner.SpawnStimulusInCircle(config, spawnCenter, spawnRadius);
-                if (config.isChoiceStimuli) spawner.RandomizeColors();
+                
+                // shorter wait after last stimulus
+                if (trial < config.numberOfTrials - 1)
+                {
+                    if (_respawnBetweenRounds) spawner.DestroyStimuli();
+                    yield return WaitForNextStimulus();
+                    if (_respawnBetweenRounds) spawner.SpawnStimulusInCircle(config, spawnCenter, spawnRadius);
+                }
+                else yield return new WaitForSeconds(1);
             }
             PinchHandler.Instance.Active = false;
             
