@@ -44,7 +44,7 @@ public class PinchHandler : MonoBehaviour
 
     private float _lastPinchTime;
     private AudioSource _audioSource;
-    public bool hideNextPinch;
+    public bool hideNextPinch = false;
 
     public bool Active { get; set; } = true;
 

@@ -66,7 +66,7 @@ namespace Experiments
             s_focused.Gaze();
             s_selected.Select();
 
-            yield return ExperimentManager.Instance.PlayTextPages(textStimuliIntroduction);
+            // yield return ExperimentManager.Instance.PlayTextPages(textStimuliIntroduction);
 
             Destroy(s_default.gameObject);
             Destroy(s_highlighted.gameObject);
@@ -102,7 +102,9 @@ namespace Experiments
         {
             var comp = cfg.CreateExperiment(ExperimentManager.Instance.gameObject, name);
 
+            comp.OnBegin();
             yield return comp.Run();
+            comp.OnEnd();
             
             Destroy(comp.gameObject);
         }

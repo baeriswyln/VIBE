@@ -17,7 +17,7 @@ namespace Experiments
 
         // --- State ---
         protected Interactable _currentTarget;
-        protected Interactable _selectedStimulus;
+        protected Interactable _pinchedStimulus;
         protected Interactable _gazedStimulus;
         protected float _gazedStimulusStart;
         
@@ -114,10 +114,12 @@ namespace Experiments
                 _currentTarget.Highlight(_observableList[trialNumber]);
             }
 
-            _selectedStimulus = null;
+            _pinchedStimulus = null;
             _gazedStimulus = null;
 
             float responseStart = Time.time;
+            // safety reset
+            PinchHandler.Instance.hideNextPinch = false;
             
             // the first pinch on the target will be ignored (the logs will show it, but the player won't notice it)
             if (_errorList[trialNumber])
@@ -135,16 +137,17 @@ namespace Experiments
             }
 
             // --- Wait for correct stimulus click or highlight ---
-            while (!StimulusSuccessCondition())
+            Interactable selectedStimulus = null;
+            while (!selectedStimulus)
             {
                 if (endScheduled) yield break;
+                selectedStimulus = StimulusSuccessCondition();
                 yield return null;
             }
 
             // make the selected/gazed stimulus the current target - in this case, the player had to choose any stimulus
-            if (!_currentTarget) _currentTarget = _selectedStimulus ? _selectedStimulus : _gazedStimulus;
-            _currentTarget.onGazeEnter -= OnStimulusGazeEnter;
-            _currentTarget.onGazeExit -= OnStimulusGazeExit;
+            selectedStimulus.onGazeEnter -= OnStimulusGazeEnter;
+            selectedStimulus.onGazeExit -= OnStimulusGazeExit;
 
             float responseTime = Time.time - responseStart;
 
@@ -152,15 +155,15 @@ namespace Experiments
             var result = new TrialResult
             {
                 TrialNumber = trialNumber,
-                TargetId = _currentTarget.StimulusId,
-                TargetPosition = _currentTarget.transform.position,
+                TargetId = selectedStimulus.StimulusId,
+                TargetPosition = selectedStimulus.transform.position,
                 ResponseTime = responseTime,
             };
             _results.Add(result);
             onTrialComplete?.Invoke(result);
 
             ExperimentLogger.Instance.Log(new ExperimentLog("",
-                $"action={(_currentTarget.IsHighlighted ? "select" : "gazeSelect")},trial={trialNumber},target={result.TargetId},rt={result.ResponseTime:F3}s"));
+                $"action={(selectedStimulus.IsHighlighted ? "select" : "gazeSelect")},trial={trialNumber},target={result.TargetId},rt={result.ResponseTime:F3}s"));
 
             yield return new WaitForSeconds(ExperimentManager.Instance.feedbackDuration);
 
@@ -169,15 +172,19 @@ namespace Experiments
             _currentTarget = null;
         }
 
-        private bool StimulusSuccessCondition()
+        private Interactable StimulusSuccessCondition()
         {
-            return
-                // for negative highlight, success condition is minimum gaze time
-                (_gazedStimulus && _gazedStimulus.IsHighlightedNegative && 
-                 Time.time - _gazedStimulusStart > ExperimentManager.Instance.gazeMinTime) ||
-                // otherwise, wait for highlighted stimulus to be selected, or any stimulus select if the player must
-                // make their own choice.
-                (_selectedStimulus && (_selectedStimulus.IsHighlighted || config.isChoiceStimuli));
+            // for negative highlight, success condition is minimum gaze time
+            if (_gazedStimulus && _gazedStimulus.IsHighlightedNegative &&
+                Time.time - _gazedStimulusStart > ExperimentManager.Instance.gazeMinTime)
+                return _gazedStimulus;
+            
+            // otherwise, wait for highlighted stimulus to be selected, or any stimulus select if the player must
+            // make their own choice.
+            if (_pinchedStimulus && (_pinchedStimulus.IsHighlighted || config.isChoiceStimuli))
+                return _pinchedStimulus;
+
+            return null;
         }
 
         private void OnStimulusGazeEnter(Interactable gazed)
@@ -193,7 +200,7 @@ namespace Experiments
 
         private void OnStimulusClicked(Interactable clicked)
         {
-            _selectedStimulus = clicked;
+            _pinchedStimulus = clicked;
         }
     }
 }
