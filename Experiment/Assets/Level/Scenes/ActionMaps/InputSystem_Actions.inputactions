@@ -1067,6 +1067,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ExpPinch",
+                    "type": "Button",
+                    "id": "a7984a13-15c0-4e9a-b3eb-0efa39bfd90f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1311,6 +1320,17 @@
                     "action": "ExpStartSession2",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "816574ef-8073-4ff5-a1f1-a43b30c5657d",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ExpPinch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

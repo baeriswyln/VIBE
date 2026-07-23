@@ -69,14 +69,14 @@ public class PinchHandler : MonoBehaviour
     {
         pinchDetector.OnPinchStart += HandleLeapPinch;
         myoPinchReceiver.OnPinchStart += HandleMyoPinch;
-        InputSystem.actions.FindAction("ExpPause").performed += HandleKeyboardPinch;
+        InputSystem.actions.FindAction("ExpPinch").performed += HandleKeyboardPinch;
     }
 
     private void OnDisable()
     {
         pinchDetector.OnPinchStart -= HandleLeapPinch;
         myoPinchReceiver.OnPinchStart -= HandleMyoPinch;
-        InputSystem.actions.FindAction("ExpPause").performed -= HandleKeyboardPinch;
+        InputSystem.actions.FindAction("ExpPinch").performed -= HandleKeyboardPinch;
     }
 
     private void HandleKeyboardPinch(InputAction.CallbackContext ctx)
