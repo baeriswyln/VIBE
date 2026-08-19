@@ -39,7 +39,7 @@ public class Interactable : MonoBehaviour
     private bool _isSelected;
     private bool _isHighlighted;
     private bool _isHighlightedNegative;
-    private bool _visuallyConfirmSelect;
+    private bool _visuallyConfirmSelect = true;
     private Vector3 _originalScale;
     private Color _originalColor;
     private Renderer _renderer;
@@ -165,10 +165,10 @@ public class Interactable : MonoBehaviour
             
         if (_renderer == null) return;
  
+        SetOutline(outlineColor);
         _renderer.GetPropertyBlock(_propBlock);
         _propBlock.SetColor("_Color", color);
         _propBlock.SetColor("_BaseColor", color); // URP/HDRP
-        SetOutline(outlineColor);
         _renderer.SetPropertyBlock(_propBlock);
     }
 
@@ -176,7 +176,7 @@ public class Interactable : MonoBehaviour
     {
         if (outlineColor != null)
         {
-            _outlineInstance.color = (Color)outlineColor;
+            _outlineInstance.SetColor("_OutlineColor", (Color) outlineColor);
             meshRenderer.materials = new Material[] { normalMaterial, _outlineInstance };
         }
         else

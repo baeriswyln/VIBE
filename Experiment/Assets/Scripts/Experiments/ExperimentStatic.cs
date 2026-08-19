@@ -10,19 +10,14 @@ namespace Experiments
     {
         [Header("Stimulus Spawn Configuration")]
         public Vector3 spawnCenter = new(0, 1, 5);
-        public float spawnRadius;
+        public float spawnRadius = 0.5f;
         
         private bool _respawnBetweenRounds = true;
-
-        public ExperimentStatic(ExperimentConfig config) : base(config)
-        {
-        }
 
         public override IEnumerator Run()
         {
             _respawnBetweenRounds = config.numberOfStimuli == 1;
             
-            var spawner = ExperimentManager.Instance.spawner; 
             if (!spawner)
             {
                 ExperimentLogger.Instance.Error(new ExperimentLog(ToString(), "No spawner assigned."));

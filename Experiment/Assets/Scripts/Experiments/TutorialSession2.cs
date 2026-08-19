@@ -1,9 +1,6 @@
 ﻿using System.Collections;
-using TMPro;
-using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 namespace Experiments
 {
@@ -11,7 +8,7 @@ namespace Experiments
     /// A simple tutorial experiment that displays instruction text in world space
     /// and advances through a sequence of pages when the user pinches.
     /// </summary>
-    public class TutorialExperiment : Experiment
+    public class TutorialSession2 : Experiment
     {
         [Header("Tutorial Pages")]
         [TextArea(3, 10)]
@@ -39,14 +36,6 @@ namespace Experiments
         [SerializeField]
         private GazeRaycaster gazeRaycaster;
 
-        // State
-        private bool _pinchedThisFrame;
-
-        public TutorialExperiment(ExperimentConfig config) : base(config)
-        {
-        }
-
-
         public override void OnBegin()
         {
             base.OnBegin();
@@ -65,7 +54,7 @@ namespace Experiments
         {
             gazeRaycaster.Deactivate();
             
-            yield return ExperimentManager.Instance.PlayTextPages(textBeforeStart);
+            yield return ExperimentManager.Instance.PlayTextPages(textBeforeStart, false);
             
             yield return new WaitUntil(() => LslBackend.Instance.startReceived || InputSystem.actions.FindAction("ExpConfirm").IsPressed() || endScheduled) ;
             
@@ -108,7 +97,6 @@ namespace Experiments
 
         private void OnPinch()
         {
-            _pinchedThisFrame = true;
         }
     }
 }

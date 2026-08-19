@@ -145,11 +145,11 @@ public class LslBackend : MonoBehaviour
                 backendInlet = new StreamInlet(results[0]);
                 backendInlet.open_stream();
 
-                Debug.Log($"[MyoPinchListener] Connected to '{inletStreamName}'");
+                Debug.Log($"[LSL] Connected to '{inletStreamName}'");
                 yield break;
             }
 
-            Debug.Log($"[MyoPinchListener] Waiting for '{inletStreamName}'…");
+            Debug.Log($"[LSL] Waiting for '{inletStreamName}'…");
             yield return new WaitForSeconds(retryInterval);
         }
     }
