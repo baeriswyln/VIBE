@@ -12,4 +12,5 @@ dependencies = [
     "pyriemann>=0.11",
     "scikit-learn>=1.8.0",
     "scipy>=1.17.1",
+    "torch>=2.13.0",
 ]

@@ -68,9 +68,9 @@ def detect_bad_channels(raw: mne.io.BaseRaw, picks: list[str],
     # robust z on log-std over the non-flat channels
     ok = std > flat_uv
     logstd = np.log(std[ok] + 1e-9)
-    med = np.median(logstd)
-    mad = np.median(np.abs(logstd - med)) + 1e-9
-    z = 0.6745 * (np.log(std + 1e-9) - med) / mad
+    med = np.median(logstd) # alternative median less sensitive to extreme values
+    mad = np.median(np.abs(logstd - med)) + 1e-9 # robust counterpart to std - measure spread without being biased by extreme values
+    z = 0.6745 * (np.log(std + 1e-9) - med) / mad # z-score
     noisy = [picks[i] for i in range(len(picks))
              if ok[i] and z[i] > z_thresh]
     allbad = sorted(set(flat) | set(saturating) | set(noisy))

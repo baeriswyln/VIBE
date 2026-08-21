@@ -1,5 +1,6 @@
 # Report - 17.07
 
-- Revise and define free variables of the experiment
-- Adapt experiment to revised free variables
-- 
+- Document experiment with independent variables
+- Adapt experiment to revised independent variables
+- Failed Unity upgrade
+- More details in EDA
