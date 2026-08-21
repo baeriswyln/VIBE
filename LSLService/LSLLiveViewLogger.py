@@ -9,6 +9,7 @@ import subprocess
 import numpy as np
 import matplotlib
 matplotlib.use("TkAgg")  # explicit backend so we can control window behaviour
+matplotlib.rcParams["figure.raise_window"] = False  # don't steal focus on every redraw/show()
 import matplotlib.pyplot as plt
 from mne_lsl.lsl import StreamInlet, resolve_streams
 from mne_lsl.lsl import StreamInfo as _LSLStreamInfo, StreamOutlet as _LSLStreamOutlet
@@ -153,10 +154,10 @@ fig, ax = plt.subplots(figsize=(14, 8))
 ax.set_facecolor("#111111")
 fig.patch.set_facecolor("#111111")
 
-# Prevent the window from stealing focus on every draw
+# Open without grabbing focus initially (figure.raise_window=False above stops
+# subsequent redraws from re-raising it).
 fig.canvas.manager.window.wm_attributes("-topmost", False)
 try:
-    # Works on most Tk builds — open without grabbing focus
     fig.canvas.manager.window.attributes("-alpha", 1.0)
     fig.canvas.manager.window.lower()   # push behind other windows initially
 except Exception:
