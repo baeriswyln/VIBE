@@ -415,7 +415,7 @@ class Orchestrator:
         # Step 5: start the game; re-publish until the game acknowledges.
         while not self.game_inlet.is_acked(MSG_START) and not self.shutdown_event.is_set():
             self.orchestrator.publish(MSG_START)
-            time.sleep(0.5)
+            time.sleep(2)
 
         log.info("[startup] all apps up; experiment running. Waiting for shutdown.")
 
