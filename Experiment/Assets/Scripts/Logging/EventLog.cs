@@ -1,7 +1,6 @@
 ﻿using System;
 using Experiments;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace Logging
@@ -40,7 +39,7 @@ namespace Logging
                 ExperimentName = ExperimentManager.Instance.CurrentExperiment?.ToString() ?? String.Empty,
                 ExperimentConfig = _experimentConfig,
                 ExperimentIndex = _experimentIndex,
-                Payload = new JRaw(GetPayload()),
+                Payload = GetPayload(),
                 HeadTracking = headTrackingData
             });
         }
@@ -62,7 +61,7 @@ namespace Logging
             }
         }
 
-        protected abstract string GetPayload();
+        protected abstract object GetPayload();
 
         public struct HeadTrackingData
         {

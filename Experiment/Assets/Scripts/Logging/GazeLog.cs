@@ -10,9 +10,9 @@
             _interactable = stimuli;
         }
 
-        protected override string GetPayload()
+        protected override object GetPayload()
         {
-            return _interactable.ToJSON();
+            return _interactable.ToLoggableObject();
         }
     }
 }

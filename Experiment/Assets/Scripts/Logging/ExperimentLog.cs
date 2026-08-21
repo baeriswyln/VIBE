@@ -19,12 +19,12 @@ namespace Logging
             base.Severity = severity;
         }
 
-        protected override string GetPayload()
+        protected override object GetPayload()
         {
-            return JsonConvert.SerializeObject(new
+            return new
             {
                 Message = _message
-            });
+            };
         }
     }
 }

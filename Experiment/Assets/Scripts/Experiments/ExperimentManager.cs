@@ -307,12 +307,12 @@ namespace Experiments
                 _message = message;
             }
 
-            protected override string GetPayload()
+            protected override object GetPayload()
             {
-                return JsonConvert.SerializeObject(new
+                return new
                 {
                     Message = _message,
-                });
+                };
             }
         }
         

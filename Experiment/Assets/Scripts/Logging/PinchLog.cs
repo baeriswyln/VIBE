@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace Logging
+﻿namespace Logging
 {
     public class PinchLog : EventLog
     {
@@ -28,13 +26,13 @@ namespace Logging
             _pinchType = pinchType;
         }
 
-        protected override string GetPayload()
+        protected override object GetPayload()
         {
-            return JsonConvert.SerializeObject(new
+            return new
             {
-                Interactable = _interactable,
+                Interactable = _interactable.ToLoggableObject(),
                 PinchType = _pinchType,
-            });
+            };
         }
     }
 }

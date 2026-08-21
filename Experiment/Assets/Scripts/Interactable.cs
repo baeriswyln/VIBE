@@ -1,9 +1,7 @@
 using System;
 using Experiments;
 using Logging;
-using Newtonsoft.Json;
 using UnityEngine;
-using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 public class Interactable : MonoBehaviour
@@ -196,13 +194,13 @@ public class Interactable : MonoBehaviour
             meshRenderer.materials = new Material[] { normalMaterial };
     }
 
-    public string ToJSON()
+    public object ToLoggableObject()
     {
         var pos = transform.position;
-        return JsonConvert.SerializeObject(new
+        return new
         {
             StimulusId, IsHighlighted, IsHighlightedNegative, IsSelected, IsGazed,
             Position = new { x = pos.x, y = pos.y, z = pos.z },
-        });
+        };
     }
 }

@@ -16,7 +16,6 @@
 using System;
 using Logging;
 using LSL;
-using Newtonsoft.Json;
 using UnityEngine;
 using VIVE.OpenXR;
 using VIVE.OpenXR.EyeTracker;
@@ -363,13 +362,13 @@ public class ViveEyeLslStreamer : MonoBehaviour
             _state = state;
         }
 
-        protected override string GetPayload()
+        protected override object GetPayload()
         {
-            return JsonConvert.SerializeObject(new
+            return new
             {
                 Eye = _eye,
                 State = _state
-            });
+            };
         }
     }
 }
