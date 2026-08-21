@@ -26,14 +26,17 @@ each inlet resolves to exactly one outlet.
 
 Sequence:
     1. dsi2lsl.exe          -> wait until its LSL outlet is resolvable
+                               (skipped when --use_eeg_sim is passed)
     2. MyoDetector.py       -> wait until its LSL outlet is resolvable
     3. game                 -> wait until its LSL outlet is resolvable
     4. LSLLiveViewLogger.py -> wait until it publishes logger_ready
+                               (started with "use_eeg_sim" when --use_eeg_sim
+                               is passed)
     5. publish game_start on the orchestrator outlet (until acked by the game)
     6. on shutdown -> gracefully terminate all
 
 Usage:
-    python start_experiment.py SUBJECT_ID
+    python start_experiment.py SUBJECT_ID [--use_eeg_sim]
 """
 
 import argparse
@@ -74,61 +77,59 @@ TERMINATE_GRACE = 10.0
 
 # Pre-launch checklist. Every item must be confirmed with "yes" before launch.
 CHECKLIST = [
-    "Myo calibrated?",
     "EEG calibrated?",
     "Eye tracking calibrated?",
 ]
 
 
-def build_default_config(subject_id: str) -> dict:
+def build_default_config(subject_id: str, use_eeg_sim: bool = False) -> dict:
     """
     Returns the launch plan. Each app entry:
         cmd          : argv list passed to subprocess.Popen
         label        : human-readable name for logging
         lsl_stream   : name of the LSL outlet to wait for (None = don't wait,
                        just confirm the process is alive)
+
+    use_eeg_sim: when True, dsi2lsl is not launched (the logger simulates EEG
+    instead), and LSLLiveViewLogger is started with the "use_eeg_sim" argument.
     """
-    return {
-        "apps": [
-            {
-                "label": "dsi2lsl",
-                "cmd": [
-                    "..\\dsi2lsl-win\\dsi2lsl.exe",
-                    "--port=COM15",
-                    "--lsl-stream-name=Experiment.VIBE.EEG",
-                    "--reference=Pz"
-                ],
-                "lsl_stream": "Experiment.VIBE.EEG",
-            },
-            {
-                "label": "MyoDetector",
-                "cmd": [
-                    "uv", "run", "--directory", "..\\MyoDetector",
-                    "src\\pinch_detector.py", "detect"
-                ],
-                "lsl_stream": "Experiment.VIBE.MyoPinch",
-            },
-            {
-                "label": "game",
-                "cmd": [
-                    "..\\Experiment\\dist\\Experiment.exe",
-                ],
-                "lsl_stream": "Experiment.VIBE.GameEventStream",
-                "skip_launch": True,
-            },
-            {
-                "label": "LSLLiveViewLogger",
-                "cmd": [
-                    "uv", "run", "--directory", "..\\LSLService",
-                    "LSLLiveViewLogger.py",
-                    subject_id,
-                ],
-                # Logger publishes READY on its backend stream when up.
-                "lsl_stream": None,
-                "wait_ready": True,
-            },
-        ]
-    }
+    logger_cmd = [
+        "uv", "run", "--directory", "..\\LSLService",
+        "LSLLiveViewLogger.py",
+        subject_id,
+    ]
+    if use_eeg_sim:
+        logger_cmd.append("use_eeg_sim")
+
+    apps = []
+    if not use_eeg_sim:
+        apps.append({
+            "label": "dsi2lsl",
+            "cmd": [
+                "..\\dsi2lsl-win\\dsi2lsl.exe",
+                "--port=COM15",
+                "--lsl-stream-name=Experiment.VIBE.EEG",
+                "--reference=Pz"
+            ],
+            "lsl_stream": "Experiment.VIBE.EEG",
+        })
+    apps.append({
+        "label": "game",
+        "cmd": [
+            "..\\Experiment\\dist\\Experiment.exe",
+        ],
+        "lsl_stream": "Experiment.VIBE.GameEventStream",
+        "skip_launch": True,
+    })
+    apps.append({
+        "label": "LSLLiveViewLogger",
+        "cmd": logger_cmd,
+        # Logger publishes READY on its backend stream when up.
+        "lsl_stream": None,
+        "wait_ready": True,
+    })
+
+    return {"apps": apps}
 
 
 # --------------------------------------------------------------------------- #
@@ -486,6 +487,11 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="VIBE experiment startup orchestrator")
     p.add_argument("subject_id", help="subject identifier")
     p.add_argument("--config", help="optional JSON config file overriding the launch plan")
+    p.add_argument(
+        "--use_eeg_sim",
+        action="store_true",
+        help="simulate EEG instead of launching dsi2lsl; passed through to LSLLiveViewLogger",
+    )
     return p.parse_args()
 
 
@@ -497,7 +503,7 @@ def main() -> int:
         with open(args.config, "r", encoding="utf-8") as fh:
             config = json.load(fh)
     else:
-        config = build_default_config(args.subject_id)
+        config = build_default_config(args.subject_id, use_eeg_sim=args.use_eeg_sim)
 
     orch = Orchestrator(args.subject_id, config)
 
