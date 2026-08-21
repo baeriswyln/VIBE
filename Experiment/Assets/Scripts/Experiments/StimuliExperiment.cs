@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Leap;
 using Logging;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
 using Random = UnityEngine.Random;
@@ -177,8 +178,14 @@ namespace Experiments
             _results.Add(result);
             onTrialComplete?.Invoke(result);
 
-            ExperimentLogger.Instance.Log(new ExperimentLog("",
-                $"action={(selectedStimulus.IsHighlighted ? "select" : "gazeSelect")},trial={trialNumber},target={result.TargetId},rt={result.ResponseTime:F3}s"));
+            ExperimentLogger.Instance.Log(new ExperimentLog(ToString(),
+                JsonConvert.SerializeObject(new
+                    {
+                        Action = selectedStimulus.IsHighlighted ? "select" : "gazeSelect",
+                        Trial = trialNumber,
+                        Target = result.TargetId,
+                        ResponseTime = result.ResponseTime
+                    })));
 
             yield return new WaitForSeconds(ExperimentManager.Instance.feedbackDuration);
 

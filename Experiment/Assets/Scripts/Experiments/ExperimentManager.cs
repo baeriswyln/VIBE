@@ -137,6 +137,7 @@ namespace Experiments
             {
                 case ExperimentSession.Session1:
                     yield return PlayTextPages(new []{"Starting session 1"});
+                    ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_SELECT_SESSION_1", ""));
                     _experimentPlaylist.Add(tutorialSession1);
                     controlExperimentSession1.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
                     foreach (var cfg in experimentConfigsSession1) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
@@ -144,6 +145,7 @@ namespace Experiments
                     break;
                 case ExperimentSession.Session2:
                     yield return PlayTextPages(new []{"Starting session 2"});
+                    ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_SELECT_SESSION_2", ""));
                     _experimentPlaylist.Add(tutorialSession2);
                     controlExperimentSession2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
                     foreach (var cfg in experimentConfigsSession2) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);

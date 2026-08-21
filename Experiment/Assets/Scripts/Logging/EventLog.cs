@@ -16,30 +16,20 @@ namespace Logging
         }
 
         public LogSeverity Severity = LogSeverity.MESSAGE;
-        private DefaultLogData logData;
-        private DateTime timestamp { get; set; }
+        private HeadTrackingData headTrackingData;
+        private ExperimentConfig _experimentConfig = ExperimentManager.Instance.CurrentExperiment?.config;
+        private int _experimentIndex = ExperimentManager.Instance.CurrentIndex;
+        private DateTime timestamp { get; set; } = DateTime.Now;
         private string eventType => GetType().Name;
         protected string eventName;
 
-        protected EventLog()
+        public void AddHeadTrackingData(HeadTrackingData data)
         {
-            timestamp = DateTime.Now;
+            headTrackingData = data;
         }
+        
 
-        public void AddDefaultData(DefaultLogData data)
-        {
-            logData = data;
-        }
-
-        public static string[] GetCsvHeaders()
-            => new[] { "Timestamp", "Severity", "EventType", "EventName", "ExperimentName", "Payload" };
-
-        public string[] ToCsvEntry()
-            => new[] { timestamp.ToString("O"), Severity.ToString(), eventType,
-                ExperimentManager.Instance.CurrentExperiment?.ToString() ?? String.Empty,
-                GetPayload() };
-
-        public string ToLslEntry()
+        public string AsJson()
         {
             return JsonConvert.SerializeObject(new
             {
@@ -48,7 +38,10 @@ namespace Logging
                 EventName = eventName,
                 Severity = Severity.ToString(),
                 ExperimentName = ExperimentManager.Instance.CurrentExperiment?.ToString() ?? String.Empty,
+                ExperimentConfig = _experimentConfig,
+                ExperimentIndex = _experimentIndex,
                 Payload = new JRaw(GetPayload()),
+                HeadTracking = headTrackingData
             });
         }
 
@@ -71,7 +64,7 @@ namespace Logging
 
         protected abstract string GetPayload();
 
-        public struct DefaultLogData
+        public struct HeadTrackingData
         {
             public Vector3 GazeOrigin;
             public Vector3 GazeDirection;

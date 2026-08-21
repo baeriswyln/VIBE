@@ -1,4 +1,6 @@
 using System;
+using Experiments;
+using Logging;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
@@ -139,8 +141,19 @@ public class Interactable : MonoBehaviour
     public void OnSelect()
     {
         _isSelected = true;
+
+        var pinchType = PinchLog.PinchType.PINCH;
+        pinchType = IsHighlightedNegative ? PinchLog.PinchType.GAZE : pinchType;
+        pinchType = (ExperimentManager.Instance.CurrentExperiment?.config.pinchIsHinted ?? false) ? PinchLog.PinchType.PINCH_WIZARD_OF_OZ : pinchType;
+        
+        ExperimentLogger.Instance.Log(new PinchLog(this, pinchType));
         UpdateColor();
         onSelected?.Invoke(this);
+    }
+
+    public void OnIgnoredSelect()
+    {
+        ExperimentLogger.Instance.Log(new PinchLog(this, PinchLog.PinchType.PINCH_IGNORED));
     }
  
     /// <summary>Resets this stimulus to its default visual state.</summary>

@@ -106,7 +106,7 @@ public class PinchHandler : MonoBehaviour
         }
 
         // don't play sound if the pinch should be hidden, or no auditory feedback is required.
-        if (!hideNextPinch && ExperimentManager.Instance.CurrentExperiment.config.hasAuditoryFeedback) 
+        if (!hideNextPinch && (ExperimentManager.Instance.CurrentExperiment?.config.hasAuditoryFeedback ?? false)) 
             _audioSource.PlayOneShot(clickSound, .5f);
         
         _lastPinchTime = Time.time;
@@ -122,8 +122,7 @@ public class PinchHandler : MonoBehaviour
             }
             else
             {
-                // todo
-                Debug.LogError("the hidden pinches are not logged yet");
+                target.OnIgnoredSelect();
             }
             onStimulusClicked?.Invoke(target);
         }

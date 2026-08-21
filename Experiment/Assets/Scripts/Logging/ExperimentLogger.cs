@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using LSL;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace Logging
@@ -50,16 +51,19 @@ namespace Logging
 
         private void Start()
         {
+            // Prepare JSON converter for Vector3 logging
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                Converters = { new Vector3Converter() }
+            };
+            
             _sessionStartTime = Time.time;
 
             string dir = Path.Combine(Application.persistentDataPath, outputFolder);
             Directory.CreateDirectory(dir);
 
             string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            _filePath = Path.Combine(dir, $"log_{participantId}_{timestamp}.csv");
-
-            // CSV header
-            File.WriteAllText(_filePath, string.Join(", ", EventLog.GetCsvHeaders()) + "\n");
+            _filePath = Path.Combine(dir, $"log_{participantId}_{timestamp}.jsonl");
 
             Debug.Log($"[ExperimentLogger] Logging to: {_filePath}");
 
@@ -71,12 +75,11 @@ namespace Logging
             }
             else
             {
-                Debug.LogError($"[ExperimentLogger] No gaze raycaster found.");
+                Log(new ExperimentLog("RAYCASTER_NOT_FOUND", "No gaze raycaster found.", EventLog.LogSeverity.ERROR));
             }
             
             // Auto-subscribe to leap hand tracking events
             PinchHandler.Instance.onPinchDetected.AddListener(OnPinchDetected);
-            PinchHandler.Instance.onStimulusClicked.AddListener(OnStimulusSelected);
             
             // Stream setup
             var hash = new Hash128();
@@ -103,11 +106,6 @@ namespace Logging
             Log(new PinchLog());
         }
 
-        public void OnStimulusSelected(Interactable stimulus)
-        {
-            Log(new PinchLog(stimulus));
-        }
-
         public void Log(EventLog log, double ts = 0.0)
         {
             // Gaze data from the raycaster
@@ -125,22 +123,22 @@ namespace Logging
             Vector3 headPos = cam.position;
             Vector3 headFwd = cam.forward;
 
-            var defaultData = new EventLog.DefaultLogData
+            var defaultData = new EventLog.HeadTrackingData
             {
                 GazeOrigin = gazeOrigin,
                 GazeDirection = gazeDir,
                 HeadPosition = headPos,
                 HeadForward = headFwd
             };
-            log.AddDefaultData(defaultData);
+            log.AddHeadTrackingData(defaultData);
             _entries.Add(log);
 
             try
             {
                 log.LogToConsole();
-                File.AppendAllText(_filePath, string.Join(", ", log.ToCsvEntry()) + "\n");
+                File.AppendAllText(_filePath, log.AsJson() + "\n");
                 
-                sample[0] = log.ToLslEntry();
+                sample[0] = log.AsJson();
                 outlet.push_sample(sample, ts > 0 ? ts : LSL.LSL.local_clock());
             }
             catch (Exception e)

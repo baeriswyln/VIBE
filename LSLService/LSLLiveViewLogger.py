@@ -126,11 +126,9 @@ eeg_n_channels = len(eeg_ch_names)
 
 # --- CSV logging setup ---
 _eeg_csv = open(os.path.join(_data_dir, f"eeg_{eeg_inlet.get_sinfo().name}_{_ts}.csv"), "w", newline="")
-_marker_csv = open(os.path.join(_data_dir, f"markers_{_ts}.csv"), "w", newline="")
+_marker_jsonl = open(os.path.join(_data_dir, f"markers_{_ts}.jsonl"), "w", newline="\n")
 _eeg_writer = csv.writer(_eeg_csv)
-_marker_writer = csv.writer(_marker_csv)
 _eeg_writer.writerow(["timestamp"] + eeg_ch_names)
-_marker_writer.writerow(["timestamp", "stream", "value"])
 _last_eeg_ts = -1.0
 WINDOW_SEC = 5.0          # how many seconds to show
 SPACING    = 40.0         # vertical spacing between channels (µV)
@@ -189,7 +187,6 @@ drawn_marker_ts = set()
 # check that all required streams are available
 REQUIRED_MARKER_STREAMS = [
     "Experiment.VIBE.ViveOpenXR_Events",
-    "Experiment.VIBE.MyoPinch",
     "Experiment.VIBE.GameEventStream",
 ]
 BACKEND_STREAM_NAME = "Experiment.VIBE.Backend.Logger"
@@ -291,7 +288,15 @@ try:
             if ts.size > 0:
                 corrected = np.array(ts) + correction
                 for t, s in zip(corrected.tolist(), samples):
-                    _marker_writer.writerow([t, inlet.name, s])
+                    payload = s[0] if s else ""
+                    try:
+                        marker_obj = json.loads(payload)
+                    except (json.JSONDecodeError, TypeError) as exc:
+                        print(f"[warn] dropping malformed marker from {inlet.name}: {payload!r} ({exc})")
+                        continue
+                    marker_obj["timestamp"] = t
+                    marker_obj["stream"] = inlet.name
+                    _marker_jsonl.write(json.dumps(marker_obj) + "\n")
                 all_marker_ts.extend([(t, idx) for t in corrected.tolist()])
 
         # Clear old marker lines
@@ -322,7 +327,7 @@ try:
         fig.canvas.draw()
         fig.canvas.flush_events()
         plt.pause(REFRESH)
-        _marker_csv.flush()
+        _marker_jsonl.flush()
 finally:
     eeg_inlet.close_stream()
     for inlet in marker_inlets:
@@ -331,7 +336,7 @@ finally:
         inlet.close_stream()
         f.close()
     _eeg_csv.close()
-    _marker_csv.close()
+    _marker_jsonl.close()
     if _sim_proc:
         _sim_proc.terminate()
         _sim_proc.wait()
