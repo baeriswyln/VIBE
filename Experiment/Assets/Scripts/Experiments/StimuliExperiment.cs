@@ -56,6 +56,7 @@ namespace Experiments
                 }
 
                 _errorList.Shuffle();
+                Debug.Log($"nbErrors: {config.numberOfErrors} - {string.Join(",", _errorList)}");
                 _observableList.Shuffle();
             }
         }

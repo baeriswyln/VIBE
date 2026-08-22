@@ -1331,6 +1331,17 @@
                     "action": "ExpPinch",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d63c108e-1e7e-4348-81bd-ecd02b33d728",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ExpPinch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

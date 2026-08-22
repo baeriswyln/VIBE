@@ -97,11 +97,12 @@ namespace Experiments
         public bool pinchIsHinted = false;
         public int numberOfObserveStimuli = 0;
         public bool isChoiceStimuli = false;
+        public bool feedbackIsDelayed = false;
 
         public ExperimentConfig(ExperimentType type, int numberOfStimuli, int numberOfTrials, 
             bool hasVirtualHand = true, bool hasVisualFeedback = true, bool hasAuditoryFeedback = true, 
             int numberOfErrors = 0, bool pinchIsHinted = false, int numberOfObserveStimuli = 0, 
-            bool isChoiceStimuli = false)
+            bool isChoiceStimuli = false, feedbackIsDelayed = false)
         {
             this.type = type;
             this.numberOfStimuli = numberOfStimuli;
@@ -113,13 +114,14 @@ namespace Experiments
             this.pinchIsHinted = pinchIsHinted;
             this.numberOfObserveStimuli = numberOfObserveStimuli;
             this.isChoiceStimuli = isChoiceStimuli;
+            this.feedbackIsDelayed = feedbackIsDelayed;
             
-            FixValues();
+            LimitValueRanges();
         }
 
         public Experiment CreateExperiment(GameObject experimentParent, string name)
         {
-            FixValues();
+            LimitValueRanges();
             
             var go = new GameObject(name);
             go.transform.SetParent(experimentParent.transform, worldPositionStays: false);
@@ -151,7 +153,7 @@ namespace Experiments
             list.Add(CreateExperiment(experimentParent, $"Experiment{list.Count}"));
         }
 
-        private void FixValues()
+        private void LimitValueRanges()
         {
             numberOfStimuli = Math.Max(numberOfStimuli, 0);
             numberOfErrors = Math.Min(Math.Max(numberOfErrors, 0), numberOfStimuli);

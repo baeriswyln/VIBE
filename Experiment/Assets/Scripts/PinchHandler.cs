@@ -107,7 +107,16 @@ public class PinchHandler : MonoBehaviour
 
         // don't play sound if the pinch should be hidden, or no auditory feedback is required.
         if (!hideNextPinch && (ExperimentManager.Instance.CurrentExperiment?.config.hasAuditoryFeedback ?? false)) 
-            _audioSource.PlayOneShot(clickSound, .5f);
+        {
+            if (ExperimentManager.Instance.CurrentExperiment.config.feebackIsDelayed)
+            {
+                StartCoroutine(_audioSource.PlayOneShot(clickSound, .5f));                
+            }
+            else
+            {
+                _audioSource.PlayOneShot(clickSound, .5f)
+            }
+        } 
         
         _lastPinchTime = Time.time;
 
@@ -118,7 +127,14 @@ public class PinchHandler : MonoBehaviour
             Interactable target = gazeRaycaster.CurrentTarget;
             if (!hideNextPinch)
             {
-                target.OnSelect();
+                if (ExperimentManager.Instance.CurrentExperiment.config.feebackIsDelayed)
+                {
+                    StartCoroutine(target.OnSelect());                
+                }
+                else
+                {
+                    target.OnSelect();
+                }
             }
             else
             {

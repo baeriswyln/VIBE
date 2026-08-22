@@ -84,8 +84,23 @@ namespace Experiments
             PinchHandler.Instance.Active = true;
             yield return ExperimentManager.Instance.PlayTextPages(textBeforeExample);
             
-            // Wait for pinch on stimulus
-            yield return new WaitUntil(() => s_example.IsSelected || endScheduled);
+            // 3 rounds of Static_4 "choice"
+            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun1)
+            var cfg1 = new ExperimentConfig(ExperimentType.Static, 4, 3, isChoiceStimuli: true);
+            yield return RunTutorialBlock(cfg1, "TutorialSession2_Block1");
+
+            // 3 rounds of Static_4 with "hinted pinch
+            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun2)
+            var cfg2 = new ExperimentConfig(ExperimentType.Static, 4, 3, pinchIsHinted: true);
+            yield return RunTutorialBlock(cfg2, "TutorialSession2_Block2");
+
+            // 3 rounds of Static_4 with "delayed feedback"
+            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun3)
+            var cfg3 = new ExperimentConfig(ExperimentType.Static, 4, 3, feedbackIsDelayed);
+            yield return RunTutorialBlock(cfg3, "TutorialSession2_Block3");
+            
+            // any questions? wait for confirmation
+            yield return new WaitUntil(() => InputSystem.actions.FindAction("ExpConfirm").IsPressed() || endScheduled);
             PinchHandler.Instance.Active = false;
 
             Destroy(s_example.gameObject);
