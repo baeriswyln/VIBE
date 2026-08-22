@@ -1269,6 +1269,7 @@ MonoBehaviour:
   cooldownTime: 0.2
   clickSound: {fileID: 8300000, guid: cef5d2eaf31bece4c93da1d521e64b22, type: 3}
   currentPinchSource: 0
+  feedbackDelay: 0.5
   onPinchDetected:
     m_PersistentCalls:
       m_Calls: []
@@ -1303,7 +1304,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: cef5d2eaf31bece4c93da1d521e64b22, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -7003,6 +7004,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
+    feedbackIsDelayed: 0
   spawner: {fileID: 0}
   onExperimentStart:
     m_PersistentCalls:
@@ -7019,6 +7021,12 @@ MonoBehaviour:
   textStimuliIntroduction:
   - 
   textBeforeExample:
+  - 
+  instructionsTestrun1:
+  - 
+  instructionsTestrun2:
+  - 
+  instructionsTestrun3:
   - 
   textAfterExample:
   - 
@@ -7265,6 +7273,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
+    feedbackIsDelayed: 0
   spawner: {fileID: 0}
   onExperimentStart:
     m_PersistentCalls:
@@ -7848,6 +7857,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
+    feedbackIsDelayed: 0
   spawner: {fileID: 0}
   onExperimentStart:
     m_PersistentCalls:
@@ -7871,6 +7881,12 @@ MonoBehaviour:
     gesture with your right hand.
   textBeforeExample:
   - 'Try it out. Look at the stimulus in front of you, and pinch to select.  '
+  instructionsTestrun1:
+  - 
+  instructionsTestrun2:
+  - 
+  instructionsTestrun3:
+  - 
   textAfterExample:
   - 'Well done! The experiment contains multiple rounds. During each round, you will
     observe 20 events. '
@@ -7999,6 +8015,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
+    feedbackIsDelayed: 0
   experimentConfigsSession1:
   - type: 0
     numberOfStimuli: 4
@@ -8010,6 +8027,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
+    feedbackIsDelayed: 0
   tutorialSession2: {fileID: 1620065022}
   controlExperimentSession2:
     type: 0
@@ -8022,6 +8040,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 1
+    feedbackIsDelayed: 0
   experimentConfigsSession2:
   - type: 0
     numberOfStimuli: 1
@@ -8033,6 +8052,7 @@ MonoBehaviour:
     pinchIsHinted: 0
     numberOfObserveStimuli: 0
     isChoiceStimuli: 1
+    feedbackIsDelayed: 0
   interTrialIntervalMin: 2
   interTrialIntervalMax: 5
   feedbackDuration: 0.5
