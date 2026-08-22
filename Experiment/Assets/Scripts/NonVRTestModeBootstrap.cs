@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.Rendering.Universal;
 
 /// <summary>
 /// Lets the experiment run without VR hardware: when no XR headset is active,
@@ -27,6 +28,16 @@ public static class NonVRTestModeBootstrap
         var trackedPoseDriver = cam.GetComponent<TrackedPoseDriver>();
         if (trackedPoseDriver != null)
             trackedPoseDriver.enabled = false;
+
+        // Disable stereo view
+        var camera = cam.GetComponent<Camera>();
+        if (camera != null)
+            camera.stereoTargetEye = StereoTargetEyeMask.None;
+
+        // Disable XR render pass
+        var cameraData = cam.GetComponent<UniversalAdditionalCameraData>();
+        if (cameraData != null)
+            cameraData.allowXRRendering = false;
 
         if (cam.GetComponent<MouseLookController>() == null)
             cam.AddComponent<MouseLookController>();
