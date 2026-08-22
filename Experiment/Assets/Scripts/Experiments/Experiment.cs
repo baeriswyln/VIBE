@@ -102,7 +102,7 @@ namespace Experiments
         public ExperimentConfig(ExperimentType type, int numberOfStimuli, int numberOfTrials, 
             bool hasVirtualHand = true, bool hasVisualFeedback = true, bool hasAuditoryFeedback = true, 
             int numberOfErrors = 0, bool pinchIsHinted = false, int numberOfObserveStimuli = 0, 
-            bool isChoiceStimuli = false, feedbackIsDelayed = false)
+            bool isChoiceStimuli = false, bool feedbackIsDelayed = false)
         {
             this.type = type;
             this.numberOfStimuli = numberOfStimuli;

@@ -30,8 +30,6 @@ namespace Experiments
         
         [TextArea(3, 10)] [Tooltip("Each string becomes one page of instructions.")]
         public string[] instructionsTestrun3 = new[] { "" };
-        
-        
 
         [TextArea(3, 10)] [Tooltip("Each string becomes one page of instructions.")]
         public string[] textAfterExample = new[] { "" };
@@ -87,17 +85,17 @@ namespace Experiments
             gazeRaycaster.Activate();
             PinchHandler.Instance.Active = true;
             // 3 rounds of Static_4 normal
-            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun1)
+            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun1);
             var cfg1 = new ExperimentConfig(ExperimentType.Static, 4, 3);
             yield return RunTutorialBlock(cfg1, "TutorialSession1_Block1");
 
             // 3 rounds of Static_4 with "observe"
-            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun2)
+            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun2);
             var cfg2 = new ExperimentConfig(ExperimentType.Static, 4, 3, numberOfObserveStimuli: 3);
             yield return RunTutorialBlock(cfg2, "TutorialSession1_Block2");
 
             // 3 rounds of Static_4 with "observe" and "hinted pinch"
-            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun3)
+            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun3);
             var cfg3 = new ExperimentConfig(ExperimentType.Static, 4, 3, numberOfObserveStimuli: 1,
                 pinchIsHinted: true);
             yield return RunTutorialBlock(cfg3, "TutorialSession1_Block3");
