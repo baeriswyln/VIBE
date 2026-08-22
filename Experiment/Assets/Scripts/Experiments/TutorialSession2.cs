@@ -96,8 +96,7 @@ namespace Experiments
 
             // 3 rounds of Static_4 with "delayed feedback"
             yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun3)
-            var cfg3 = new ExperimentConfig(ExperimentType.Static, 4, 3, numberOfObserveStimuli: 1,
-                pinchIsHinted: true);
+            var cfg3 = new ExperimentConfig(ExperimentType.Static, 4, 3, feedbackIsDelayed);
             yield return RunTutorialBlock(cfg3, "TutorialSession2_Block3");
             
             // any questions? wait for confirmation
