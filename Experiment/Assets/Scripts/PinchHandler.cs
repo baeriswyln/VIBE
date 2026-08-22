@@ -1,4 +1,5 @@
-﻿using Experiments;
+﻿using System.Collections;
+using Experiments;
 using Leap;
 using UnityEngine;
 using UnityEngine.Events;
@@ -35,9 +36,12 @@ public class PinchHandler : MonoBehaviour
     public float cooldownTime = 0.2f;
 
     [Tooltip("Click sound")] public AudioClip clickSound;
-    
+
     [Tooltip("Select origin of the pinch events")]
     public PinchSource currentPinchSource = PinchSource.Leap;
+
+    [Tooltip("Delay in seconds applied to feedback when feedbackIsDelayed is set on the experiment config.")]
+    public float feedbackDelay = 0.5f;
 
     [Header("Events")] public UnityEvent onPinchDetected;
     public UnityEvent<Interactable> onStimulusClicked;
@@ -108,13 +112,13 @@ public class PinchHandler : MonoBehaviour
         // don't play sound if the pinch should be hidden, or no auditory feedback is required.
         if (!hideNextPinch && (ExperimentManager.Instance.CurrentExperiment?.config.hasAuditoryFeedback ?? false)) 
         {
-            if (ExperimentManager.Instance.CurrentExperiment.config.feebackIsDelayed)
+            if (ExperimentManager.Instance.CurrentExperiment.config.feedbackIsDelayed)
             {
-                StartCoroutine(_audioSource.PlayOneShot(clickSound, .5f));                
+                StartCoroutine(PlayClickSoundDelayed(feedbackDelay));
             }
             else
             {
-                _audioSource.PlayOneShot(clickSound, .5f)
+                _audioSource.PlayOneShot(clickSound, .5f);
             }
         } 
         
@@ -127,9 +131,9 @@ public class PinchHandler : MonoBehaviour
             Interactable target = gazeRaycaster.CurrentTarget;
             if (!hideNextPinch)
             {
-                if (ExperimentManager.Instance.CurrentExperiment.config.feebackIsDelayed)
+                if (ExperimentManager.Instance.CurrentExperiment.config.feedbackIsDelayed)
                 {
-                    StartCoroutine(target.OnSelect());                
+                    StartCoroutine(SelectDelayed(target, feedbackDelay));
                 }
                 else
                 {
@@ -146,5 +150,17 @@ public class PinchHandler : MonoBehaviour
         {
             onPinchDetected?.Invoke();
         }
+    }
+
+    private IEnumerator PlayClickSoundDelayed(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        _audioSource.PlayOneShot(clickSound, .5f);
+    }
+
+    private IEnumerator SelectDelayed(Interactable target, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        target.OnSelect();
     }
 }
