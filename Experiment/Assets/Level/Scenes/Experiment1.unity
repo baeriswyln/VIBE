@@ -8007,7 +8007,7 @@ MonoBehaviour:
   controlExperimentSession1:
     type: 0
     numberOfStimuli: 1
-    numberOfTrials: 20
+    numberOfTrials: 15
     hasVirtualHand: 1
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
@@ -8028,12 +8028,111 @@ MonoBehaviour:
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 1
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 1
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 1
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 10
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 15
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 0
+    numberOfErrors: 5
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 15
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 15
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 1
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 15
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 15
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
   tutorialSession2: {fileID: 1620065022}
   controlExperimentSession2:
     type: 0
-    numberOfStimuli: 1
+    numberOfStimuli: 4
     numberOfTrials: 10
-    hasVirtualHand: 1
+    hasVirtualHand: 0
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
     numberOfErrors: 0
@@ -8043,9 +8142,9 @@ MonoBehaviour:
     feedbackIsDelayed: 0
   experimentConfigsSession2:
   - type: 0
-    numberOfStimuli: 1
+    numberOfStimuli: 4
     numberOfTrials: 10
-    hasVirtualHand: 1
+    hasVirtualHand: 0
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
     numberOfErrors: 0
@@ -8053,11 +8152,66 @@ MonoBehaviour:
     numberOfObserveStimuli: 0
     isChoiceStimuli: 1
     feedbackIsDelayed: 0
-  interTrialIntervalMin: 2
-  interTrialIntervalMax: 5
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 1
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 1
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 1
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 1
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 1
+  interTrialIntervalMin: 3
+  interTrialIntervalMax: 7
   feedbackDuration: 0.5
   gazeMinTime: 0.2
-  gapBetweenExperiments: 20
+  gapBetweenExperiments: 15
   staticSpawner: {fileID: 1516759628}
   randomSpawner: {fileID: 68749651}
   handVisualizer: {fileID: 1407308815}
