@@ -30,8 +30,8 @@
         {
             return new
             {
-                Interactable = _interactable.ToLoggableObject(),
-                PinchType = _pinchType,
+                Interactable = _interactable?.ToLoggableObject() ?? new {},
+                PinchType = nameof(_pinchType),
             };
         }
     }

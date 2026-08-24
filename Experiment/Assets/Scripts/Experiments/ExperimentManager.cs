@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Leap;
 using Logging;
 using Newtonsoft.Json;
 using TMPro;
@@ -136,6 +137,9 @@ namespace Experiments
             switch (session)
             {
                 case ExperimentSession.Session1:
+                    // rounds must be randomized for more reliable results
+                    experimentConfigsSession1.Shuffle();
+                    
                     yield return PlayTextPages(new []{"Starting session 1"});
                     ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_SELECT_SESSION_1", ""));
                     _experimentPlaylist.Add(tutorialSession1);
@@ -144,6 +148,9 @@ namespace Experiments
                     controlExperimentSession1.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
                     break;
                 case ExperimentSession.Session2:
+                    // rounds must be randomized for more reliable results
+                    experimentConfigsSession2.Shuffle();
+                    
                     yield return PlayTextPages(new []{"Starting session 2"});
                     ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_SELECT_SESSION_2", ""));
                     _experimentPlaylist.Add(tutorialSession2);
@@ -244,6 +251,9 @@ namespace Experiments
                 exp.OnEnd();
                 ExperimentLogger.Instance.Log(new ExperimentManagerLog("EXPERIMENT_END", $"{_currentIndex}:{exp.ToString()}"));
                 onExperimentFinished?.Invoke(exp);
+                
+                // update progress indication
+                progress.text = $"Progress: {(_currentIndex == 0 ? 0 : ((_experimentPlaylist.Count-1) / _currentIndex))}%";
 
                 if (gapBetweenExperiments > 0f && !exp.endScheduled && !exp.skipEndOfExperimentPause)
                     yield return new WaitForSeconds(gapBetweenExperiments);

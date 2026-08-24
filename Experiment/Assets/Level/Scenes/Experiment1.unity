@@ -473,6 +473,67 @@ MonoBehaviour:
   fingerType: 1
   activateDistance: 0.025
   deactivateDistance: 0.03
+--- !u!1 &460157868
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 460157869}
+  - component: {fileID: 460157870}
+  m_Layer: 5
+  m_Name: ProgressGroup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &460157869
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 460157868}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 636749075}
+  m_Father: {fileID: 1434859424}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!223 &460157870
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 460157868}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 1
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
+  m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!83 &460724690
 AudioClip:
   m_ObjectHideFlags: 0
@@ -591,6 +652,159 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 560873706}
   m_Mesh: {fileID: 6607397599308209861, guid: 00c9c177e828a57439e290aef2a23b3f, type: 3}
+--- !u!1 &636749074
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 636749075}
+  - component: {fileID: 636749078}
+  - component: {fileID: 636749077}
+  - component: {fileID: 636749076}
+  m_Layer: 5
+  m_Name: Progress
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &636749075
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 636749074}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1815324004}
+  m_Father: {fileID: 460157869}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -400}
+  m_SizeDelta: {x: 400, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &636749076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 636749074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 2
+--- !u!114 &636749077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 636749074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: "Progress: 0\t%"
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: f675742eaf9c20a4f909d78ee7a14fed, type: 2}
+  m_sharedMaterial: {fileID: 4687939059374929122, guid: f675742eaf9c20a4f909d78ee7a14fed, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 36
+  m_fontSizeBase: 36
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: -7
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &636749078
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 636749074}
+  m_CullTransparentMesh: 1
 --- !u!1 &650430508
 GameObject:
   m_ObjectHideFlags: 0
@@ -6776,6 +6990,7 @@ RectTransform:
   m_Children:
   - {fileID: 1959111152}
   - {fileID: 1975376542}
+  - {fileID: 460157869}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -7283,6 +7498,96 @@ MonoBehaviour:
       m_Calls: []
   skipEndOfExperimentPause: 1
   endScheduled: 0
+--- !u!1 &1815324003
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1815324004}
+  - component: {fileID: 1815324007}
+  - component: {fileID: 1815324006}
+  - component: {fileID: 1815324005}
+  m_Layer: 5
+  m_Name: Panel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1815324004
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1815324003}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 636749075}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 20, y: 20}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1815324005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1815324003}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 2
+  m_VerticalFit: 2
+--- !u!114 &1815324006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1815324003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.64705884}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1815324007
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1815324003}
+  m_CullTransparentMesh: 1
 --- !u!1 &1818747167
 GameObject:
   m_ObjectHideFlags: 0
@@ -8006,8 +8311,8 @@ MonoBehaviour:
   tutorialSession1: {fileID: 1960306619}
   controlExperimentSession1:
     type: 0
-    numberOfStimuli: 1
-    numberOfTrials: 20
+    numberOfStimuli: 4
+    numberOfTrials: 15
     hasVirtualHand: 1
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
@@ -8018,7 +8323,7 @@ MonoBehaviour:
     feedbackIsDelayed: 0
   experimentConfigsSession1:
   - type: 0
-    numberOfStimuli: 4
+    numberOfStimuli: 1
     numberOfTrials: 20
     hasVirtualHand: 1
     hasVisualFeedback: 1
@@ -8028,12 +8333,111 @@ MonoBehaviour:
     numberOfObserveStimuli: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 1
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 1
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 1
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 20
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 10
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 15
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 0
+    numberOfErrors: 5
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 15
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 15
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 1
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 15
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 15
+    isChoiceStimuli: 0
+    feedbackIsDelayed: 0
   tutorialSession2: {fileID: 1620065022}
   controlExperimentSession2:
     type: 0
-    numberOfStimuli: 1
+    numberOfStimuli: 4
     numberOfTrials: 10
-    hasVirtualHand: 1
+    hasVirtualHand: 0
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
     numberOfErrors: 0
@@ -8043,9 +8447,9 @@ MonoBehaviour:
     feedbackIsDelayed: 0
   experimentConfigsSession2:
   - type: 0
-    numberOfStimuli: 1
+    numberOfStimuli: 4
     numberOfTrials: 10
-    hasVirtualHand: 1
+    hasVirtualHand: 0
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
     numberOfErrors: 0
@@ -8053,11 +8457,66 @@ MonoBehaviour:
     numberOfObserveStimuli: 0
     isChoiceStimuli: 1
     feedbackIsDelayed: 0
-  interTrialIntervalMin: 2
-  interTrialIntervalMax: 5
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 1
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 1
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 0
+  - type: 0
+    numberOfStimuli: 4
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 1
+    numberOfErrors: 5
+    pinchIsHinted: 1
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 1
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 1
+    hasAuditoryFeedback: 0
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 0
+  - type: 1
+    numberOfStimuli: 6
+    numberOfTrials: 10
+    hasVirtualHand: 0
+    hasVisualFeedback: 0
+    hasAuditoryFeedback: 1
+    numberOfErrors: 0
+    pinchIsHinted: 0
+    numberOfObserveStimuli: 0
+    isChoiceStimuli: 1
+    feedbackIsDelayed: 1
+  interTrialIntervalMin: 3
+  interTrialIntervalMax: 7
   feedbackDuration: 0.5
   gazeMinTime: 0.2
-  gapBetweenExperiments: 20
+  gapBetweenExperiments: 15
   staticSpawner: {fileID: 1516759628}
   randomSpawner: {fileID: 68749651}
   handVisualizer: {fileID: 1407308815}
@@ -8065,7 +8524,7 @@ MonoBehaviour:
   gazeRaycaster: {fileID: 1359528791}
   pauseUi: {fileID: 1959111151}
   instructionTextUi: {fileID: 1400203280}
-  progress: {fileID: 0}
+  progress: {fileID: 636749077}
   onSequenceStart:
     m_PersistentCalls:
       m_Calls: []
