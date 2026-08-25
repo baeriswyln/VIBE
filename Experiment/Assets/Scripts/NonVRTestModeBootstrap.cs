@@ -1,6 +1,8 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.XR.Management;
 
 /// <summary>
 /// Lets the experiment run without VR hardware: when no XR headset is active,
@@ -16,12 +18,58 @@ using UnityEngine.Rendering.Universal;
 /// </summary>
 public static class NonVRTestModeBootstrap
 {
+    // XRSettings.isDeviceActive can still read false for the first few frames
+    // after a real headset's loader has initialized, because the runtime
+    // (e.g. OpenXR) finishes its session handshake asynchronously. Give it a
+    // window to come up before concluding no headset is present.
+    private const float DeviceActivationTimeoutSeconds = 10f;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Init()
     {
-        if (UnityEngine.XR.XRSettings.isDeviceActive)
-            return; // real headset connected and tracking — leave VR input untouched
+        var xrManager = XRGeneralSettings.Instance != null ? XRGeneralSettings.Instance.Manager : null;
+        if (xrManager == null || xrManager.activeLoader == null)
+        {
+            // No XR loader ever came up, so no runtime/headset was found at
+            // all — this is known immediately, nothing to wait for.
+            EnableMouseLookMode();
+            return;
+        }
 
+        if (UnityEngine.XR.XRSettings.isDeviceActive)
+            return; // real headset connected and already tracking — leave VR input untouched
+
+        var waiter = new GameObject("[NonVRTestModeBootstrap] XR Activation Waiter").AddComponent<XrActivationWaiter>();
+        Object.DontDestroyOnLoad(waiter.gameObject);
+        waiter.Begin(DeviceActivationTimeoutSeconds);
+    }
+
+    private sealed class XrActivationWaiter : MonoBehaviour
+    {
+        public void Begin(float timeoutSeconds) => StartCoroutine(WaitRoutine(timeoutSeconds));
+
+        private IEnumerator WaitRoutine(float timeoutSeconds)
+        {
+            float deadline = Time.unscaledTime + timeoutSeconds;
+            while (Time.unscaledTime < deadline)
+            {
+                if (UnityEngine.XR.XRSettings.isDeviceActive)
+                {
+                    Destroy(gameObject);
+                    yield break;
+                }
+                yield return null;
+            }
+
+            Debug.LogWarning("[NonVRTestModeBootstrap] XR loader initialized but headset never became active " +
+                              $"within {timeoutSeconds:0}s — falling back to mouse-look test mode.");
+            EnableMouseLookMode();
+            Destroy(gameObject);
+        }
+    }
+
+    private static void EnableMouseLookMode()
+    {
         var gazeRaycaster = Object.FindFirstObjectByType<GazeRaycaster>();
         if (gazeRaycaster == null)
             return;
