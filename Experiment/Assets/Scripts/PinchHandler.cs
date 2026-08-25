@@ -85,6 +85,10 @@ public class PinchHandler : MonoBehaviour
 
     private void HandleKeyboardPinch(InputAction.CallbackContext ctx)
     {
+        // No mouse input as pinch if VR is active
+        if (ctx.control.device is Mouse && UnityEngine.XR.XRSettings.isDeviceActive)
+            return;
+
         HandlePinch();
     }
     
