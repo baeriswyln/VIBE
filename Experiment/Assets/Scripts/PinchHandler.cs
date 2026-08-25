@@ -112,19 +112,6 @@ public class PinchHandler : MonoBehaviour
             Debug.LogWarning("pinch skipped");
             return;
         }
-
-        // don't play sound if the pinch should be hidden, or no auditory feedback is required.
-        if (!hideNextPinch && (ExperimentManager.Instance.CurrentExperiment?.config.hasAuditoryFeedback ?? false)) 
-        {
-            if (ExperimentManager.Instance.CurrentExperiment.config.feedbackIsDelayed)
-            {
-                StartCoroutine(PlayClickSoundDelayed(feedbackDelay));
-            }
-            else
-            {
-                _audioSource.PlayOneShot(clickSound, .5f);
-            }
-        } 
         
         _lastPinchTime = Time.time;
 
@@ -137,10 +124,16 @@ public class PinchHandler : MonoBehaviour
             {
                 if (ExperimentManager.Instance.CurrentExperiment.config.feedbackIsDelayed)
                 {
+                    if (ExperimentManager.Instance.CurrentExperiment?.config.hasAuditoryFeedback ?? false) 
+                        StartCoroutine(PlayClickSoundDelayed(feedbackDelay));
+                    
                     StartCoroutine(SelectDelayed(target, feedbackDelay));
                 }
                 else
                 {
+                    if (ExperimentManager.Instance.CurrentExperiment?.config.hasAuditoryFeedback ?? false)
+                        _audioSource.PlayOneShot(clickSound, .5f);
+                    
                     target.OnSelect();
                 }
             }
