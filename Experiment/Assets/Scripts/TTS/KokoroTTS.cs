@@ -194,7 +194,7 @@ namespace Unity.InferenceEngine.TTS.Inference
             {
                 if (kvp.Key.Length != 1)
                 {
-                    Debug.LogWarning(~StreamOutlet() { dll.lsl_destroy_outlet(obj); }$"Skipping non-single-character token: \"{kvp.Key}\" (length {kvp.Key.Length})");
+                    Debug.LogWarning($"Skipping non-single-character token: \"{kvp.Key}\" (length {kvp.Key.Length})");
                     continue;
                 }
                 charVocab[kvp.Key[0]] = kvp.Value;
