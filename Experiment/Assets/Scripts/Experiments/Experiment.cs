@@ -5,6 +5,7 @@ using Unity.InferenceEngine.TTS.Inference;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.Serialization;
 
 namespace Experiments
 {
@@ -95,13 +96,13 @@ namespace Experiments
         public bool hasAuditoryFeedback = true;
         public int numberOfErrors = 0;
         public bool pinchIsHinted = false;
-        public int numberOfObserveStimuli = 0;
+        [FormerlySerializedAs("numberOfObserveStimuli")] public int numberOfObserveTrials = 0;
         public bool isChoiceStimuli = false;
         public bool feedbackIsDelayed = false;
 
         public ExperimentConfig(ExperimentType type, int numberOfStimuli, int numberOfTrials, 
             bool hasVirtualHand = true, bool hasVisualFeedback = true, bool hasAuditoryFeedback = true, 
-            int numberOfErrors = 0, bool pinchIsHinted = false, int numberOfObserveStimuli = 0, 
+            int numberOfErrors = 0, bool pinchIsHinted = false, int numberOfObserveTrials = 0, 
             bool isChoiceStimuli = false, bool feedbackIsDelayed = false)
         {
             this.type = type;
@@ -112,7 +113,7 @@ namespace Experiments
             this.hasAuditoryFeedback = hasAuditoryFeedback;
             this.numberOfErrors = numberOfErrors;
             this.pinchIsHinted = pinchIsHinted;
-            this.numberOfObserveStimuli = numberOfObserveStimuli;
+            this.numberOfObserveTrials = numberOfObserveTrials;
             this.isChoiceStimuli = isChoiceStimuli;
             this.feedbackIsDelayed = feedbackIsDelayed;
             
@@ -157,7 +158,7 @@ namespace Experiments
         {
             numberOfStimuli = Math.Max(numberOfStimuli, 0);
             numberOfErrors = Math.Min(Math.Max(numberOfErrors, 0), numberOfStimuli);
-            numberOfObserveStimuli = Math.Min(Math.Max(numberOfObserveStimuli, 0), numberOfStimuli);
+            numberOfObserveTrials = Math.Min(Math.Max(numberOfObserveTrials, 0), numberOfStimuli);
         }
     }
 }

@@ -49,10 +49,10 @@ namespace Experiments
             
             if (config != null)
             {
-                for (var i = 0; i < config.numberOfStimuli; i++)
+                for (var i = 0; i < config.numberOfTrials; i++)
                 {
                     _errorList.Add(i < config.numberOfErrors);
-                    _observableList.Add(i < config.numberOfObserveStimuli);
+                    _observableList.Add(i < config.numberOfObserveTrials);
                 }
 
                 _errorList.Shuffle();

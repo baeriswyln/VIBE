@@ -7217,7 +7217,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   spawner: {fileID: 0}
@@ -7227,26 +7227,35 @@ MonoBehaviour:
   onExperimentComplete:
     m_PersistentCalls:
       m_Calls: []
-  skipEndOfExperimentPause: 0
+  skipEndOfExperimentPause: 1
   endScheduled: 0
   textBeforeStart:
-  - 
+  - The experiment is being prepared and will start soon. Please wait.
   textBeforeStimuliIntroduction:
-  - 
+  - 'Try to reduce head movements and general body movements to a minimum, this will
+    improve the measurements. '
   textStimuliIntroduction:
-  - 
+  - 'You will be looking at a series of highlighted stimuli.  A stimulus is a colored
+    sphere. A highlighted stimulus is outlined yellow.  '
+  - 'Once you look at a stimulus, its outline will turn orange.  '
+  - Once you select the stimulus, it will turn green, and a confirmation sound plays.
+  - You will be selecting the highlighted stimulus by looking at it and using a pinch
+    gesture with your right hand.
   textBeforeExample:
-  - 
-  instructionsTestrun1:
-  - 
-  instructionsTestrun2:
-  - 
-  instructionsTestrun3:
-  - 
+  - You can now try it out.
   textAfterExample:
-  - 
-  stimuliPrefab: {fileID: 0}
-  gazeRaycaster: {fileID: 0}
+  - 'Please be aware that the audio/visual selection-feedback will not be present
+    in every round. '
+  - Additionally, in some rounds, the feedback will arrive with a delay, as you have
+    experienced in the previous tutorial block.
+  - The experiment will now start shortly. It contains multiple rounds. During each
+    round, you will observe 10 events.
+  - 'Inbetween the rounds you have 15 seconds to relax. During this time you can
+    freely move your hand, and rest your eyes. '
+  - 'Be sure to return into the original position after relaxing. '
+  - The experimen will now start.
+  stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
+  gazeRaycaster: {fileID: 1359528791}
 --- !u!1 &1625652138
 GameObject:
   m_ObjectHideFlags: 0
@@ -7486,7 +7495,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 0
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   spawner: {fileID: 0}
@@ -8160,7 +8169,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   spawner: {fileID: 0}
@@ -8179,25 +8188,22 @@ MonoBehaviour:
     improve the measurements. '
   textStimuliIntroduction:
   - 'You will be looking at a series of highlighted stimuli.  A stimulus is a blue
-    sphere. A highlighted stimulus is yellow.  '
-  - 'Once you look at a stimulus, it will turn orange. Once you select the stimulus,
-    it will turn green, and a confirmation sound plays. '
+    sphere. A highlighted stimulus is outlined yellow.  '
+  - 'Once you look at a stimulus, its outline will turn orange.  '
+  - Once you select the stimulus, it will turn green, and a confirmation sound plays.
   - You will be selecting the highlighted stimulus by looking at it and using a pinch
     gesture with your right hand.
   textBeforeExample:
-  - 'Try it out. Look at the stimulus in front of you, and pinch to select.  '
-  instructionsTestrun1:
-  - 
-  instructionsTestrun2:
-  - 
-  instructionsTestrun3:
-  - 
+  - You can now try it out.
   textAfterExample:
-  - 'Well done! The experiment contains multiple rounds. During each round, you will
-    observe 20 events. '
-  - 'Inbetween the rounds you have 20 seconds to relax. During this time you can
+  - 'Please be aware that the audio/visual selection-feedback will not be present
+    in every round. '
+  - The experiment will now start shortly. It contains multiple rounds. During each
+    round, you will observe 15 to 20 events.
+  - 'Inbetween the rounds you have 15 seconds to relax. During this time you can
     freely move your hand, and rest your eyes. '
   - 'Be sure to return into the original position after relaxing. '
+  - The experimen will now start.
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   gazeRaycaster: {fileID: 1359528791}
 --- !u!1 &1975376541
@@ -8318,7 +8324,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   experimentConfigsSession1:
@@ -8330,7 +8336,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   - type: 0
@@ -8341,7 +8347,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   - type: 0
@@ -8352,7 +8358,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 0
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   - type: 0
@@ -8363,7 +8369,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 5
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   - type: 0
@@ -8374,7 +8380,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 5
     pinchIsHinted: 1
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   - type: 0
@@ -8385,7 +8391,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 10
+    numberOfObserveTrials: 10
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   - type: 1
@@ -8396,7 +8402,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 0
     numberOfErrors: 5
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   - type: 1
@@ -8407,7 +8413,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 5
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   - type: 1
@@ -8418,7 +8424,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 5
     pinchIsHinted: 1
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   - type: 1
@@ -8429,7 +8435,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 15
+    numberOfObserveTrials: 15
     isChoiceStimuli: 0
     feedbackIsDelayed: 0
   tutorialSession2: {fileID: 1620065022}
@@ -8442,7 +8448,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 1
     feedbackIsDelayed: 0
   experimentConfigsSession2:
@@ -8454,7 +8460,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 1
     feedbackIsDelayed: 0
   - type: 0
@@ -8465,7 +8471,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 1
     feedbackIsDelayed: 1
   - type: 0
@@ -8476,7 +8482,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 5
     pinchIsHinted: 1
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 1
     feedbackIsDelayed: 0
   - type: 0
@@ -8487,7 +8493,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 5
     pinchIsHinted: 1
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 1
     feedbackIsDelayed: 1
   - type: 1
@@ -8498,7 +8504,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 0
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 1
     feedbackIsDelayed: 0
   - type: 1
@@ -8509,7 +8515,7 @@ MonoBehaviour:
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
-    numberOfObserveStimuli: 0
+    numberOfObserveTrials: 0
     isChoiceStimuli: 1
     feedbackIsDelayed: 1
   interTrialIntervalMin: 3

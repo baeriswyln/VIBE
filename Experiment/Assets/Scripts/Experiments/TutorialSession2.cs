@@ -21,15 +21,6 @@ namespace Experiments
 
         [TextArea(3, 10)] [Tooltip("Each string becomes one page of instructions.")]
         public string[] textBeforeExample = new[] { "" };
-        
-        [TextArea(3, 10)] [Tooltip("Each string becomes one page of instructions.")]
-        public string[] instructionsTestrun1 = new[] { "" };
-
-        [TextArea(3, 10)] [Tooltip("Each string becomes one page of instructions.")]
-        public string[] instructionsTestrun2 = new[] { "" };
-
-        [TextArea(3, 10)] [Tooltip("Each string becomes one page of instructions.")]
-        public string[] instructionsTestrun3 = new[] { "" };
 
         [TextArea(3, 10)] [Tooltip("Each string becomes one page of instructions.")]
         public string[] textAfterExample = new[] { "" };
@@ -89,17 +80,14 @@ namespace Experiments
             yield return ExperimentManager.Instance.PlayTextPages(textBeforeExample);
 
             // 3 rounds of Static_4 "choice"
-            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun1);
             var cfg1 = new ExperimentConfig(ExperimentType.Static, 4, 3, isChoiceStimuli: true);
             yield return RunTutorialBlock(cfg1, "TutorialSession2_Block1");
 
-            // 3 rounds of Static_4 with "hinted pinch
-            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun2);
+            // 3 rounds of Static_4 with "hinted pinch"
             var cfg2 = new ExperimentConfig(ExperimentType.Static, 4, 3, pinchIsHinted: true);
             yield return RunTutorialBlock(cfg2, "TutorialSession2_Block2");
 
             // 3 rounds of Static_4 with "delayed feedback"
-            yield return ExperimentManager.Instance.PlayTextPages(instructionsTestrun3);
             var cfg3 = new ExperimentConfig(ExperimentType.Static, 4, 3, feedbackIsDelayed: true);
             yield return RunTutorialBlock(cfg3, "TutorialSession2_Block3");
 

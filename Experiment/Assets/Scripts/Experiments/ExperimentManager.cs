@@ -262,6 +262,7 @@ namespace Experiments
             _currentIndex = -1;
             _isRunning = false;
             onSequenceComplete?.Invoke();
+            yield return Instance.PlayTextPages(new []{"This is the end of the experiment. Thank you for participating."});
             ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_COMPLETE", ""));
         }
 
@@ -274,7 +275,7 @@ namespace Experiments
             else
             {
                 var text = "Select the highlighted stimulus.";
-                if (config.numberOfObserveStimuli > 0) text += " A stimulus highlighted red should only be observed. Look at such a stimulus for approximately half a second without pinching.";
+                if (config.numberOfObserveTrials > 0) text += " A stimulus highlighted red should only be observed. Look at such a stimulus for approximately half a second without pinching.";
                 pages.Add(text);
             }
             
