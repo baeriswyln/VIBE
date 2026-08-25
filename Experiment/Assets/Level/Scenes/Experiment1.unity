@@ -7244,7 +7244,7 @@ MonoBehaviour:
   textBeforeExample:
   - You can now try it out.
   textAfterExample:
-  - 'Please be aware that the audio/visual selection-feedback will not be present
+  - 'Please be aware that the audio and visual selection-feedback will not be present
     in every round. '
   - Additionally, in some rounds, the feedback will arrive with a delay, as you have
     experienced in the previous tutorial block.
@@ -7253,7 +7253,7 @@ MonoBehaviour:
   - 'Inbetween the rounds you have 15 seconds to relax. During this time you can
     freely move your hand, and rest your eyes. '
   - 'Be sure to return into the original position after relaxing. '
-  - The experimen will now start.
+  - The experiment will now start.
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   gazeRaycaster: {fileID: 1359528791}
 --- !u!1 &1625652138
@@ -8196,14 +8196,14 @@ MonoBehaviour:
   textBeforeExample:
   - You can now try it out.
   textAfterExample:
-  - 'Please be aware that the audio/visual selection-feedback will not be present
+  - 'Please be aware that the audio and visual selection-feedback will not be present
     in every round. '
   - The experiment will now start shortly. It contains multiple rounds. During each
-    round, you will observe 15 to 20 events.
+    round, you will observe 15 events.
   - 'Inbetween the rounds you have 15 seconds to relax. During this time you can
     freely move your hand, and rest your eyes. '
   - 'Be sure to return into the original position after relaxing. '
-  - The experimen will now start.
+  - The experiment will now start.
   stimuliPrefab: {fileID: 2297796887684887862, guid: 8fc5897fb280c77459d8e476adda8d51, type: 3}
   gazeRaycaster: {fileID: 1359528791}
 --- !u!1 &1975376541
