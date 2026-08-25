@@ -253,7 +253,7 @@ namespace Experiments
                 onExperimentFinished?.Invoke(exp);
                 
                 // update progress indication
-                progress.text = $"Progress: {(_currentIndex == 0 ? 0 : ((_experimentPlaylist.Count-1) / _currentIndex))}%";
+                progress.text = $"Progress: {(_currentIndex == 0 ? 0 : (100f / (_experimentPlaylist.Count-1) * _currentIndex)):F0}%";
 
                 if (gapBetweenExperiments > 0f && !exp.endScheduled && !exp.skipEndOfExperimentPause)
                     yield return new WaitForSeconds(gapBetweenExperiments);
