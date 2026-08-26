@@ -42,6 +42,7 @@ public class Interactable : MonoBehaviour
     private bool _visuallyConfirmSelect = true;
     private Vector3 _originalScale;
     private Color _originalColor;
+    private Color _baseColor;
     private Renderer _renderer;
     private MaterialPropertyBlock _propBlock;
     private Material _outlineInstance;
@@ -73,6 +74,7 @@ public class Interactable : MonoBehaviour
         {
             _renderer.GetPropertyBlock(_propBlock);
             _originalColor = _renderer.sharedMaterial.color;
+            _baseColor = _renderer.sharedMaterial.color;
         }
  
         if (string.IsNullOrEmpty(StimulusId))
@@ -160,6 +162,7 @@ public class Interactable : MonoBehaviour
         _isSelected = false;
         _isHighlighted = false;
         _isHighlightedNegative = false;
+        _originalColor = _baseColor;
         UpdateColor();
         transform.localScale = _originalScale;
     }

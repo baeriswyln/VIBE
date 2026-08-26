@@ -73,8 +73,6 @@ namespace Experiments
             Destroy(s_focused.gameObject);
             Destroy(s_selected.gameObject);
 
-            var s_example = Instantiate(stimuliPrefab, baseLoc + 1.5f * Vector3.right, Quaternion.identity);
-
             gazeRaycaster.Activate();
             PinchHandler.Instance.Active = true;
             yield return ExperimentManager.Instance.PlayTextPages(textBeforeExample);
@@ -94,8 +92,6 @@ namespace Experiments
             // any questions? wait for confirmation
             yield return new WaitUntil(() => InputSystem.actions.FindAction("ExpConfirm").IsPressed() || endScheduled);
             PinchHandler.Instance.Active = false;
-
-            Destroy(s_example.gameObject);
 
             yield return ExperimentManager.Instance.PlayTextPages(textAfterExample);
 
