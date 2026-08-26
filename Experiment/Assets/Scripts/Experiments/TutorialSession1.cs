@@ -43,7 +43,7 @@ namespace Experiments
             base.OnEnd();
         }
 
-        public override IEnumerator Run()
+        public override IEnumerator Run(bool skipEndPause = false)
         {
             gazeRaycaster.Deactivate();
 
@@ -102,7 +102,7 @@ namespace Experiments
             var comp = cfg.CreateExperiment(ExperimentManager.Instance.gameObject, name);
 
             comp.OnBegin();
-            yield return comp.Run();
+            yield return comp.Run(true);
             comp.OnEnd();
             
             Destroy(comp.gameObject);

@@ -19,7 +19,7 @@ namespace Experiments
     /// </summary>
     public class ExperimentRandom : StimuliExperiment
     {
-        public override IEnumerator Run()
+        public override IEnumerator Run(bool skipEndPause = false)
         {
             if (!spawner)
             {
@@ -61,7 +61,10 @@ namespace Experiments
             PinchHandler.Instance.Active = false;
             
             spawner.DestroyStimuli();
-            yield return ExperimentManager.Instance.PlayTextPages(new[] { "End of the round, short break." });
+            if (!skipEndPause)
+            {
+                yield return ExperimentManager.Instance.PlayTextPages(new[] { "End of the round, short break." });
+            }
             ExperimentLogger.Instance.Log(new ExperimentLog(ToString(), $"Finished: {_results.Count} events."));
             MarkComplete();
         }

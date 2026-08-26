@@ -58,7 +58,7 @@ namespace Experiments
         /// The main experiment logic. Must be implemented by subclasses.
         /// Runs as a coroutine so you can use yield return to wait for things.
         /// </summary>
-        public abstract IEnumerator Run();
+        public abstract IEnumerator Run(bool skipEndPause = false);
 
         /// <summary>
         /// Called by the runner after Run() completes. Override for cleanup.

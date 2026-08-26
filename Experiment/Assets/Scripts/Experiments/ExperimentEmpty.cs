@@ -8,7 +8,7 @@ namespace Experiments
     
     
     {
-        public override IEnumerator Run()
+        public override IEnumerator Run(bool skipEndPause = false)
         {
             // yield return PlayTextPages(textStart);
             // if(trialInfoText) trialInfoText.gameObject.SetActive(false);
