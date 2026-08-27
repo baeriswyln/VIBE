@@ -52,7 +52,7 @@ namespace Experiments
             PinchHandler.Instance.Active = false;
             
             spawner.DestroyStimuli();
-            if (skipEndPause)
+            if (!skipEndPause)
             {
                 yield return ExperimentManager.Instance.PlayTextPages(new[] { "End of the round, short break." });
             }

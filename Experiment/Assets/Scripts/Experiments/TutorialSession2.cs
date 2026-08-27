@@ -86,8 +86,10 @@ namespace Experiments
             yield return RunTutorialBlock(cfg2, "TutorialSession2_Block2");
 
             // 3 rounds of Static_4 with "delayed feedback"
+            config.feedbackIsDelayed = true;
             var cfg3 = new ExperimentConfig(ExperimentType.Static, 4, 3, feedbackIsDelayed: true);
             yield return RunTutorialBlock(cfg3, "TutorialSession2_Block3");
+            config.feedbackIsDelayed = false;
 
             // any questions? wait for confirmation
             yield return new WaitUntil(() => InputSystem.actions.FindAction("ExpConfirm").IsPressed() || endScheduled);

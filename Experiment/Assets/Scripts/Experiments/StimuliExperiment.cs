@@ -185,8 +185,14 @@ namespace Experiments
                         Action = selectedStimulus.IsHighlighted ? "select" : "gazeSelect",
                         Trial = trialNumber,
                         Target = result.TargetId,
-                        ResponseTime = result.ResponseTime
+                        ResponseTime = result.ResponseTime,
+                        ExperimentConfig = ExperimentManager.Instance.CurrentExperiment?.config,
                     })));
+            if (selectedStimulus.IsHighlightedNegative)
+            {
+                // special pinch log for gaze select
+                ExperimentLogger.Instance.Log(new PinchLog(selectedStimulus, PinchLog.PinchType.GAZE));
+            }
 
             yield return new WaitForSeconds(ExperimentManager.Instance.feedbackDuration);
 

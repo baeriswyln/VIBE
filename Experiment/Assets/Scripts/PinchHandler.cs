@@ -41,7 +41,7 @@ public class PinchHandler : MonoBehaviour
     public PinchSource currentPinchSource = PinchSource.Leap;
 
     [Tooltip("Delay in seconds applied to feedback when feedbackIsDelayed is set on the experiment config.")]
-    public float feedbackDelay = 0.5f;
+    public float feedbackDelay = 0.6f;
 
     [Header("Events")] public UnityEvent onPinchDetected;
     public UnityEvent<Interactable> onStimulusClicked;
@@ -124,9 +124,6 @@ public class PinchHandler : MonoBehaviour
             {
                 if (ExperimentManager.Instance.CurrentExperiment.config.feedbackIsDelayed)
                 {
-                    if (ExperimentManager.Instance.CurrentExperiment?.config.hasAuditoryFeedback ?? false) 
-                        StartCoroutine(PlayClickSoundDelayed(feedbackDelay));
-                    
                     StartCoroutine(SelectDelayed(target, feedbackDelay));
                 }
                 else
@@ -149,15 +146,11 @@ public class PinchHandler : MonoBehaviour
         }
     }
 
-    private IEnumerator PlayClickSoundDelayed(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        _audioSource.PlayOneShot(clickSound, .5f);
-    }
-
     private IEnumerator SelectDelayed(Interactable target, float delay)
     {
         yield return new WaitForSeconds(delay);
+        if (ExperimentManager.Instance.CurrentExperiment?.config.hasAuditoryFeedback ?? false) 
+            _audioSource.PlayOneShot(clickSound, .5f);
         target.OnSelect();
     }
 }

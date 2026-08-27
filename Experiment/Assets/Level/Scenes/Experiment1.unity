@@ -1483,7 +1483,7 @@ MonoBehaviour:
   cooldownTime: 0.2
   clickSound: {fileID: 8300000, guid: cef5d2eaf31bece4c93da1d521e64b22, type: 3}
   currentPinchSource: 0
-  feedbackDelay: 0.5
+  feedbackDelay: 0.6
   onPinchDetected:
     m_PersistentCalls:
       m_Calls: []
@@ -8443,13 +8443,13 @@ MonoBehaviour:
     type: 0
     numberOfStimuli: 4
     numberOfTrials: 10
-    hasVirtualHand: 0
+    hasVirtualHand: 1
     hasVisualFeedback: 1
     hasAuditoryFeedback: 1
     numberOfErrors: 0
     pinchIsHinted: 0
     numberOfObserveTrials: 0
-    isChoiceStimuli: 1
+    isChoiceStimuli: 0
     feedbackIsDelayed: 0
   experimentConfigsSession2:
   - type: 0
