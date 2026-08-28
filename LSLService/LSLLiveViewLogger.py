@@ -30,6 +30,9 @@ MARKER_COLORS = ["#c0392b", "#27ae60", "#2980b9", "#e67e22", "#8e44ad"]
 # Channels to hide from the visualization
 HIDDEN_CHANNELS = {"X1", "X2", "X3", "TRG"}
 
+# Marker EventTypes to log but not draw on the plot
+HIDDEN_MARKER_EVENT_TYPES = {"BlinkLog", "GazeLog"}
+
 # Display order — channels are shown top-to-bottom in this sequence.
 # Any channel present in the stream but absent from this list is appended at the end.
 CHANNEL_ORDER = [
@@ -133,7 +136,7 @@ _eeg_writer.writerow(["timestamp"] + eeg_ch_names)
 _last_eeg_ts = -1.0
 WINDOW_SEC = 5.0          # how many seconds to show
 SPACING    = 40.0         # vertical spacing between channels (µV)
-REFRESH    = 0.10         # plot refresh interval (s)
+REFRESH    = 0.20         # plot refresh interval (s)
 
 # --- Visible channel indices in DSI display order ---
 _ch_index = {name: i for i, name in enumerate(eeg_ch_names)}
@@ -298,7 +301,14 @@ try:
                     marker_obj["timestamp"] = t
                     marker_obj["stream"] = inlet.name
                     _marker_jsonl.write(json.dumps(marker_obj) + "\n")
-                all_marker_ts.extend([(t, idx) for t in corrected.tolist()])
+                    event_type = marker_obj.get("EventType")
+                    if event_type not in HIDDEN_MARKER_EVENT_TYPES:
+                        label = event_type or "?"
+                        if event_type == "PinchLog":
+                            pinch_type = (marker_obj.get("Payload") or {}).get("PinchType")
+                            if pinch_type:
+                                label = f"{event_type} ({pinch_type})"
+                        all_marker_ts.append((t, idx, label))
 
         # Clear old marker lines
         for ml in marker_lines:
@@ -309,18 +319,18 @@ try:
         marker_texts.clear()
 
         # Redraw markers within the visible window
-        for mts, stream_idx in all_marker_ts:
+        for mts, stream_idx, label in all_marker_ts:
             t_rel_mk = mts - t_start
             color = MARKER_COLORS[stream_idx % len(MARKER_COLORS)]
             if 0 <= t_rel_mk <= WINDOW_SEC:
                 vline = ax.axvline(x=t_rel_mk, color=color, lw=1.0, linestyle="--", alpha=0.6)
                 txt   = ax.text(t_rel_mk + 0.05, (n_vis - 0.7) * SPACING,
-                                "stim", color="#aaaaaa", fontsize=8, alpha=0.7)
+                                label, color="#aaaaaa", fontsize=8, alpha=0.7)
                 marker_lines.append(vline)
                 marker_texts.append(txt)
 
         # Prune old markers
-        all_marker_ts = [(mts, i) for mts, i in all_marker_ts if mts >= eeg_buf_ts[0]]
+        all_marker_ts = [(mts, i, label) for mts, i, label in all_marker_ts if mts >= eeg_buf_ts[0]]
 
         if len(drawn_marker_ts) == 1:
             ax.legend(loc="upper right", facecolor="#222222", labelcolor="#aaaaaa", fontsize=9)
