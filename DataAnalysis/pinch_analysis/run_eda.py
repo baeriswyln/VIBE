@@ -456,7 +456,7 @@ def fig_motor_by_experiment(times, trace, meta, report_lines, ylim=(-0.29,0.02))
     pre = (times >= -0.5) & (times <= 0.0)
     meta = meta.assign(beta_erd=trace[:, pre].mean(axis=1))
     meta = meta[meta["experiment"].notna() &
-               ~meta["experiment"].isin(["Tutorial", "End"])]
+               ~ds.is_excluded_block(meta["experiment"])]
     idx = meta.index.to_numpy()
     trace_e = trace[idx]
     meta_r = meta.reset_index(drop=True)
@@ -675,7 +675,7 @@ def fig_subject_topo_by_experiment(pooled, subject, report_lines):
     sub_ep = pooled[idx]
     meta_full = sub_ep.metadata.reset_index(drop=True)
     keep = (meta_full["experiment"].notna() &
-           ~meta_full["experiment"].isin(["Tutorial", "End"])).to_numpy()
+           ~ds.is_excluded_block(meta_full["experiment"])).to_numpy()
     ep = sub_ep[keep]
     meta = meta_full[keep].reset_index(drop=True)
     present = [e for e in EXP_ORDER if e in meta["experiment"].unique()]
@@ -804,9 +804,8 @@ def main():
         preps.append(prepare_session(sess))
 
     report.append("\n## 2. Signal quality & spectra\n")
-    example = next(i for i, p in enumerate(preps)
-                   if p.session.subject == "subject_8")
-    fig_signal_quality(preps[example], report)   # subject_8 as example
+    example = 0  # first session (by subject) as a representative example
+    fig_signal_quality(preps[example], report)
     fig_timeline(preps[example], report)
     fig_psd(preps, report)
 
@@ -911,14 +910,23 @@ def main():
     else:
         report.append("- No hard-negative epochs available; skipped.")
 
-    report.append("\n### 3e. Single-subject case study - subject_7\n")
-    fig_subject_erp_spaghetti(pooled, "subject_7", report)
-    fig_subject_topo_by_experiment(pooled, "subject_7", report)
+    # Case-study subject: whoever has the strongest (most negative) median
+    # pre-movement beta ERD in §3b, rather than a hardcoded id.
+    pre_b = (times_b >= -0.5) & (times_b <= 0.0)
+    beta_erd_b = meta_b.assign(beta_erd=trace_b[:, pre_b].mean(axis=1))
+    case_study_subject = beta_erd_b.groupby("subject")["beta_erd"].median().idxmin()
+    report.append(
+        f"\n### 3e. Single-subject case study - {case_study_subject}\n"
+        f"({case_study_subject} has the strongest grand-average beta ERD of "
+        "the cohort, per §3b.)\n")
+    fig_subject_erp_spaghetti(pooled, case_study_subject, report)
+    fig_subject_topo_by_experiment(pooled, case_study_subject, report)
 
     report.append("\n## 4. Gaze / pupil around the pinch\n")
     fig_gaze(preps, report)
 
-    (OUT / "eda_report.md").write_text("\n".join(str(x) for x in report))
+    (OUT / "eda_report.md").write_text("\n".join(str(x) for x in report),
+                                       encoding="utf-8")
     print("\nWrote", OUT / "eda_report.md", "and figures to", FIGS)
 
 

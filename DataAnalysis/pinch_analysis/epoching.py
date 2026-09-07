@@ -99,7 +99,7 @@ def sample_negative_times(prep: PreparedSession, n: int, window: float,
         blocks = blocks[blocks["experiment"].isin(experiments)]
     # exclude tutorial/end blocks that carry no real trials (keep unlabeled
     # None blocks — subject_5 session 1 has no ExperimentName but real pinches)
-    blocks = blocks[~blocks["experiment"].isin(["Tutorial", "End", ""])]
+    blocks = blocks[~ds.is_excluded_block(blocks["experiment"])]
     spans = [(r.t_start + window, r.t_end - window)
              for r in blocks.itertuples() if r.t_end - r.t_start > 3 * window]
     if not spans:

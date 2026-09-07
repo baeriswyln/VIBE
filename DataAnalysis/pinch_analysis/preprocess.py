@@ -151,8 +151,8 @@ def pick_scalp(raw: mne.io.BaseRaw) -> mne.io.BaseRaw:
 
 
 if __name__ == "__main__":
-    from .dataset import find_sessions, load_eeg, DATA_ROOT
-    sess = find_sessions(DATA_ROOT / "subject_8")[0]
+    from .dataset import all_sessions, load_eeg
+    sess = all_sessions()[0]
     raw, ts = load_eeg(sess)
     clean, rep = preprocess(raw, verbose=True)
     print("Clean raw:", clean)

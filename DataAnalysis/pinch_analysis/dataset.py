@@ -4,9 +4,15 @@ dataset.py — Load and align the VIBE pinch experiment recordings.
 Each subject directory holds up to three synchronised streams that share one
 LSL clock (the ``timestamp`` column, in seconds):
 
-  * ``eeg_*.csv``    — 24 ch WearableSensing DSI-24 @ ~300 Hz
-  * ``gaze_*.csv``   — 19 ch Vive Pro Eye gaze @ nominal 120 Hz (effective ~38 Hz)
-  * ``markers_*.csv`` — event markers (JSON payloads on several sub-streams)
+  * ``eeg_*.csv``      — 24 ch WearableSensing DSI-24 @ ~300 Hz
+  * ``gaze_*.csv``     — 19 ch Vive Pro Eye gaze @ nominal 120 Hz (effective ~38 Hz)
+  * ``markers_*.jsonl`` — one JSON object per event marker, one line per event.
+    Each line is the recorder's merge of the raw LSL marker payload (as JSON,
+    published by the Unity ``ExperimentLogger``) with two fields it adds itself:
+    ``timestamp`` (LSL clock, seconds) and ``stream`` (the source LSL stream
+    name, e.g. ``Experiment.VIBE.GameEventStream``). The payload carries
+    ``EventType``/``EventName``/``ExperimentName``/``ExperimentConfig``/
+    ``Payload``/``HeadTracking`` straight from Unity's ``EventLog`` JSON.
 
 Because the streams share the LSL clock we can align everything by timestamp.
 The EEG ``TRG`` (trigger) channel is all-zero in these recordings, so marker
@@ -31,7 +37,6 @@ This module reuses ``scripts.s00_mne_info_builder`` for the MNE Info.
 """
 from __future__ import annotations
 
-import ast
 import glob
 import json
 import re
@@ -49,7 +54,10 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 from scripts.s00_mne_info_builder import build_info, LEGACY_TO_MODERN  # noqa: E402
 
-DATA_ROOT = _ROOT / "data"
+# Subject recordings live under data/raw/subject_*; fall back to data/ itself
+# so a flat data/subject_* layout (no raw/preprocessed split) still works.
+DATA_ROOT = _ROOT / "data" / "raw" if (_ROOT / "data" / "raw").exists() \
+    else _ROOT / "data"
 
 # Channels that are auxiliary / not scalp EEG on this DSI-24 export.
 #   A1, A2 : ear/mastoid references
@@ -71,6 +79,19 @@ GAZE_CHANNELS = [
 
 MYO_EXPERIMENTS = {"MyoTwoPositions", "MyoFourPositions"}
 
+# Blocks that carry no real experimental trials and should be excluded from
+# condition-level stats / negative-window sampling. Matches both the legacy
+# short names ("Tutorial", "End") and the current naming, where a practice
+# block's ExperimentName is e.g. "TutorialSession1 (Experiments.TutorialSession1)".
+_EXCLUDE_BLOCK_NAMES = {"", "End"}
+_TUTORIAL_RE = re.compile(r"Tutorial", re.IGNORECASE)
+
+
+def is_excluded_block(experiment: pd.Series) -> pd.Series:
+    """True for practice/tutorial or unlabeled 'end of session' block names."""
+    exp = experiment.fillna("")
+    return exp.isin(_EXCLUDE_BLOCK_NAMES) | exp.str.contains(_TUTORIAL_RE)
+
 
 # --------------------------------------------------------------------------- #
 # File discovery
@@ -84,7 +105,7 @@ class Session:
     eeg_meta: Path
     gaze_csv: Path
     gaze_meta: Path
-    markers_csv: Path
+    markers_jsonl: Path
 
     def __repr__(self) -> str:
         return f"Session(subject={self.subject!r}, stamp={self.stamp!r})"
@@ -118,7 +139,7 @@ def find_sessions(subject_dir: str | Path) -> list[Session]:
             eeg_meta=one("eeg_*_metadata.txt"),
             gaze_csv=one("gaze_*.csv"),
             gaze_meta=one("gaze_*_metadata.txt"),
-            markers_csv=one("markers_*.csv"),
+            markers_jsonl=one("markers_*.jsonl"),
         ))
     return sessions
 
@@ -213,16 +234,45 @@ def gaze_on_grid(gaze: pd.DataFrame, grid_ts: np.ndarray,
 # --------------------------------------------------------------------------- #
 # Markers
 # --------------------------------------------------------------------------- #
-def _parse_game_payload(value: str):
-    try:
-        lst = ast.literal_eval(value)
-        return json.loads(lst[0])
-    except Exception:
+def _read_markers_jsonl(path: Path) -> pd.DataFrame:
+    """Read a markers_*.jsonl file into a flat DataFrame, one row per line.
+
+    Each line is already a single JSON object (see module docstring), so this
+    is a straight `json.loads` per line - no nested string-encoded payloads
+    to unwrap. Malformed lines are dropped.
+    """
+    rows = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rows.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+    return pd.DataFrame(rows)
+
+
+def _select_message(payload: dict) -> dict | None:
+    """Parse an ExperimentLog Payload's `Message` field.
+
+    Most ExperimentLog messages carry a JSON-encoded dict (e.g.
+    `{"Action":"select","Trial":0,"Target":"Stimuli(Clone)","ResponseTime":...}`);
+    a few are plain text (e.g. "Finished: 3 events.") and are not selects.
+    """
+    msg = payload.get("Message") if isinstance(payload, dict) else None
+    if not isinstance(msg, str):
         return None
+    try:
+        obj = json.loads(msg)
+    except json.JSONDecodeError:
+        return None
+    return obj if isinstance(obj, dict) else None
 
 
 def parse_markers(session: Session) -> dict[str, pd.DataFrame]:
-    """Parse the markers CSV into tidy per-kind DataFrames.
+    """Parse the markers jsonl file into tidy per-kind DataFrames.
 
     Returns dict with keys:
       'game'  : all GameEventStream events (etype, ename, exp, payload cols)
@@ -232,25 +282,36 @@ def parse_markers(session: Session) -> dict[str, pd.DataFrame]:
       'blink' : BlinkLog events (eye, state)
       'gaze_evt': GazeLog events (gaze enter/exit on stimulus)
     """
-    mk = pd.read_csv(session.markers_csv)
-    game = mk[mk["stream"] == "Experiment.VIBE.GameEventStream"].copy()
-    parsed = game["value"].apply(_parse_game_payload)
-    keep = parsed.notna()
-    game = game[keep].copy()
-    parsed = parsed[keep]
-    game["etype"] = [p.get("EventType") for p in parsed]
-    game["ename"] = [p.get("EventName") for p in parsed]
-    game["exp"] = [p.get("ExperimentName") for p in parsed]
-    game["payload"] = list(parsed.apply(lambda p: p.get("Payload") or {}))
+    mk = _read_markers_jsonl(session.markers_jsonl)
+    empty_cols = ["timestamp", "experiment", "ename"]
+    if "stream" not in mk.columns:
+        game = pd.DataFrame(columns=empty_cols + ["etype", "payload"])
+    else:
+        game = mk[mk["stream"] == "Experiment.VIBE.GameEventStream"].copy()
+    game["etype"] = game.get("EventType")
+    game["ename"] = game.get("EventName")
+    game["exp"] = game.get("ExperimentName")
+    game["payload"] = (game["Payload"] if "Payload" in game.columns
+                       else pd.Series([{}] * len(game), index=game.index)) \
+        .apply(lambda p: p if isinstance(p, dict) else {})
 
     # --- Pinch gesture onsets (PinchLog) ---
+    # Stimulus info sits under Payload["Interactable"] (empty dict for
+    # PINCH_NONE, a pinch into empty space); Payload["PinchType"] is a new
+    # field distinguishing a real motor pinch ("PINCH") from a gaze-only
+    # selection logged as a PinchLog for bookkeeping ("GAZE"), a hinted
+    # Wizard-of-Oz pinch ("PINCH_WIZARD_OF_OZ"), etc.
     pl = game[game["etype"] == "PinchLog"].copy()
+    interactable = pl["payload"].apply(
+        lambda p: p.get("Interactable")
+        if isinstance(p.get("Interactable"), dict) else {})
     def pv(key, default=np.nan):
-        return [p.get(key, default) for p in pl["payload"]]
+        return [i.get(key, default) for i in interactable]
     pinch = pd.DataFrame({
         "timestamp": pl["timestamp"].to_numpy(),
         "experiment": pl["exp"].to_numpy(),
         "ename": pl["ename"].to_numpy(),
+        "pinch_type": [p.get("PinchType") for p in pl["payload"]],
         "stimulus_id": pv("StimulusId", None),
         "is_selected": pv("IsSelected", False),
         "is_highlighted": pv("IsHighlighted", False),
@@ -258,8 +319,8 @@ def parse_markers(session: Session) -> dict[str, pd.DataFrame]:
         "is_gazed": pv("IsGazed", False),
     })
     # position (only present for PINCH_STIMULUS)
-    pos = [p.get("Position", {}) if isinstance(p.get("Position"), dict) else {}
-           for p in pl["payload"]]
+    pos = [i.get("Position", {}) if isinstance(i.get("Position"), dict) else {}
+           for i in interactable]
     pinch["pos_x"] = [q.get("x", np.nan) for q in pos]
     pinch["pos_y"] = [q.get("y", np.nan) for q in pos]
     pinch["pos_z"] = [q.get("z", np.nan) for q in pos]
@@ -268,25 +329,20 @@ def parse_markers(session: Session) -> dict[str, pd.DataFrame]:
 
     # --- select logs (trial, rt) ---
     el = game[game["etype"] == "ExperimentLog"].copy()
-    el["msg"] = pd.Series(
-        [str(p.get("Message", "")) if isinstance(p, dict) else ""
-         for p in el["payload"]], index=el.index, dtype="object")
-    sel = el[el["msg"].str.contains("action=select", na=False)].copy()
-
-    def field(msg, key):
-        m = re.search(rf"{key}=([^,]+)", msg)
-        return m.group(1) if m else None
+    el["msg_obj"] = el["payload"].apply(_select_message)
+    is_select = el["msg_obj"].apply(
+        lambda d: isinstance(d, dict) and d.get("Action") == "select")
+    sel = el[is_select].copy()
     select = pd.DataFrame({
         "timestamp": sel["timestamp"].to_numpy(),
         "experiment": sel["exp"].to_numpy(),
-        "trial": [field(m, "trial") for m in sel["msg"]],
-        "target": [field(m, "target") for m in sel["msg"]],
-        "rt": [field(m, "rt") for m in sel["msg"]],
+        "trial": [d.get("Trial") for d in sel["msg_obj"]],
+        "target": [d.get("Target") for d in sel["msg_obj"]],
+        "rt": [d.get("ResponseTime") for d in sel["msg_obj"]],
     })
     if len(select):
         select["trial"] = pd.to_numeric(select["trial"], errors="coerce")
-        select["rt"] = pd.to_numeric(
-            select["rt"].str.replace("s", "", regex=False), errors="coerce")
+        select["rt"] = pd.to_numeric(select["rt"], errors="coerce")
 
     # --- blink / gaze logs ---
     bl = game[game["etype"] == "BlinkLog"].copy()
@@ -311,10 +367,30 @@ def parse_markers(session: Session) -> dict[str, pd.DataFrame]:
     })
 
     # --- myo ---
-    myo_raw = mk[mk["stream"] == "Experiment.VIBE.MyoPinch"].copy()
+    # The Myo bridge publishes plain-string samples ("pinch_start"/"pinch_end",
+    # not JSON) on a separate LSL stream; the recorder's `json.loads` on that
+    # payload fails and drops those samples, so no Experiment.VIBE.MyoPinch
+    # rows currently reach this file. Handled defensively in case that's fixed
+    # upstream and the stream starts publishing JSON objects.
+    if "stream" in mk.columns:
+        myo_raw = mk[mk["stream"] == "Experiment.VIBE.MyoPinch"].copy()
+    else:
+        myo_raw = mk.iloc[0:0]
+    def myo_state(row) -> str | None:
+        payload = row.get("Payload")
+        if isinstance(payload, dict):
+            for key in ("state", "State"):
+                if key in payload:
+                    return payload[key]
+        for key in ("state", "State"):
+            val = row.get(key)
+            if isinstance(val, str):
+                return val
+        return None
     myo = pd.DataFrame({
-        "timestamp": myo_raw["timestamp"].to_numpy(),
-        "state": myo_raw["value"].str.extract(r"'(pinch_\w+)'")[0].to_numpy(),
+        "timestamp": myo_raw["timestamp"].to_numpy() if len(myo_raw) else
+                     np.array([], dtype=np.float64),
+        "state": [myo_state(r) for _, r in myo_raw.iterrows()],
     })
 
     return {"game": game, "pinch": pinch, "select": select,
@@ -406,7 +482,7 @@ def experiment_blocks(markers: dict[str, pd.DataFrame],
 
 
 if __name__ == "__main__":
-    sess = find_sessions(DATA_ROOT / "subject_8")[0]
+    sess = all_sessions()[0]
     print("Session:", sess)
     raw, ts = load_eeg(sess)
     print("EEG raw:", raw)

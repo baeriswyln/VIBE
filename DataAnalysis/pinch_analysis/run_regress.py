@@ -46,7 +46,6 @@ W = 1.5            # window length (s)
 STEP = 0.1        # slide step (s)
 HORIZON = 2.0      # cap on time-to-next-pinch (s)
 GAZE_GRID_HZ = 60.0
-EXCLUDE_BLOCKS = {"Tutorial", "End", ""}
 
 
 def _gaze_arrays(prep):
@@ -73,7 +72,7 @@ def build_session(prep):
     pinch_t = np.sort(prep.pinch["timestamp"].to_numpy())
     ga = _gaze_arrays(prep)
 
-    blocks = prep.blocks[~prep.blocks["experiment"].isin(EXCLUDE_BLOCKS)]
+    blocks = prep.blocks[~ds.is_excluded_block(prep.blocks["experiment"])]
     end_times = []
     for r in blocks.itertuples():
         t = r.t_start + W
