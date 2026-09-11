@@ -20,5 +20,6 @@ dependencies = [
     "scipy>=1.17.1",
     "scipy-stubs~=1.17.1",
     "seaborn>=0.13.2",
+    "specparam>=2.0.0rc7",
     "torch>=2.13.0",
 ]
