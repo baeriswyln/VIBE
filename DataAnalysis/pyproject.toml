@@ -22,4 +22,13 @@ dependencies = [
     "seaborn>=0.13.2",
     "specparam>=2.0.0rc7",
     "torch>=2.13.0",
+    "wandb>=0.30.0",
 ]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu130" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
