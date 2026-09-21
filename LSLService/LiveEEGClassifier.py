@@ -14,8 +14,9 @@ import torch
 from pylsl import StreamInlet, StreamInfo, StreamOutlet, resolve_byprop, proc_clocksync, proc_dejitter
 from scipy import signal
 
-LSL_STREAM_NAME_IN  = ""
-LSL_STREAM_NAME_OUT = ""
+LSL_STREAM_NAME_IN  = "Experiment.VIBE.EEG"
+LSL_STREAM_NAME_OUT = "Experiment.VIBE.Pinch"
+LSL_MARKER_NAME_IN  = "Experiment.VIBE.MarkerReplay"
 CLASSIFY_WINDOW_SECONDS = 2
 
 
@@ -31,6 +32,9 @@ def parse_args():
     p.add_argument("--zscore", action="store_true",
                    help="Z-score each channel within the window (use only if you did so in training)")
     p.add_argument("--labels", default=None, help="Comma-separated class labels (metadata only)")
+    p.add_argument("--replay", action="store_true",
+                   help=f"Also subscribe to the '{LSL_MARKER_NAME_IN}' stream from EEGReplay.py and "
+                        f"report whether a ground-truth marker falls inside the classified window")
     return p.parse_args()
 
 
@@ -69,8 +73,8 @@ class StreamingFilter:
 # Model
 # --------------------------------------------------------------------------
 def load_model(path, device):
-    model = torch.load(path, map_location=device, weights_only=False)
-    model.eval()
+    ep = torch.export.load(path)
+    model = ep.module()
     print(f"Loaded model from {path}")
     return model
 
@@ -88,7 +92,7 @@ def make_input(window, args, device):
 
 @torch.no_grad()
 def classify(model, window, args):
-    x = make_input(window, args, "cuda")
+    x = make_input(window, args, "cuda" if torch.cuda.is_available() else "cpu")
     out = model(x)
     if isinstance(out, (tuple, list)):
         out = out[0]
@@ -100,6 +104,31 @@ def classify(model, window, args):
         probs = torch.softmax(out, dim=1)
     probs = probs[0].cpu().numpy()
     return int(np.argmax(probs)), probs
+
+
+# --------------------------------------------------------------------------
+# Replay markers
+# --------------------------------------------------------------------------
+class MarkerTracker:
+    """Collects ground-truth markers from the replay stream and answers
+    'was there one inside the window that just got classified?'."""
+
+    def __init__(self, inlet, window):
+        self.inlet = inlet
+        self.window = window
+        self.stamps = []   # marker timestamps, oldest -> newest
+
+    def poll(self):
+        samples, stamps = self.inlet.pull_chunk(timeout=0.0)
+        if stamps:
+            self.stamps.extend(stamps)
+
+    def seen_within(self, t_end):
+        """True if a marker lies in (t_end - window, t_end]."""
+        t_start = t_end - self.window
+        # markers older than any future window are of no further use
+        self.stamps = [t for t in self.stamps if t > t_start]
+        return any(t <= t_end for t in self.stamps)
 
 
 # --------------------------------------------------------------------------
@@ -121,15 +150,26 @@ def main():
 
     inlet = StreamInlet(info_in, max_buflen=30, processing_flags=proc_clocksync | proc_dejitter)
 
-    win_len = int(round(args.window * fs))
+    # ---- optional replay-marker stream ----
+    markers = None
+    if args.replay:
+        mstreams = resolve_byprop("name", LSL_MARKER_NAME_IN, timeout=10)
+        if not mstreams:
+            sys.exit(f"--replay given but no '{LSL_MARKER_NAME_IN}' stream found.")
+        m_inlet = StreamInlet(mstreams[0], max_buflen=30, processing_flags=proc_clocksync)
+        markers = MarkerTracker(m_inlet, CLASSIFY_WINDOW_SECONDS)
+        print(f"Connected to '{LSL_MARKER_NAME_IN}' for ground-truth markers.")
+
+    win_len = int(round(CLASSIFY_WINDOW_SECONDS * fs))+1
     hop_len = max(1, int(round(args.hop * fs)))
-    settle_len = int(round(CLASSIFY_WINDOW_SECONDS * fs))
+    settle_len = int(round(CLASSIFY_WINDOW_SECONDS * fs))+1
 
     # ---- model + dry run to find number of classes ----
-    model = load_model(args.model, "cuda")
-    model.to("cuda")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = load_model(args.model, device)
+    model.to(device)
     try:
-        _, probs = classify(model, np.zeros((n_ch, win_len), dtype=np.float32), args)
+        _, probs = classify(model, np.zeros((1, n_ch, win_len), dtype=np.float32), args)
     except Exception as e:
         sys.exit(f"Model rejected a dummy input of {n_ch} channels x {win_len} samples "
                  f": {e}")
@@ -151,7 +191,7 @@ def main():
 
     # ---- processing state ----
     filt = StreamingFilter(build_filter(fs), n_ch)
-    buf = np.zeros((n_ch, win_len), dtype=np.float32)   # rolling window, oldest -> newest
+    buf = np.zeros((1, n_ch, win_len), dtype=np.float32)   # rolling window, oldest -> newest
     total = 0            # total samples processed
     since_last = 0       # samples since last classification
     min_samples = win_len + settle_len
@@ -162,6 +202,8 @@ def main():
     try:
         while True:
             samples, stamps = inlet.pull_chunk(timeout=0.1, max_samples=int(fs))
+            if markers is not None:
+                markers.poll()
             if not stamps:
                 continue
 
@@ -171,9 +213,9 @@ def main():
 
             # update rolling buffer
             if n >= win_len:
-                buf = y[:, -win_len:]
+                buf[0] = y[:, -win_len:]
             else:
-                buf = np.concatenate([buf[:, n:], y], axis=1)
+                buf[0] = np.concatenate([buf[0, :, n:], y], axis=1)
 
             total += n
             since_last += n
@@ -183,8 +225,13 @@ def main():
                 t_start = time.perf_counter()
                 cls, probs = classify(model, buf, args)
                 latency_ms = (time.perf_counter() - t_start) * 1000
-                outlet.push_sample([float(cls)] + probs.astype(float).tolist(), timestamp=stamps[-1])
-                print(f"\r{labels[cls]:>12s}  p={probs[cls]:.2f}  ({latency_ms:.1f} ms)   ", end="", flush=True)
+                if labels[cls] == 'PinchLog' and probs[cls] > 0.8:
+                    outlet.push_sample(["PINCH"], timestamp=stamps[-1])
+                marker_txt = ""
+                if markers is not None:
+                    marker_txt = f"  marker={'YES' if markers.seen_within(stamps[-1]) else ' no'}"
+                print(f"\r{labels[cls]:>12s}  p={probs[cls]:.2f}{marker_txt}  ({latency_ms:.1f} ms)   ",
+                      end="", flush=True)
     except KeyboardInterrupt:
         print("\nStopped.")
 

@@ -1479,7 +1479,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.PinchDetector
   gazeRaycaster: {fileID: 1359528791}
   pinchDetector: {fileID: 407473971}
-  myoPinchReceiver: {fileID: 968829681}
+  lslPinchReceiver: {fileID: 968829681}
   cooldownTime: 0.2
   clickSound: {fileID: 8300000, guid: cef5d2eaf31bece4c93da1d521e64b22, type: 3}
   currentPinchSource: 0
@@ -1498,14 +1498,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 968829676}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80ab18bded4d32a47bea5b626347e2eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.MyoPinchReceiver
-  streamName: Experiment.VIBE.MyoPinch
+  streamName: Experiment.VIBE.Pinch
   resolveTimeout: 0
   retryInterval: 1
+  pinchDebounceTime: 1
   logEvents: 1
 --- !u!82 &968829682
 AudioSource:
@@ -7778,7 +7779,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0211afb593e24cbd9871f44b7b3541c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Resources.Scripts.ExperimentLogger
-  participantId: P27
+  participantId: P28
   outputFolder: ExperimentLogs
   gazeRaycaster: {fileID: 1359528791}
 --- !u!4 &1865475892

@@ -4,36 +4,35 @@ using System.Threading.Tasks;
 using LSL;
 using UnityEngine;
 
-public class MyoPinchReceiver : MonoBehaviour
+public class LslPinchReceiver : MonoBehaviour
 {
     [Header("LSL Stream")] [Tooltip("Stream name as published by the Python bridge.")]
-    public string streamName = "Experiment.VIBE.MyoPinch";
+    public string streamName = "Experiment.VIBE.Pinch";
 
     [Tooltip("Seconds to wait per resolve attempt before retrying.")]
-    public double resolveTimeout = 2.0;
+    public double resolveTimeout = 0;
 
     [Tooltip("How often (s) to retry resolving if the stream isn't up yet.")]
     public float retryInterval = 1.0f;
 
+    [Tooltip("Minimum time between accepted pinches")]
+    public float pinchDebounceTime = 1f;
+
     [Header("Debug")] public bool logEvents = true;
 
     /// <summary>Fired on the main thread when a pinch begins.</summary>
-    public event Action OnPinchStart;
-
-    /// <summary>Fired on the main thread when a pinch ends.</summary>
-    public event Action OnPinchEnd;
-
-    /// <summary>True while the bridge has reported an active pinch.</summary>
-    public bool IsPinching { get; private set; }
+    public event Action OnPinch;
 
     /// <summary>True once the LSL stream has been resolved.</summary>
     public bool IsConnected => inlet != null;
 
     private StreamInlet inlet;
     private string[] sampleBuf = new string[1];
+    private float tsLastPinch;
 
     void OnEnable()
     {
+        tsLastPinch = Time.time;
         StartCoroutine(ResolveLoop());
     }
 
@@ -62,12 +61,12 @@ public class MyoPinchReceiver : MonoBehaviour
                 inlet = new StreamInlet(results[0]);
                 inlet.open_stream();
                 if (logEvents)
-                    Debug.Log($"[MyoPinchListener] Connected to '{streamName}'");
+                    Debug.Log($"[PinchListener] Connected to '{streamName}'");
                 yield break;
             }
 
             if (logEvents)
-                Debug.Log($"[MyoPinchListener] Waiting for '{streamName}'…");
+                Debug.Log($"[PinchListener] Waiting for '{streamName}'…");
             yield return new WaitForSeconds(retryInterval);
         }
     }
@@ -91,29 +90,20 @@ public class MyoPinchReceiver : MonoBehaviour
     {
         switch (label)
         {
-            case "pinch_start":
-                if (!IsPinching)
+            case "PINCH":
+                // debounce
+                var now = Time.time;
+                if (now - tsLastPinch >  pinchDebounceTime)
                 {
-                    IsPinching = true;
-                    if (logEvents) Debug.Log("[MyoPinchListener] pinch_start");
-                    OnPinchStart?.Invoke();
-                }
-
-                break;
-
-            case "pinch_end":
-                if (IsPinching)
-                {
-                    IsPinching = false;
-                    if (logEvents) Debug.Log("[MyoPinchListener] pinch_end");
-                    OnPinchEnd?.Invoke();
+                    tsLastPinch = now;
+                    OnPinch?.Invoke();
                 }
 
                 break;
 
             default:
                 if (logEvents)
-                    Debug.LogWarning($"[MyoPinchListener] Unknown label: {label}");
+                    Debug.LogWarning($"[PinchListener] Unknown label: {label}");
                 break;
         }
     }

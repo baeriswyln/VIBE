@@ -17,7 +17,7 @@ public class PinchHandler : MonoBehaviour
 {
     public enum PinchSource {
         Leap,
-        Myo,
+        Lsl,
     }
     
     public static PinchHandler Instance { get; private set; }
@@ -28,8 +28,8 @@ public class PinchHandler : MonoBehaviour
     [Tooltip("The PinchDetector in the scene.")]
     public PinchDetector pinchDetector;
     
-    [Tooltip("The MyoPinchReceiver in the scene.")]
-    public MyoPinchReceiver myoPinchReceiver;
+    [Tooltip("The LslPinchReceiver in the scene.")]
+    public LslPinchReceiver lslPinchReceiver;
 
     [Header("Pinch Settings")]
     [Tooltip("Minimum seconds between successive pinch activations (debounce).")]
@@ -72,14 +72,14 @@ public class PinchHandler : MonoBehaviour
     private void OnEnable()
     {
         pinchDetector.OnPinchStart += HandleLeapPinch;
-        myoPinchReceiver.OnPinchStart += HandleMyoPinch;
+        lslPinchReceiver.OnPinch += HandleLslPinch;
         InputSystem.actions.FindAction("ExpPinch").performed += HandleKeyboardPinch;
     }
 
     private void OnDisable()
     {
         pinchDetector.OnPinchStart -= HandleLeapPinch;
-        myoPinchReceiver.OnPinchStart -= HandleMyoPinch;
+        lslPinchReceiver.OnPinch -= HandleLslPinch;
         InputSystem.actions.FindAction("ExpPinch").performed -= HandleKeyboardPinch;
     }
 
@@ -92,9 +92,9 @@ public class PinchHandler : MonoBehaviour
         HandlePinch();
     }
     
-    private void HandleMyoPinch()
+    private void HandleLslPinch()
     {
-        if(currentPinchSource == PinchSource.Myo) HandlePinch();
+        if(currentPinchSource == PinchSource.Lsl) HandlePinch();
     }
 
     private void HandleLeapPinch(Hand hand)
