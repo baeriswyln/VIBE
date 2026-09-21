@@ -9,6 +9,9 @@ __pycache__/
 .venv
 .uv/
 
+# Weights & Biases local run data
+wandb/
+
 # PyCharm
 .idea/
 .idea_modules/

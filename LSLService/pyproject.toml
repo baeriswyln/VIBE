@@ -6,6 +6,10 @@ dependencies = [
     "mne-lsl",
     "numpy",
     "matplotlib",
+    "pylsl>=1.18.5",
+    "scipy>=1.15.3",
+    "torch>=2.14.0",
+    "pandas>=2.3.3",
 ]
 
 [tool.uv]
