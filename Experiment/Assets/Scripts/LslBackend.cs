@@ -131,7 +131,6 @@ public class LslBackend : MonoBehaviour
 
     private IEnumerator BuildBackendInlet()
     {
-        yield break;
         while (backendInlet == null && isActiveAndEnabled)
         {
             // resolve_stream blocks the calling thread -> delegate to thread
