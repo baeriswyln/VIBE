@@ -46,6 +46,7 @@ public class Interactable : MonoBehaviour
     private Renderer _renderer;
     private MaterialPropertyBlock _propBlock;
     private Material _outlineInstance;
+    private bool _hasRandomColor = false;
         
     private InteractableManager _interactableManager;
         
@@ -114,7 +115,8 @@ public class Interactable : MonoBehaviour
             0.6f, 1f, // Saturation, vivid colors
             0.8f, 1f  // value, bright colors
         );
-        
+
+        _hasRandomColor = true;
         _originalColor = randomColor;
         UpdateColor();
     }
@@ -170,11 +172,12 @@ public class Interactable : MonoBehaviour
     private void UpdateColor()
     {
         var color = _originalColor;
+        color = (_isGazed && !_hasRandomColor) ? focusColor : color;
         color = _isSelected && _visuallyConfirmSelect ? selectedColor : color;
 
         Color? outlineColor = _isHighlighted ? highlightColor : null;
         outlineColor = _isHighlightedNegative ? highlightNegativeColor : outlineColor;
-        outlineColor = _isGazed ? focusColor : outlineColor;
+        outlineColor = (_isGazed && _hasRandomColor) ? focusColor : outlineColor;
             
             
         if (_renderer == null) return;

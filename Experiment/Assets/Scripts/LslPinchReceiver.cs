@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
+using Experiments;
 using LSL;
 using UnityEngine;
 
@@ -47,7 +48,7 @@ public class LslPinchReceiver : MonoBehaviour
 
     private IEnumerator ResolveLoop()
     {
-        while (inlet == null && isActiveAndEnabled)
+        while (inlet == null && isActiveAndEnabled && !(ExperimentManager.Instance?.IsRunning ?? false))
         {
             // resolve_stream blocks the calling thread -> delegate to thread
             Task<StreamInfo[]> resolveTask = Task.Run(() =>

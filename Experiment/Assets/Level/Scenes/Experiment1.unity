@@ -7238,7 +7238,7 @@ MonoBehaviour:
   textStimuliIntroduction:
   - 'You will be looking at a series of highlighted stimuli.  A stimulus is a colored
     sphere. A highlighted stimulus is outlined yellow.  '
-  - 'Once you look at a stimulus, its outline will turn orange.  '
+  - 'Once you look at a stimulus, it will turn orange.  '
   - Once you select the stimulus, it will turn green, and a confirmation sound plays.
   - You will be selecting the highlighted stimulus by looking at it and using a pinch
     gesture with your right hand.
@@ -8190,7 +8190,7 @@ MonoBehaviour:
   textStimuliIntroduction:
   - 'You will be looking at a series of highlighted stimuli.  A stimulus is a blue
     sphere. A highlighted stimulus is outlined yellow.  '
-  - 'Once you look at a stimulus, its outline will turn orange.  '
+  - 'Once you look at a stimulus, it will turn orange.  '
   - Once you select the stimulus, it will turn green, and a confirmation sound plays.
   - You will be selecting the highlighted stimulus by looking at it and using a pinch
     gesture with your right hand.

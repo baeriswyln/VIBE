@@ -159,7 +159,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
   highlightColor: {r: 1, g: 0.9, b: 0.3, a: 1}
   highlightNegativeColor: {r: 1, g: 0.2, b: 0.2, a: 1}
-  focusColor: {r: 1, g: 0.64769167, b: 0.5019608, a: 1}
+  focusColor: {r: 1, g: 0.51705414, b: 0.062745094, a: 1}
   selectedColor: {r: 0.3, g: 1, b: 0.5, a: 1}
   meshRenderer: {fileID: 6061535677203128486}
   outlineMaterial: {fileID: 2100000, guid: eb0477a4781cc834a86b5c3d6702aead, type: 2}

@@ -194,6 +194,8 @@ namespace Experiments
                 ExperimentLogger.Instance.Log(new PinchLog(selectedStimulus, PinchLog.PinchType.GAZE));
             }
 
+            if (ExperimentManager.Instance.CurrentExperiment?.config.feedbackIsDelayed ?? false)
+                yield return new WaitForSeconds(PinchHandler.Instance.feedbackDelay);
             yield return new WaitForSeconds(ExperimentManager.Instance.feedbackDuration);
 
             // --- Cleanup ---
