@@ -1,5 +1,6 @@
 data/
 out/
+*.pt2
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
