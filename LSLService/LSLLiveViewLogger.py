@@ -13,6 +13,39 @@ matplotlib.rcParams["figure.raise_window"] = False  # don't steal focus on every
 import matplotlib.pyplot as plt
 from mne_lsl.lsl import StreamInlet, resolve_streams
 from mne_lsl.lsl import StreamInfo as _LSLStreamInfo, StreamOutlet as _LSLStreamOutlet
+from scipy import signal as sps
+
+
+# --- Real-time filter for the plot only; persisted CSV data always stays raw. ---
+def build_display_filter(fs):
+    nyq = fs / 2.0
+    if 45.0 >= nyq:
+        raise ValueError(f"Sampling rate {fs} Hz is too low for a 45 Hz low-pass.")
+    hp = sps.butter(4, 1.0, btype="highpass", fs=fs, output="sos")
+    lp = sps.butter(4, 45.0, btype="lowpass", fs=fs, output="sos")
+    b, a = sps.iirnotch(50.0, Q=30.0, fs=fs)
+    notch = sps.tf2sos(b, a)
+    return np.vstack([hp, lp, notch])
+
+
+class StreamingFilter:
+    """Stateful SOS filter for chunked, real-time streams."""
+
+    def __init__(self, sos, n_ch):
+        self.sos = sos
+        self.n_ch = n_ch
+        self.zi = None
+
+    def __call__(self, x):
+        """x: (n_ch, n_samples) -> filtered array, same shape."""
+        if self.zi is None:
+            # Initialise state as if the signal had been sitting at its first
+            # value forever; avoids a startup transient from DC offsets.
+            zi0 = sps.sosfilt_zi(self.sos)                  # (sections, 2)
+            self.zi = zi0[:, None, :] * x[:, 0][None, :, None]  # (sections, n_ch, 2)
+        y, self.zi = sps.sosfilt(self.sos, x, axis=-1, zi=self.zi)
+        return y
+
 
 # --- handle SIGTERM for graceful exit ---
 def sigterm_handler(_signo, _stack_frame):
@@ -229,8 +262,11 @@ print("Plotting — close the window to stop.")
 all_marker_ts = []
 
 EEG_BUFFER_SAMPLES = int(eeg_inlet.get_sinfo().sfreq * WINDOW_SEC)
-eeg_buf_data = np.zeros((eeg_n_channels, EEG_BUFFER_SAMPLES))
+eeg_buf_data = np.zeros((eeg_n_channels, EEG_BUFFER_SAMPLES))  # filtered, for display only
 eeg_buf_ts   = np.zeros(EEG_BUFFER_SAMPLES)
+
+# 1 Hz highpass + 45 Hz lowpass + 50 Hz notch, applied only to what gets plotted.
+display_filter = StreamingFilter(build_display_filter(eeg_inlet.get_sinfo().sfreq), eeg_n_channels)
 
 # gracefully quit the loop on external signal
 try:
@@ -251,20 +287,23 @@ try:
         t_last           = eeg_ts[-1]
         reconstructed_ts = t_last - np.arange(n_new - 1, -1, -1) / sfreq
 
-        # Update DC offset estimate (exponential moving average per channel)
-        for j in range(n_new):
-            dc_offset += DC_ALPHA * (eeg_chunk[j] - dc_offset)
-
-        # Ring buffer update
-        eeg_buf_data = np.roll(eeg_buf_data, -n_new, axis=1)
-        eeg_buf_ts   = np.roll(eeg_buf_ts,   -n_new)
-        eeg_buf_data[:, -n_new:] = eeg_chunk.T
-        eeg_buf_ts[  -n_new:]    = reconstructed_ts
-
-        # CSV logging (raw, uncorrected data)
+        # CSV logging (raw, unfiltered, uncorrected data)
         for j in range(n_new):
             _eeg_writer.writerow([reconstructed_ts[j]] + eeg_chunk[j].tolist())
         _last_eeg_ts = float(reconstructed_ts[-1])
+
+        # Filter for display only; the persisted CSV above already has the raw data.
+        filt_chunk = display_filter(eeg_chunk.T)   # (n_channels, n_new)
+
+        # Update DC offset estimate (exponential moving average per channel)
+        for j in range(n_new):
+            dc_offset += DC_ALPHA * (filt_chunk[:, j] - dc_offset)
+
+        # Ring buffer update (filtered data)
+        eeg_buf_data = np.roll(eeg_buf_data, -n_new, axis=1)
+        eeg_buf_ts   = np.roll(eeg_buf_ts,   -n_new)
+        eeg_buf_data[:, -n_new:] = filt_chunk
+        eeg_buf_ts[  -n_new:]    = reconstructed_ts
 
         # --- Plot visible channels with DC offset removed and amplitude scaled ---
         t_start = eeg_buf_ts[0]
