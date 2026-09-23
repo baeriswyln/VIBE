@@ -19,6 +19,23 @@ LSL_STREAM_NAME_OUT = "Experiment.VIBE.Pinch"
 LSL_MARKER_NAME_IN  = "Experiment.VIBE.MarkerReplay"
 CLASSIFY_WINDOW_SECONDS = 2
 
+ANSI_GREEN_BG = "\033[42m"
+ANSI_RED_BG = "\033[41m"
+ANSI_RESET = "\033[0m"
+
+
+def status_cell(is_positive):
+    bg = ANSI_GREEN_BG if is_positive else ANSI_RED_BG
+    return f"{bg}  {ANSI_RESET}"
+
+
+def render_classification_buffer(buffer, next_index):
+    """buffer is a ring buffer; next_index is where the next write will land
+    (i.e. the oldest entry). Renders oldest -> newest, so the most recent
+    classification is always the rightmost cell."""
+    ordered = buffer[next_index:] + buffer[:next_index]
+    return "".join(status_cell(v) for v in ordered)
+
 
 
 # --------------------------------------------------------------------------
@@ -35,6 +52,12 @@ def parse_args():
     p.add_argument("--replay", action="store_true",
                    help=f"Also subscribe to the '{LSL_MARKER_NAME_IN}' stream from EEGReplay.py and "
                         f"report whether a ground-truth marker falls inside the classified window")
+    p.add_argument("--consecutive", type=int, default=2,
+                   help="Number of consecutively epochs classified as positive to trigger a marker.")
+    p.add_argument("--finetune", action="store_true",
+                   help="Create a fine tuned model based on the input model.")
+    p.add_argument("--positive-threshold", type=float, default=0.8,
+                   help="Classification threshold for positive event.")
     return p.parse_args()
 
 
@@ -199,6 +222,9 @@ def main():
     print(f"Window {CLASSIFY_WINDOW_SECONDS}s ({win_len} samples), hop {args.hop}s. "
           f"Discarding first {CLASSIFY_WINDOW_SECONDS}s while filters settle. Ctrl+C to stop.")
 
+    last_was_positive = False # a debouncer for pinch event triggers
+    class_buffer = [False] * args.consecutive # the last N predictions. True -> predicted PinchLog
+    class_buffer_i = 0
     try:
         while True:
             samples, stamps = inlet.pull_chunk(timeout=0.1, max_samples=int(fs))
@@ -225,12 +251,23 @@ def main():
                 t_start = time.perf_counter()
                 cls, probs = classify(model, buf, args)
                 latency_ms = (time.perf_counter() - t_start) * 1000
-                if labels[cls] == 'PinchLog' and probs[cls] > 0.8:
+
+                class_buffer[class_buffer_i] = (labels[cls] == 'PinchLog' and probs[cls] > args.positive_threshold)
+                class_buffer_i = (class_buffer_i + 1) % args.consecutive
+
+                if all(class_buffer) and not last_was_positive:
                     outlet.push_sample(["PINCH"], timestamp=stamps[-1])
-                marker_txt = ""
+                    last_was_positive = True
+                else:
+                    last_was_positive = False
+
+                buf_vis = render_classification_buffer(class_buffer, class_buffer_i)
+
+                gt_vis = ""
                 if markers is not None:
-                    marker_txt = f"  marker={'YES' if markers.seen_within(stamps[-1]) else ' no'}"
-                print(f"\r{labels[cls]:>12s}  p={probs[cls]:.2f}{marker_txt}  ({latency_ms:.1f} ms)   ",
+                    gt_vis = "  " + status_cell(markers.seen_within(stamps[-1]))
+
+                print(f"\r{labels[cls]:>12s}  p={probs[cls]:.2f}  [{buf_vis}]{gt_vis}  ({latency_ms:.1f} ms)   ",
                       end="", flush=True)
     except KeyboardInterrupt:
         print("\nStopped.")
