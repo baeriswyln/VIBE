@@ -1498,7 +1498,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 968829676}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80ab18bded4d32a47bea5b626347e2eb, type: 3}
   m_Name: 
@@ -8520,7 +8520,7 @@ MonoBehaviour:
     isChoiceStimuli: 1
     feedbackIsDelayed: 1
   interTrialIntervalMin: 3
-  interTrialIntervalMax: 7
+  interTrialIntervalMax: 5
   feedbackDuration: 0.5
   gazeMinTime: 0.2
   gapBetweenExperiments: 15

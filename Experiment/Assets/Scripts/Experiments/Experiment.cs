@@ -96,7 +96,7 @@ namespace Experiments
         public bool hasAuditoryFeedback = true;
         public int numberOfErrors = 0;
         public bool pinchIsHinted = false;
-        [FormerlySerializedAs("numberOfObserveStimuli")] public int numberOfObserveTrials = 0;
+        public int numberOfObserveTrials = 0;
         public bool isChoiceStimuli = false;
         public bool feedbackIsDelayed = false;
 
@@ -157,8 +157,8 @@ namespace Experiments
         private void LimitValueRanges()
         {
             numberOfStimuli = Math.Max(numberOfStimuli, 0);
-            numberOfErrors = Math.Min(Math.Max(numberOfErrors, 0), numberOfStimuli);
-            numberOfObserveTrials = Math.Min(Math.Max(numberOfObserveTrials, 0), numberOfStimuli);
+            numberOfErrors = Math.Min(Math.Max(numberOfErrors, 0), numberOfTrials);
+            numberOfObserveTrials = Math.Min(Math.Max(numberOfObserveTrials, 0), numberOfTrials);
         }
     }
 }
