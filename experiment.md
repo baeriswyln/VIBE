@@ -22,14 +22,15 @@ The following variables are present in the experiment
 
 There are three different stimuli setups:
 
-- `Static_1_Stimuli`: Exactly one stimulus is spawned at the center of the view port. **No eye/head movement** is required, reducing movement induced EEG signals.
-- `Static_4_Stimuli`: Four stimuli are spawned on an imaginary circle around the center of the view port, regularly spaced from eachother. This requres the **eye movement required** by the participant. 
-- `Random_6_Stimuli`: Six stimuli are spawned at random positions in the view port with a minimum space between eachother such that **eye and slight head movements will be requried**. 
+- `Static_1`: Exactly one stimulus is spawned at the center of the view port. **No eye/head movement** is required, reducing movement induced EEG signals.
+- `Static_4`: Four stimuli are spawned on an imaginary circle around the center of the view port, regularly spaced from eachother. This requres the **eye movement required** by the participant. 
+- `Random_6`: Six stimuli are spawned at random positions in the view port with a minimum space between eachother such that **eye and slight head movements will be requried**. 
 
 ### Feedback types
 
 The experiments will have three different feedback types.
 
+- `Virtual hand`: A virtual representation of the participant's hand is shown, replicating their hand's posture.
 - `Visual`: The stimulus will change its appearance when clicked.
 - `Auditory`: A sound is played when the stimulus is clicked.
 
@@ -48,22 +49,20 @@ In the first session, each block contains a total of 20 trials. The block `Stati
 
 The full experiment (including setup and tutorial time) is expected to take approximately 1h. 
 
-| Stimuli setup | Virtual Hand | Visual | Auditory | Induced errors | Hinted pinch | Observe  |
-| --- | --- | --- | --- | --- | --- | --- |
-| Static_1_Stimuli |  x | x | x | | |
-| Static_4_Stimuli | x | x | x |  |  |  |
-| Static_4_Stimuli | x |  | x |  |  |  |
-| Static_4_Stimuli | x | x |  |  |  |  |
-| Static_4_Stimuli |  | x | x |  |  |  |
-| Static_4_Stimuli |  | x |  |  |  |  |
-| Static_4_Stimuli |  |  | x |  |  |  |
-| Static_4_Stimuli |  | x | x | x |  |  |
-| Static_4_Stimuli |  | x | x | x | x |  |
-| Static_4_Stimuli |  | x | x |  |  | x |
-| Random_6_Stimuli |  | x |  | x |  |  |
-| Random_6_Stimuli |  |  | x | x |  |  |
-| Random_6_Stimuli |  | x | x | x | x |  |
-| Random_6_Stimuli |  | x | x |  |  | x |
+| Stimuli setup | #trials |  Virtual Hand | Visual | Auditory | #Induced errors | Hinted pinch | #Observe  |
+| ---------------- | --- | --- | --- | --- | --- | --- |
+| Static_4 | 15 | x | x | x |   |  |  |
+| Static_1 | 15 | x | x | x |   |   |
+| Static_4 | 15 | x |   | x | 1  |  |  |
+| Static_4 | 15 | x | x |   | 1  |  |  |
+| Static_4 | 15 |   | x | x | 3  |  |  |
+| Static_4 | 15 |   | x | x | 5  | x |  |
+| Static_4 | 15 |   | x | x |   |  | 10 |
+| Random_6 | 15 |   | x |   | 1 |  |  |
+| Random_6 | 15 |   |   | x | 3 |  |  |
+| Random_6 | 15 |   | x | x | 5 | x |  |
+| Random_6 | 15 |   | x | x |   |  | 10 |
+| Static_4 | 15 | x | x | x |   |  |  |
 
 #### Session 2
 
@@ -71,8 +70,16 @@ The second session is shorter and will be a "control" session. Each block contai
 
 The full experiment (including setup and tutorial time) is expected to take approximately 30min.
 
-| Stimuli setup | Visual | Auditory | Induced errors | Hinted pinch | Observe | Choose |
-| --- | --- | --- | --- | --- | --- | --- |
+| Stimuli setup | #trials | Virtual Hand | Visual | Auditory | #Induced errors | Hinted pinch | Choose | Delayed Feedback |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Static_4 | 10 | x | x | x |   |   |   |   |
+| Static_4 | 10 |   | x | x |   |   | x |   |
+| Static_4 | 10 |   | x | x |   |   | x | x |
+| Static_4 | 10 |   | x | x | 3 | x | x |   |
+| Static_4 | 10 |   | x | x | 3 | x | x | x |
+| Random_6 | 10 |   | x |   |   |   | x |   |
+| Random_6 | 10 |   |   | x |   |   | x | x |
+| Static_4 | 10 | x | x | x |   |   |   |   |
 
 ## Hypotheses
 
