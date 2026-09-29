@@ -2,6 +2,7 @@
 // Requires: VIVE OpenXR Plugin with "Vive XR Eye Tracker (Beta)" enabled
 // in Project Settings > XR Plug-in Management > OpenXR > OpenXR Feature Groups
 
+using System;
 using Logging;
 using UnityEngine;
 using UnityEngine.Events;
@@ -42,6 +43,7 @@ public class GazeRaycaster : MonoBehaviour
     [Tooltip("Number of consecutive 'closed-or-invalid' frames required before a blink_start fires. " +
              "Filters out single-frame tracker hiccups. 2 is a good default at 90+ Hz.")]
     [Range(1, 10)] public int blinkHoldFrames = 2;
+    [Range(0,1)] public float blinkOpennessThreshold = 0.15f;
 
 
     [Header("Raycast Settings")] [Tooltip("Maximum distance for gaze detection.")]
@@ -97,6 +99,9 @@ public class GazeRaycaster : MonoBehaviour
     private GazeSource _activeSource = GazeSource.None;
     private GazeSource _prevSource = GazeSource.None;
     private bool _isActive = true;
+    // Eye state
+    private float eyesOpenedAt = 1;
+    private float eyesClosedAt = 0;
 
     // --- Public API ---
 
@@ -105,6 +110,7 @@ public class GazeRaycaster : MonoBehaviour
 
     public bool IsEyeTrackingActive => _activeSource == GazeSource.ViveNativeEyeTracker
                                        || _activeSource == GazeSource.OpenXRInputSystem;
+    public float TimeSinceEyesOpen => Math.Max(0, eyesOpenedAt - eyesClosedAt);
 
     public Vector3 CurrentGazeDirection => _smoothedGazeDirection;
     public Vector3 CurrentGazeOrigin { get; private set; }
@@ -295,6 +301,23 @@ public class GazeRaycaster : MonoBehaviour
 
             if (!success || gazes == null || gazes.Length == 0)
                 return false;
+            
+            // Update eye state
+            XrSingleEyeGeometricDataHTC[] geom;
+            bool geomOK = XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out geom);
+            if (geomOK)
+            {        
+                float lOpen = (geomOK && geom != null && geom.Length >= 1 && geom[0].isValid)
+                    ? geom[0].eyeOpenness : 0f;
+                float rOpen = (geomOK && geom != null && geom.Length >= 2 && geom[1].isValid)
+                    ? geom[1].eyeOpenness : 0f;
+                bool leftRawClosed  = (lOpen < blinkOpennessThreshold);
+                bool rightRawClosed = (rOpen < blinkOpennessThreshold);
+
+                if (leftRawClosed || rightRawClosed)
+                    if (eyesClosedAt < eyesOpenedAt) eyesClosedAt = Time.time;
+                else if (eyesOpenedAt < eyesClosedAt) eyesOpenedAt = Time.time;
+            }
 
 
             // Pick the requested eye

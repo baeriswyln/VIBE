@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class LslPinchReceiver : MonoBehaviour
 {
+    public static LslPinchReceiver Instance { get; private set; }
+    
     [Header("LSL Stream")] [Tooltip("Stream name as published by the Python bridge.")]
     public string streamName = "Experiment.VIBE.Pinch";
 
@@ -26,11 +28,27 @@ public class LslPinchReceiver : MonoBehaviour
 
     /// <summary>True once the LSL stream has been resolved.</summary>
     public bool IsConnected => inlet != null;
+    public bool phase1Ready = false;
+    public bool phase2Ready = false;
+    public bool phase3Ready = false;
 
     private StreamInlet inlet;
     private string[] sampleBuf = new string[1];
     private float tsLastPinch;
 
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    
     void OnEnable()
     {
         tsLastPinch = Time.time;
@@ -99,9 +117,16 @@ public class LslPinchReceiver : MonoBehaviour
                     tsLastPinch = now;
                     OnPinch?.Invoke();
                 }
-
                 break;
-
+            case "classifier_ready_phase_1":
+                phase1Ready = true;
+                break;
+            case "classifier_ready_phase_2":
+                phase2Ready = true;
+                break;
+            case "classifier_ready_phase_3":
+                phase3Ready = true;
+                break;
             default:
                 if (logEvents)
                     Debug.LogWarning($"[PinchListener] Unknown label: {label}");

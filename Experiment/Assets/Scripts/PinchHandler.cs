@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using Experiments;
 using Leap;
+using Logging;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -30,6 +31,9 @@ public class PinchHandler : MonoBehaviour
     
     [Tooltip("The LslPinchReceiver in the scene.")]
     public LslPinchReceiver lslPinchReceiver;
+
+    [Tooltip("Minimum time in seconds that the eyes have to be open to accept pinches from LSL.")]
+    public float eyesOpenThreshold = 0.5f;
 
     [Header("Pinch Settings")]
     [Tooltip("Minimum seconds between successive pinch activations (debounce).")]
@@ -94,12 +98,20 @@ public class PinchHandler : MonoBehaviour
     
     private void HandleLslPinch()
     {
-        if(currentPinchSource == PinchSource.Lsl) HandlePinch();
+        // ignore pinches that came in when eyes are closed. 
+        if(currentPinchSource == PinchSource.Lsl)
+        {
+            if (gazeRaycaster.TimeSinceEyesOpen < eyesOpenThreshold)
+                ExperimentLogger.Instance.Log(new PinchLog(PinchLog.PinchType.IGNORED_EEG_PINCH));
+            else
+                HandlePinch();
+        }
     }
 
     private void HandleLeapPinch(Hand hand)
     {
-        if(currentPinchSource == PinchSource.Leap) HandlePinch();
+        if (currentPinchSource == PinchSource.Leap) HandlePinch();
+        else RecordPinch();
     }
         
     private void HandlePinch()
@@ -143,6 +155,21 @@ public class PinchHandler : MonoBehaviour
         else
         {
             onPinchDetected?.Invoke();
+        }
+    }
+
+    private void RecordPinch()
+    {
+        if(!Active) return;
+
+        if (gazeRaycaster.IsFocusConfirmed && gazeRaycaster.CurrentTarget != null)
+        {
+            Interactable target = gazeRaycaster.CurrentTarget;
+            ExperimentLogger.Instance.Log(new PinchLog(target, PinchLog.PinchType.IGNORED_GROUND_TRUTH));
+        }
+        else
+        {
+            ExperimentLogger.Instance.Log(new PinchLog(PinchLog.PinchType.IGNORED_GROUND_TRUTH));
         }
     }
 

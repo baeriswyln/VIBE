@@ -26,6 +26,12 @@ namespace Experiments
         public ExperimentConfig controlExperimentSession2;
         public List<ExperimentConfig> experimentConfigsSession2;
         
+        [Header("Experiments Session 3")]
+        public Experiment tutorialSession3;
+        public ExperimentConfig experimentConfigSession3_1;
+        public ExperimentConfig experimentConfigSession3_2;
+        public ExperimentConfig experimentConfigSession3_3;
+        
         private List<Experiment> _experimentPlaylist;
         
         [Header("General Experiment Configuration")]
@@ -98,12 +104,14 @@ namespace Experiments
             InputSystem.actions.FindAction("ExpPause").performed += TogglePause;
             InputSystem.actions.FindAction("ExpStartSession1").performed += StartSequence1;
             InputSystem.actions.FindAction("ExpStartSession2").performed += StartSequence2;
+            InputSystem.actions.FindAction("ExpStartSession3").performed += StartSequence3;
         }
 
         private void OnDisable()
         {
-            InputSystem.actions.FindAction("ExpStartSession2").performed += StartSequence2;
-            InputSystem.actions.FindAction("ExpStartSession1").performed += StartSequence1;
+            InputSystem.actions.FindAction("ExpStartSession3").performed -= StartSequence3;
+            InputSystem.actions.FindAction("ExpStartSession2").performed -= StartSequence2;
+            InputSystem.actions.FindAction("ExpStartSession1").performed -= StartSequence1;
             InputSystem.actions.FindAction("ExpPause").performed -= TogglePause;
             InputSystem.actions.FindAction("ExpRestart").performed -= RestartCurrent;
             InputSystem.actions.FindAction("ExpPrevious").performed -= GoToPrevious;
@@ -119,6 +127,11 @@ namespace Experiments
         public void StartSequence2(InputAction.CallbackContext context)
         {
             StartCoroutine(StartSequence(ExperimentSession.Session2));
+        }
+
+        public void StartSequence3(InputAction.CallbackContext context)
+        {
+            StartCoroutine(StartSequence(ExperimentSession.Session3));
         }
 
         /// <summary>
@@ -158,6 +171,42 @@ namespace Experiments
                     foreach (var cfg in experimentConfigsSession2) cfg.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
                     controlExperimentSession2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
                     break;
+                case ExperimentSession.Session3:
+                    yield return PlayTextPages(new []{"Starting session 3"});
+                    ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_SELECT_SESSION_3", ""));
+                    
+                    _experimentPlaylist.Add(tutorialSession3);
+                    for (var i = 0; i < 3; i++) experimentConfigSession3_1.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
+                    yield return new WaitUntil(() => LslPinchReceiver.Instance.phase1Ready);
+                    yield return RunAllExperiments(true);
+                    ExperimentLogger.Instance.Log(new ExperimentManagerLog("END_PHASE_1", ""));
+                    LslBackend.Instance.PushEvent("end_phase_1");
+                    
+                    yield return PlayTextPages(new []{"Phase 2 is being prepared."});
+                    _experimentPlaylist = new List<Experiment>();
+                    for (var i = 0; i < 3; i++) experimentConfigSession3_2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
+                    foreach (StimuliExperiment exp in _experimentPlaylist)
+                        exp.currentPinchSource = PinchHandler.PinchSource.Lsl;
+                    yield return new WaitUntil(() => LslPinchReceiver.Instance.phase2Ready);
+                    yield return PlayTextPages(new []{"Phase 2 is ready."});
+                    yield return new WaitUntil(() => InputSystem.actions.FindAction("ExpConfirm").IsPressed());
+                    yield return RunAllExperiments(true);
+                    ExperimentLogger.Instance.Log(new ExperimentManagerLog("END_PHASE_2", ""));
+                    LslBackend.Instance.PushEvent("end_phase_2");
+                    
+                    yield return PlayTextPages(new []{"Phase 3 is being prepared."});
+                    _experimentPlaylist = new List<Experiment>();
+                    for (var i = 0; i < 3; i++) experimentConfigSession3_2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
+                    foreach (StimuliExperiment exp in _experimentPlaylist)
+                        exp.currentPinchSource = PinchHandler.PinchSource.Lsl;
+                    yield return new WaitUntil(() => LslPinchReceiver.Instance.phase3Ready);
+                    yield return PlayTextPages(new []{"Phase 3 is ready."});
+                    yield return new WaitUntil(() => InputSystem.actions.FindAction("ExpConfirm").IsPressed());
+                    yield return RunAllExperiments();
+                    ExperimentLogger.Instance.Log(new ExperimentManagerLog("END_PHASE_3", ""));
+                    LslBackend.Instance.PushEvent("end_phase_3");
+                    
+                    yield break;
             }
 
             yield return RunAllExperiments();
@@ -220,7 +269,7 @@ namespace Experiments
             }
         }
 
-        private IEnumerator RunAllExperiments()
+        private IEnumerator RunAllExperiments(bool skipEndOfExperimentText = false)
         {
             _isRunning = true;
             PinchHandler.Instance.Active = false;
@@ -262,7 +311,8 @@ namespace Experiments
             _currentIndex = -1;
             _isRunning = false;
             onSequenceComplete?.Invoke();
-            yield return Instance.PlayTextPages(new []{"This is the end of the experiment. Thank you for participating."});
+            if (!skipEndOfExperimentText)
+                yield return Instance.PlayTextPages(new []{"This is the end of the experiment. Thank you for participating."});
             ExperimentLogger.Instance.Log(new ExperimentManagerLog("SEQUENCE_COMPLETE", ""));
         }
 
@@ -330,7 +380,8 @@ namespace Experiments
         public enum ExperimentSession
         {
             Session1,
-            Session2
+            Session2,
+            Session3
         }
     }
 }
