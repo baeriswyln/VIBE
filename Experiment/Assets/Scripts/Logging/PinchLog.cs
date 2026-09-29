@@ -7,16 +7,18 @@
             PINCH,
             PINCH_IGNORED,
             PINCH_WIZARD_OF_OZ,
-            GAZE
+            GAZE,
+            IGNORED_GROUND_TRUTH,
+            IGNORED_EEG_PINCH,
         }
         
         private Interactable _interactable;
         private PinchType _pinchType;
         
-        public PinchLog()
+        public PinchLog(PinchType pinchType = PinchType.PINCH)
         {
             eventName = "PINCH_NONE";
-            _pinchType = PinchType.PINCH;
+            _pinchType = pinchType;
         }
 
         public PinchLog(Interactable stimulus, PinchType pinchType = PinchType.PINCH)

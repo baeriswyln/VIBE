@@ -223,7 +223,7 @@ drawn_marker_ts = set()
 
 # check that all required streams are available
 REQUIRED_MARKER_STREAMS = [
-    "Experiment.VIBE.ViveOpenXR_Events",
+    # "Experiment.VIBE.ViveOpenXR_Events",
     "Experiment.VIBE.GameEventStream",
 ]
 BACKEND_STREAM_NAME = "Experiment.VIBE.Backend.Logger"

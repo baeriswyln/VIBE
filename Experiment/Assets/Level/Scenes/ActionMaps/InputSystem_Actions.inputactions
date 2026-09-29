@@ -1069,6 +1069,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "ExpStartSession3",
+                    "type": "Button",
+                    "id": "6d07ef44-28a8-4b80-a1d2-f082ffc040fc",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "ExpPinch",
                     "type": "Button",
                     "id": "a7984a13-15c0-4e9a-b3eb-0efa39bfd90f",
@@ -1318,6 +1327,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "ExpStartSession2",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "One Modifier",
+                    "id": "044fdb57-fcb2-475f-b56f-f0e9a5fecb41",
+                    "path": "OneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ExpStartSession3",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "68a68bfe-0cbf-49d1-a79f-008a6bc28de9",
+                    "path": "<Keyboard>/ctrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ExpStartSession3",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "aa6d0f54-762d-4383-857a-8393f76d03f0",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ExpStartSession3",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
