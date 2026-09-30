@@ -43,7 +43,12 @@ N_PHASES = 3
 
 # Channels of the DSI stream that are not part of the model input (dropped in
 # 11_preprocessing.ipynb as well).
-NON_EEG_CHANNELS = {"X1", "X2", "X3", "TRG"}
+NON_EEG_CHANNELS = {"X1", "X2", "X3", "TRG", "timestamp"}
+
+# dsi2lsl records against Pz (--reference=Pz), so the stream has no Pz channel. Models
+# trained with the reference restored expect it as an extra, last channel: all zeros
+# before the average re-referencing (mne.add_reference_channels).
+REFERENCE_CHANNEL = "Pz"
 
 # Epoching, as in 11_preprocessing.ipynb.
 EPOCH_T_MIN = -1.7
@@ -148,17 +153,19 @@ class StreamingFilter:
 # Model
 # --------------------------------------------------------------------------
 def load_model(path, device):
+    """-> (model, number of channels of its (1, 1, n_ch, n_samples) input)."""
     ep = torch.export.load(path)
     model = ep.module()
-    print(f"Loaded model from {path}")
-    return model
+    n_ch = ep.example_inputs[0][0].shape[-2]
+    print(f"Loaded model from {path} ({n_ch} input channels)")
+    return model, n_ch
 
 
 def make_input(window, args, device):
-    """window: (n_ch, n_samples) float array -> torch tensor for the model."""
+    """window: (1, n_ch, n_samples) float array -> (1, 1, n_ch, n_samples) torch tensor for the model."""
     w = window
     if args.zscore:
-        w = (w - w.mean(axis=1, keepdims=True)) / (w.std(axis=1, keepdims=True) + 1e-8)
+        w = (w - w.mean(axis=-1, keepdims=True)) / (w.std(axis=-1, keepdims=True) + 1e-8)
 
     t = torch.from_numpy(np.ascontiguousarray(w, dtype=np.float32)).unsqueeze(0)  # batch dim
 
@@ -221,8 +228,9 @@ def channel_labels(info):
 
 class EEGInput:
     """The EEG inlet plus the channel selection that matches the model input:
-    auxiliary channels are dropped and the rest is re-referenced to the average,
-    as in 11_preprocessing.ipynb."""
+    auxiliary channels are dropped, the recording reference is added back if the
+    model expects it, and the result is re-referenced to the average, as in
+    11_preprocessing.ipynb."""
 
     def __init__(self, inlet):
         self.inlet = inlet
@@ -235,11 +243,28 @@ class EEGInput:
         else:
             self.picks = list(range(info.channel_count()))
             self.ch_names = []
-        self.n_ch = len(self.picks)
+        self.restore_reference = False
+
+    @property
+    def n_ch(self):
+        return len(self.picks) + self.restore_reference
+
+    def match_model(self, n_model_ch):
+        """Adapt the channel selection to the number of channels the model expects."""
+        missing = n_model_ch - len(self.picks)
+        if missing == 1 and REFERENCE_CHANNEL not in self.ch_names:
+            self.restore_reference = True
+            if self.ch_names:
+                self.ch_names.append(REFERENCE_CHANNEL)
+        elif missing != 0:
+            sys.exit(f"Model expects {n_model_ch} channels, the stream provides {len(self.picks)} "
+                     f"{self.ch_names or ''} (+1 with the {REFERENCE_CHANNEL} reference restored).")
 
     def select(self, samples):
         """samples: list of (n_ch_stream,) rows -> (n_ch, n) average-referenced array."""
         x = np.asarray(samples, dtype=np.float64).T[self.picks]
+        if self.restore_reference:
+            x = np.vstack([x, np.zeros((1, x.shape[1]))])
         return x - x.mean(axis=0, keepdims=True)
 
 
@@ -456,9 +481,10 @@ def empty_marker_timestamps(pinches, segment):
     return np.asarray(out)
 
 
-def build_finetune_dataset(csv_path, backend_end_stamps):
+def build_finetune_dataset(csv_path, backend_end_stamps, restore_reference=False):
     """Epochs of the recording as (X, is_positive), X: (n_epochs, n_ch, n_times),
-    channel-wise z-scored as in 14_classification.ipynb."""
+    channel-wise z-scored as in 14_classification.ipynb. The channels match
+    EEGInput: with restore_reference the recording reference is the last one."""
     import mne
     mne.set_log_level("WARNING")
 
@@ -496,13 +522,16 @@ def build_finetune_dataset(csv_path, backend_end_stamps):
     neg_ts = empty_marker_timestamps(pinches, segment)
 
     # ---- raw EEG, cropped 10s before the first experiment to let the filters settle ----
-    ch_names = [c for c in eeg_csv.columns if c != "timestamp" and c not in NON_EEG_CHANNELS]
+    # a stream channel named like the logger's timestamp column is read as 'timestamp.1'
+    ch_names = [c for c in eeg_csv.columns if c.split(".")[0] not in NON_EEG_CHANNELS]
     timestamps = eeg_csv.timestamp.to_numpy()
     t_idx = np.searchsorted(timestamps, start_ts - 10)
     t0 = timestamps[t_idx]
     info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types="eeg")
     raw = mne.io.RawArray(eeg_csv[ch_names].to_numpy()[t_idx:].T * 1e-6, info)
     raw.rename_channels({k: v for k, v in {"T3": "T7", "T4": "T8", "T5": "P7", "T6": "P8"}.items() if k in ch_names})
+    if restore_reference:
+        raw = mne.add_reference_channels(raw, REFERENCE_CHANNEL)
     raw.set_montage(mne.channels.make_standard_montage("standard_1020"), on_missing="ignore")
     raw.set_eeg_reference(ref_channels="average")
 
@@ -520,7 +549,7 @@ def build_finetune_dataset(csv_path, backend_end_stamps):
     raw.set_annotations(mne.Annotations(bad_onsets, bad_durations, ["BAD_BREAK"] * len(bad_onsets)))
 
     # 'eeg_light' preprocessing: frequency filters only
-    raw.filter(l_freq=1.0, h_freq=None)
+    raw.filter(l_freq=0.3, h_freq=None)
     raw.notch_filter(freqs=[50])
     raw.filter(l_freq=None, h_freq=45.)
 
@@ -604,18 +633,19 @@ def finetune(model, X, y, args, device, validation_split=0.2, seed=42):
     print(f"[finetune] done, best val_loss {best_loss:.4f}")
 
 
-def finetune_on_latest_recording(model, labels, win_len, backend_end_stamps, args, device):
+def finetune_on_latest_recording(model, labels, eeg, win_len, backend_end_stamps, args, device):
     """Fine tunes model on the most recent recording. Returns True on success; on
     failure the original weights are restored."""
     original_state = copy.deepcopy(model.state_dict())
     try:
         csv_path = find_latest_recording(args.data_dir, args.subject)
-        X, is_positive = build_finetune_dataset(csv_path, backend_end_stamps)
+        X, is_positive = build_finetune_dataset(csv_path, backend_end_stamps, eeg.restore_reference)
         n_pos, n_neg = int(is_positive.sum()), int((~is_positive).sum())
         if min(n_pos, n_neg) < args.finetune_min_epochs_per_class:
             raise ValueError(f"not enough epochs ({n_pos} {LABEL_POSITIVE}, {n_neg} {LABEL_NEGATIVE})")
-        if X.shape[2] != win_len:
-            raise ValueError(f"epochs have {X.shape[2]} samples, model expects {win_len}")
+        if X.shape[1:] != (eeg.n_ch, win_len):
+            raise ValueError(f"epochs have {X.shape[1]} channels x {X.shape[2]} samples, "
+                             f"model expects {eeg.n_ch} x {win_len}")
 
         y = np.where(is_positive, labels.index(LABEL_POSITIVE), labels.index(LABEL_NEGATIVE))
         finetune(model, X, y, args, device)
@@ -666,7 +696,7 @@ def run_phases(eeg, model, labels, outlet, markers, args, device, win_len):
 
     # ---- phase 3: fine tune on the recording, then inference ----
     print("[phases] phase 3: fine tuning on the most recent recording")
-    finetune_on_latest_recording(model, labels, win_len, phases.end_stamps, args, device)
+    finetune_on_latest_recording(model, labels, eeg, win_len, phases.end_stamps, args, device)
     run_inference(eeg, model, labels, outlet, markers, args, should_stop=lambda: phase_over(3),
                   on_running=lambda: ready.set(MSG_READY_PHASE.format(3)))
     ready.clear()
@@ -705,9 +735,7 @@ def main():
 
     inlet = StreamInlet(info_in, max_buflen=30, processing_flags=proc_clocksync | proc_dejitter)
     eeg = EEGInput(inlet)
-    n_ch = eeg.n_ch
-    print(f"Connected to '{info_in.name()}': {info_in.channel_count()} channels @ {fs} Hz, "
-          f"using {n_ch} {eeg.ch_names or ''}")
+    print(f"Connected to '{info_in.name()}': {info_in.channel_count()} channels @ {fs} Hz")
 
     # ---- optional replay-marker stream ----
     markers = None
@@ -723,8 +751,11 @@ def main():
 
     # ---- model + dry run to find number of classes ----
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = load_model(args.model, device)
+    model, n_model_ch = load_model(args.model, device)
     model.to(device)
+    eeg.match_model(n_model_ch)
+    n_ch = eeg.n_ch
+    print(f"Model input: {n_ch} channels {eeg.ch_names or ''}")
     try:
         _, probs = classify(model, np.zeros((1, n_ch, win_len), dtype=np.float32), args)
     except Exception as e:
