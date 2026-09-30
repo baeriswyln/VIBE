@@ -184,7 +184,7 @@ namespace Experiments
                     
                     yield return PlayTextPages(new []{"Phase 2 is being prepared."});
                     _experimentPlaylist = new List<Experiment>();
-                    for (var i = 0; i < 2; i++) experimentConfigSession3_2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
+                    for (var i = 0; i < 3; i++) experimentConfigSession3_2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
                     foreach (StimuliExperiment exp in _experimentPlaylist)
                         exp.currentPinchSource = PinchHandler.PinchSource.Lsl;
                     yield return new WaitUntil(() => LslPinchReceiver.Instance.phase2Ready);
@@ -196,7 +196,7 @@ namespace Experiments
                     
                     yield return PlayTextPages(new []{"Phase 3 is being prepared."});
                     _experimentPlaylist = new List<Experiment>();
-                    for (var i = 0; i < 2; i++) experimentConfigSession3_2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
+                    for (var i = 0; i < 3; i++) experimentConfigSession3_2.CreateExperimentFromSelfAndAddToList(_experimentPlaylist, gameObject);
                     foreach (StimuliExperiment exp in _experimentPlaylist)
                         exp.currentPinchSource = PinchHandler.PinchSource.Lsl;
                     yield return new WaitUntil(() => LslPinchReceiver.Instance.phase3Ready);

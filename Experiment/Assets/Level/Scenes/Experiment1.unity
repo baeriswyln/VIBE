@@ -1907,7 +1907,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1801138295239465688, guid: 8e0fbeda1179e774da6992760eebb4f1, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.0099599
+      value: 1.00996
       objectReference: {fileID: 0}
     - target: {fileID: 1801138295239465688, guid: 8e0fbeda1179e774da6992760eebb4f1, type: 3}
       propertyPath: m_LocalScale.y
@@ -6195,7 +6195,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8142502994988969365, guid: 8e0fbeda1179e774da6992760eebb4f1, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.9833076
+      value: 0.98330754
       objectReference: {fileID: 0}
     - target: {fileID: 8142502994988969365, guid: 8e0fbeda1179e774da6992760eebb4f1, type: 3}
       propertyPath: m_LocalScale.y
@@ -8651,10 +8651,10 @@ MonoBehaviour:
     isChoiceStimuli: 1
     feedbackIsDelayed: 0
   interTrialIntervalMin: 2
-  interTrialIntervalMax: 3
+  interTrialIntervalMax: 4
   feedbackDuration: 0.5
   gazeMinTime: 0.2
-  gapBetweenExperiments: 2
+  gapBetweenExperiments: 15
   staticSpawner: {fileID: 1516759628}
   randomSpawner: {fileID: 68749651}
   handVisualizer: {fileID: 1407308815}
