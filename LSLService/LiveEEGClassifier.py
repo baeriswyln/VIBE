@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """
-eeg_classify.py - Classify EEG signals in real time. The last 2 seconds are filtered
+LiveEEGClassifier.py - Classify EEG signals in real time. The last 2 seconds are filtered
 and given to a torch model for classification. The results are published on a
 separate LSL stream.
 
-With --phased the classifier follows a 3 phase run, driven by phase-end tokens
-("end_phase_1", "end_phase_2", "end_phase_3") on a backend stream:
+The classifier takes two models and follows a 3 phase run, driven by phase-end
+tokens ("end_phase_1", "end_phase_2", "end_phase_3") on a backend stream:
     Phase 1: idle (LSLLiveViewLogger records the data used for fine tuning).
-    Phase 2: live inference with the given model.
-    Phase 3: epoch the most recent recording (same preprocessing and epoching as
-             DataAnalysis/11_preprocessing.ipynb), fine tune the model on it and
-             run live inference with the fine tuned model.
+             At its end, the phase 1 data of the most recent recording is epoched
+             (same preprocessing and epoching as DataAnalysis/11_preprocessing.ipynb)
+             and both models are fine tuned on it.
+    Phase 2: live inference with the fine tuned first model.
+    Phase 3: live inference with the fine tuned second model.
 Readiness for each phase ("classifier_ready_phase_N") is published on the marker
 output stream; phases 2 and 3 count as ready once inference is running.
 """
@@ -34,7 +35,7 @@ LSL_STREAM_NAME_OUT = "Experiment.VIBE.Pinch"
 LSL_MARKER_NAME_IN  = "Experiment.VIBE.MarkerReplay"
 CLASSIFY_WINDOW_SECONDS = 2
 
-# Backend stream for the phased run.
+# Backend stream publishing the phase ends.
 BACKEND_STREAM_NAME_PHASES = "Experiment.VIBE.Backend.Game"
 MSG_END_PHASE = re.compile(r"^end_phase_(\d+)$", re.IGNORECASE)
 MSG_READY_PHASE = "classifier_ready_phase_{}"
@@ -56,6 +57,13 @@ EPOCH_T_MAX = 0.3
 MIN_DIST_BETWEEN_EVENTS = 1.1
 LABEL_POSITIVE = "PinchLog"
 LABEL_NEGATIVE = "NoPinchLog"
+LABELS = [LABEL_NEGATIVE, LABEL_POSITIVE]   # model output order
+
+# Fine tuning.
+FINETUNE_EPOCHS = 30
+FINETUNE_LR = 1e-4
+FINETUNE_BATCH_SIZE = 32
+FINETUNE_MIN_EPOCHS_PER_CLASS = 10   # keep the original models if fewer epochs per class are available
 
 ANSI_GREEN_BG = "\033[42m"
 ANSI_RED_BG = "\033[41m"
@@ -81,40 +89,22 @@ def render_classification_buffer(buffer, next_index):
 # --------------------------------------------------------------------------
 def parse_args():
     p = argparse.ArgumentParser(description="Real-time EEG filtering + torch classification over LSL.")
-    p.add_argument("model", help="Path to the pre-trained model (TorchScript, or a fully pickled nn.Module)")
-    p.add_argument("--hop", type=float, default=0.5,
+    p.add_argument("model", help="Path to the pre-trained model (torch.export .pt2) used in phase 2")
+    p.add_argument("model2", help="Path to the pre-trained model (torch.export .pt2) used in phase 3")
+    p.add_argument("--hop", type=float, default=0.25,
                    help="Seconds between classifications (default 0.5)")
-    p.add_argument("--zscore", action="store_true",
-                   help="Z-score each channel within the window (use only if you did so in training)")
-    p.add_argument("--labels", default=None, help="Comma-separated class labels (metadata only)")
     p.add_argument("--replay", action="store_true",
-                   help=f"Also subscribe to the '{LSL_MARKER_NAME_IN}' stream from EEGReplay.py and "
-                        f"report whether a ground-truth marker falls inside the classified window")
+                   help=f"Also subscribe to the '{LSL_MARKER_NAME_IN}' stream from EEGReplay.py, forward "
+                        f"each of its pinch markers as PINCH on '{LSL_STREAM_NAME_OUT}' and report whether "
+                        f"a ground-truth marker falls inside the classified window")
     p.add_argument("--consecutive", type=int, default=2,
                    help="Number of consecutively epochs classified as positive to trigger a marker.")
-    p.add_argument("--finetune", action="store_true",
-                   help="Create a fine tuned model based on the input model.")
-    p.add_argument("--positive-threshold", type=float, default=0.8,
+    p.add_argument("--positive-threshold", type=float, default=0.7,
                    help="Classification threshold for positive event.")
-    p.add_argument("--manual_trigger", action="store_true",
-                   help="Listen for Enter key presses to trigger a marker.")
-
-    g = p.add_argument_group("phased run")
-    g.add_argument("--phased", action="store_true",
-                   help="Run the 3 phase protocol (idle -> inference -> fine tune + inference), advancing "
-                        "on 'end_phase_N' tokens from --phase-stream and publishing "
-                        f"'classifier_ready_phase_N' on '{LSL_STREAM_NAME_OUT}'.")
-    g.add_argument("--phase-stream", default=BACKEND_STREAM_NAME_PHASES,
-                   help=f"Backend stream publishing the phase ends (default '{BACKEND_STREAM_NAME_PHASES}')")
-    g.add_argument("--data-dir", type=Path, default=Path(__file__).parent / "data",
+    p.add_argument("--data-dir", type=Path, default=Path(__file__).parent / "data",
                    help="Directory LSLLiveViewLogger writes to; the most recent recording is used for fine tuning")
-    g.add_argument("--subject", default=None,
+    p.add_argument("--subject", default=None,
                    help="Only consider recordings of this subject id when looking for the most recent one")
-    g.add_argument("--finetune-epochs", type=int, default=30, help="Fine tuning epochs (default 30)")
-    g.add_argument("--finetune-lr", type=float, default=1e-4, help="Fine tuning learning rate (default 1e-4)")
-    g.add_argument("--finetune-batch-size", type=int, default=32, help="Fine tuning batch size (default 32)")
-    g.add_argument("--finetune-min-epochs-per-class", type=int, default=10,
-                   help="Keep the original model if fewer epochs per class are available (default 10)")
     return p.parse_args()
 
 
@@ -125,7 +115,7 @@ def build_filter(fs):
     nyq = fs / 2.0
     if 45.0 >= nyq:
         sys.exit(f"Sampling rate {fs} Hz is too low for a 45 Hz low-pass.")
-    hp = signal.butter(4, 1.0, btype="highpass", fs=fs, output="sos")
+    hp = signal.butter(4, 0.3, btype="highpass", fs=fs, output="sos")
     lp = signal.butter(4, 45.0, btype="lowpass", fs=fs, output="sos")
     b, a = signal.iirnotch(50.0, Q=30.0, fs=fs)
     notch = signal.tf2sos(b, a)
@@ -161,20 +151,17 @@ def load_model(path, device):
     return model, n_ch
 
 
-def make_input(window, args, device):
-    """window: (1, n_ch, n_samples) float array -> (1, 1, n_ch, n_samples) torch tensor for the model."""
-    w = window
-    if args.zscore:
-        w = (w - w.mean(axis=-1, keepdims=True)) / (w.std(axis=-1, keepdims=True) + 1e-8)
-
+def make_input(window, device):
+    """window: (1, n_ch, n_samples) float array -> channel-wise z-scored (1, 1, n_ch, n_samples)
+    torch tensor for the model."""
+    w = (window - window.mean(axis=-1, keepdims=True)) / (window.std(axis=-1, keepdims=True) + 1e-8)
     t = torch.from_numpy(np.ascontiguousarray(w, dtype=np.float32)).unsqueeze(0)  # batch dim
-
     return t.to(device)
 
 
 @torch.no_grad()
-def classify(model, window, args):
-    x = make_input(window, args, "cuda" if torch.cuda.is_available() else "cpu")
+def classify(model, window):
+    x = make_input(window, "cuda" if torch.cuda.is_available() else "cpu")
     out = model(x)
     if isinstance(out, (tuple, list)):
         out = out[0]
@@ -192,18 +179,25 @@ def classify(model, window, args):
 # Replay markers
 # --------------------------------------------------------------------------
 class MarkerTracker:
-    """Collects ground-truth markers from the replay stream and answers
-    'was there one inside the window that just got classified?'."""
+    """Collects ground-truth markers from the replay stream, forwards each of them
+    as a PINCH on the output stream and answers 'was there one inside the window
+    that just got classified?'."""
 
-    def __init__(self, inlet, window):
+    def __init__(self, inlet, window, outlet):
         self.inlet = inlet
         self.window = window
+        self.outlet = outlet
         self.stamps = []   # marker timestamps, oldest -> newest
+
+    def flush(self):
+        """Drop the markers that queued up while nobody polled."""
+        self.inlet.flush()
 
     def poll(self):
         samples, stamps = self.inlet.pull_chunk(timeout=0.0)
-        if stamps:
-            self.stamps.extend(stamps)
+        for t in stamps:
+            self.outlet.push_sample(["PINCH"], timestamp=t)
+        self.stamps.extend(stamps)
 
     def seen_within(self, t_end):
         """True if a marker lies in (t_end - window, t_end]."""
@@ -271,7 +265,7 @@ class EEGInput:
 # --------------------------------------------------------------------------
 # Inference
 # --------------------------------------------------------------------------
-def run_inference(eeg, model, labels, outlet, markers, args, should_stop=lambda: False, on_running=None):
+def run_inference(eeg, model, outlet, markers, args, should_stop, on_running=None):
     """Classify the EEG stream until should_stop() returns True. on_running is
     called once, right after the first classification."""
     fs = eeg.fs
@@ -281,6 +275,8 @@ def run_inference(eeg, model, labels, outlet, markers, args, should_stop=lambda:
 
     # ---- processing state ----
     eeg.inlet.flush()    # drop whatever queued up while we were not classifying
+    if markers is not None:
+        markers.flush()
     filt = StreamingFilter(build_filter(fs), eeg.n_ch)
     buf = np.zeros((1, eeg.n_ch, win_len), dtype=np.float32)   # rolling window, oldest -> newest
     total = 0            # total samples processed
@@ -316,14 +312,14 @@ def run_inference(eeg, model, labels, outlet, markers, args, should_stop=lambda:
         if total >= min_samples and since_last >= hop_len:
             since_last = 0
             t_start = time.perf_counter()
-            cls, probs = classify(model, buf, args)
+            cls, probs = classify(model, buf)
             latency_ms = (time.perf_counter() - t_start) * 1000
 
             if on_running is not None:
                 on_running()
                 on_running = None
 
-            class_buffer[class_buffer_i] = (labels[cls] == LABEL_POSITIVE and probs[cls] > args.positive_threshold)
+            class_buffer[class_buffer_i] = (LABELS[cls] == LABEL_POSITIVE and probs[cls] > args.positive_threshold)
             class_buffer_i = (class_buffer_i + 1) % args.consecutive
 
             if all(class_buffer) and not last_was_positive:
@@ -338,13 +334,13 @@ def run_inference(eeg, model, labels, outlet, markers, args, should_stop=lambda:
             if markers is not None:
                 gt_vis = "  " + status_cell(markers.seen_within(stamps[-1]))
 
-            print(f"\r{labels[cls]:>12s}  p={probs[cls]:.2f}  [{buf_vis}]{gt_vis}  ({latency_ms:.1f} ms)   ",
+            print(f"\r{LABELS[cls]:>12s}  p={probs[cls]:.2f}  [{buf_vis}]{gt_vis}  ({latency_ms:.1f} ms)   ",
                   end="", flush=True)
     print()
 
 
 # --------------------------------------------------------------------------
-# Phased run: backend streams
+# Phases: backend streams
 # --------------------------------------------------------------------------
 def parse_phase_end(message):
     """Phase number of an end-of-phase message, or None. Accepts plain tokens
@@ -408,7 +404,7 @@ class ReadyPublisher:
 
 
 # --------------------------------------------------------------------------
-# Phased run: fine tuning data (see DataAnalysis/11_preprocessing.ipynb)
+# Fine tuning data (see DataAnalysis/11_preprocessing.ipynb)
 # --------------------------------------------------------------------------
 def find_latest_recording(data_dir, subject=None):
     """Most recent EEG csv written by LSLLiveViewLogger."""
@@ -482,7 +478,7 @@ def empty_marker_timestamps(pinches, segment):
 
 
 def build_finetune_dataset(csv_path, backend_end_stamps, restore_reference=False):
-    """Epochs of the recording as (X, is_positive), X: (n_epochs, n_ch, n_times),
+    """Phase 1 epochs of the recording as (X, is_positive), X: (n_epochs, n_ch, n_times),
     channel-wise z-scored as in 14_classification.ipynb. The channels match
     EEGInput: with restore_reference the recording reference is the last one."""
     import mne
@@ -515,8 +511,8 @@ def build_finetune_dataset(csv_path, backend_end_stamps, restore_reference=False
     intervals = experiment_intervals(markers)
     markers = markers[markers.timestamp > start_ts]
 
-    # experiment indices restart in every phase, so a segment is (phase, experiment)
-    pinches = markers[markers.EventType == "PinchLog"]
+    # only phase 1 is used; experiment indices restart in every phase, so a segment is (phase, experiment)
+    pinches = markers[(markers.EventType == "PinchLog") & (markers.timestamp <= end_phase_1)]
     segment = [np.searchsorted(phase_ends, pinches.timestamp.to_numpy()), pinches.ExperimentIndex.to_numpy()]
     pos_ts = ground_truth_pinches(pinches, end_phase_1)
     neg_ts = empty_marker_timestamps(pinches, segment)
@@ -573,9 +569,9 @@ def build_finetune_dataset(csv_path, backend_end_stamps, restore_reference=False
 
 
 # --------------------------------------------------------------------------
-# Phased run: fine tuning
+# Fine tuning
 # --------------------------------------------------------------------------
-def finetune(model, X, y, args, device, validation_split=0.2, seed=42):
+def finetune(model, X, y, device, validation_split=0.2, seed=42):
     """Fine tunes model in place on X: (n, n_ch, n_times), y: (n,) class indices and
     keeps the weights with the lowest validation loss. The exported model cannot be
     put in train mode, so dropout stays off and batch norm statistics stay frozen."""
@@ -596,7 +592,7 @@ def finetune(model, X, y, args, device, validation_split=0.2, seed=42):
     counts = np.bincount(y[tr_idx], minlength=n_classes).astype(np.float64)
     weights = torch.tensor(counts.sum() / (n_classes * np.maximum(counts, 1)), dtype=torch.float32, device=device)
     criterion = torch.nn.CrossEntropyLoss(weight=weights)
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.finetune_lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=FINETUNE_LR)
 
     # The model is exported with a batch size of 1 and its constrained layers modify their
     # weights in place during forward, so every sample gets its own forward + backward; the
@@ -620,62 +616,65 @@ def finetune(model, X, y, args, device, validation_split=0.2, seed=42):
 
     best_loss, best_state = val_loss(), copy.deepcopy(model.state_dict())
     print(f"[finetune] {len(tr_idx)} train / {len(va_idx)} validation epochs, val_loss before {best_loss:.4f}")
-    for epoch in range(1, args.finetune_epochs + 1):
+    for epoch in range(1, FINETUNE_EPOCHS + 1):
         run_loss = 0.0
-        for batch in np.array_split(rng.permutation(tr_idx), max(1, len(tr_idx) // args.finetune_batch_size)):
+        for batch in np.array_split(rng.permutation(tr_idx), max(1, len(tr_idx) // FINETUNE_BATCH_SIZE)):
             run_loss += train_step(batch) * len(batch)
         v_loss = val_loss()
         if v_loss < best_loss:
             best_loss, best_state = v_loss, copy.deepcopy(model.state_dict())
-        print(f"[finetune] epoch {epoch:3d}/{args.finetune_epochs}  loss {run_loss / len(tr_idx):.4f}  "
+        print(f"[finetune] epoch {epoch:3d}/{FINETUNE_EPOCHS}  loss {run_loss / len(tr_idx):.4f}  "
               f"val_loss {v_loss:.4f}")
     model.load_state_dict(best_state)
     print(f"[finetune] done, best val_loss {best_loss:.4f}")
 
 
-def finetune_on_latest_recording(model, labels, eeg, win_len, backend_end_stamps, args, device):
-    """Fine tunes model on the most recent recording. Returns True on success; on
+def load_finetune_data(eeg, win_len, backend_end_stamps, args):
+    """-> (csv_path, X, y): the phase 1 epochs of the most recent recording and their class indices."""
+    csv_path = find_latest_recording(args.data_dir, args.subject)
+    X, is_positive = build_finetune_dataset(csv_path, backend_end_stamps, eeg.restore_reference)
+    n_pos, n_neg = int(is_positive.sum()), int((~is_positive).sum())
+    if min(n_pos, n_neg) < FINETUNE_MIN_EPOCHS_PER_CLASS:
+        raise ValueError(f"not enough epochs ({n_pos} {LABEL_POSITIVE}, {n_neg} {LABEL_NEGATIVE})")
+    if X.shape[1:] != (eeg.n_ch, win_len):
+        raise ValueError(f"epochs have {X.shape[1]} channels x {X.shape[2]} samples, "
+                         f"model expects {eeg.n_ch} x {win_len}")
+    y = np.where(is_positive, LABELS.index(LABEL_POSITIVE), LABELS.index(LABEL_NEGATIVE))
+    return csv_path, X, y
+
+
+def finetune_and_save(model, name, X, y, out_dir, device):
+    """Fine tunes model on (X, y) and saves it to out_dir. Returns True on success; on
     failure the original weights are restored."""
+    print(f"[finetune] fine tuning '{name}'")
     original_state = copy.deepcopy(model.state_dict())
     try:
-        csv_path = find_latest_recording(args.data_dir, args.subject)
-        X, is_positive = build_finetune_dataset(csv_path, backend_end_stamps, eeg.restore_reference)
-        n_pos, n_neg = int(is_positive.sum()), int((~is_positive).sum())
-        if min(n_pos, n_neg) < args.finetune_min_epochs_per_class:
-            raise ValueError(f"not enough epochs ({n_pos} {LABEL_POSITIVE}, {n_neg} {LABEL_NEGATIVE})")
-        if X.shape[1:] != (eeg.n_ch, win_len):
-            raise ValueError(f"epochs have {X.shape[1]} channels x {X.shape[2]} samples, "
-                             f"model expects {eeg.n_ch} x {win_len}")
-
-        y = np.where(is_positive, labels.index(LABEL_POSITIVE), labels.index(LABEL_NEGATIVE))
-        finetune(model, X, y, args, device)
+        finetune(model, X, y, device)
     except Exception as e:
         model.load_state_dict(original_state)
-        print(f"[finetune] FAILED, continuing with the original model: {e}")
+        print(f"[finetune] FAILED, continuing with the original '{name}': {e}")
         return False
 
-    out_path = csv_path.with_name(f"finetuned_{time.strftime('%Y%m%d_%H%M%S')}.pt2")
+    out_path = Path(out_dir) / f"finetuned_{name}_{time.strftime('%Y%m%d_%H%M%S')}.pt2"
     try:
         ep = torch.export.export(model, (torch.from_numpy(X[:1]).unsqueeze(1).to(device),))
         torch.export.save(ep, out_path)
-        print(f"[finetune] saved fine tuned model to {out_path}")
+        print(f"[finetune] saved fine tuned '{name}' to {out_path}")
     except Exception as e:
-        print(f"[finetune] could not save the fine tuned model: {e}")
+        print(f"[finetune] could not save the fine tuned '{name}': {e}")
     return True
 
 
-def run_phases(eeg, model, labels, outlet, markers, args, device, win_len):
-    if LABEL_POSITIVE not in labels or LABEL_NEGATIVE not in labels:
-        sys.exit(f"--phased needs --labels containing '{LABEL_NEGATIVE}' and '{LABEL_POSITIVE}'.")
-
+def run_phases(eeg, models, outlet, markers, args, device, win_len):
+    """models: [(name, model) for phase 2, (name, model) for phase 3]."""
     ready = ReadyPublisher(outlet)
     print(f"Publishing ready state on '{LSL_STREAM_NAME_OUT}'.")
 
-    streams = resolve_byprop("name", args.phase_stream, timeout=60)
+    streams = resolve_byprop("name", BACKEND_STREAM_NAME_PHASES, timeout=60)
     if not streams:
-        sys.exit(f"No '{args.phase_stream}' stream found.")
+        sys.exit(f"No '{BACKEND_STREAM_NAME_PHASES}' stream found.")
     phases = PhaseListener(StreamInlet(streams[0], max_buflen=360, processing_flags=proc_clocksync))
-    print(f"Listening for phase ends on '{args.phase_stream}'.")
+    print(f"Listening for phase ends on '{BACKEND_STREAM_NAME_PHASES}'.")
 
     def phase_over(phase):
         ready.tick()
@@ -685,21 +684,27 @@ def run_phases(eeg, model, labels, outlet, markers, args, device, win_len):
     ready.set(MSG_READY_PHASE.format(1))
     while not phases.has_ended(1):
         ready.tick()
+        if markers is not None:
+            markers.poll()
         phases.poll(timeout=0.2)
     ready.clear()
 
-    # ---- phase 2: inference with the given model ----
-    print("[phases] phase 2: inference with the given model")
-    run_inference(eeg, model, labels, outlet, markers, args, should_stop=lambda: phase_over(2),
-                  on_running=lambda: ready.set(MSG_READY_PHASE.format(2)))
-    ready.clear()
+    # ---- fine tune both models on the phase 1 data ----
+    print("[phases] fine tuning both models on the phase 1 recording")
+    try:
+        csv_path, X, y = load_finetune_data(eeg, win_len, phases.end_stamps, args)
+    except Exception as e:
+        print(f"[finetune] FAILED to build the fine tuning data, continuing with the original models: {e}")
+    else:
+        for name, model in models:
+            finetune_and_save(model, name, X, y, csv_path.parent, device)
 
-    # ---- phase 3: fine tune on the recording, then inference ----
-    print("[phases] phase 3: fine tuning on the most recent recording")
-    finetune_on_latest_recording(model, labels, eeg, win_len, phases.end_stamps, args, device)
-    run_inference(eeg, model, labels, outlet, markers, args, should_stop=lambda: phase_over(3),
-                  on_running=lambda: ready.set(MSG_READY_PHASE.format(3)))
-    ready.clear()
+    # ---- phases 2 and 3: inference with the first / second fine tuned model ----
+    for phase, (name, model) in zip((2, 3), models):
+        print(f"[phases] phase {phase}: inference with the fine tuned '{name}'")
+        run_inference(eeg, model, outlet, markers, args, should_stop=lambda p=phase: phase_over(p),
+                      on_running=lambda p=phase: ready.set(MSG_READY_PHASE.format(p)))
+        ready.clear()
     print("[phases] all phases done.")
 
 
@@ -708,21 +713,6 @@ def run_phases(eeg, model, labels, outlet, markers, args, device, win_len):
 # --------------------------------------------------------------------------
 def main():
     args = parse_args()
-
-    if args.manual_trigger:
-        # ---- output stream (irregular rate, float32) ----
-        info_out = StreamInfo(LSL_STREAM_NAME_OUT, "Marker", 1, 0.0, "string",
-                              "eeg_classifier")
-        outlet = StreamOutlet(info_out)
-        print(f"Publishing on '{LSL_STREAM_NAME_OUT}' (type='Classification').")
-        try:
-            while True:
-                input()
-                outlet.push_sample(["PINCH"])
-
-        except (KeyboardInterrupt, EOFError):
-            print("\nStopped.")
-            return
 
     # ---- connect to input stream ----
     streams = resolve_byprop("name", LSL_STREAM_NAME_IN, timeout=30)
@@ -737,6 +727,38 @@ def main():
     eeg = EEGInput(inlet)
     print(f"Connected to '{info_in.name()}': {info_in.channel_count()} channels @ {fs} Hz")
 
+    win_len = int(round(CLASSIFY_WINDOW_SECONDS * fs))+1
+
+    # ---- models + dry run to check their input and output ----
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    paths = [args.model, args.model2]
+    loaded = [load_model(path, device) for path in paths]
+    if len({n for _, n in loaded}) != 1:
+        sys.exit(f"The models expect different numbers of channels: {[n for _, n in loaded]}")
+    eeg.match_model(loaded[0][1])
+    n_ch = eeg.n_ch
+    print(f"Model input: {n_ch} channels {eeg.ch_names or ''}")
+
+    models = []
+    for path, (model, _) in zip(paths, loaded):
+        model.to(device)
+        try:
+            _, probs = classify(model, np.zeros((1, n_ch, win_len), dtype=np.float32))
+        except Exception as e:
+            sys.exit(f"Model '{path}' rejected a dummy input of {n_ch} channels x {win_len} samples: {e}")
+        if len(probs) != len(LABELS):
+            sys.exit(f"Model '{path}' outputs {len(probs)} classes, expected {len(LABELS)}: {LABELS}")
+        models.append((Path(path).stem, model))
+
+    # ---- output stream (irregular rate, string) ----
+    info_out = StreamInfo(LSL_STREAM_NAME_OUT, "Classification", 1, 0.0, "string",
+                          f"{info_in.source_id() or 'eeg'}_classifier")
+    chans = info_out.desc().append_child("channels")
+    for name in ["predicted_class"] + [f"p_{l}" for l in LABELS]:
+        chans.append_child("channel").append_child_value("label", name)
+    outlet = StreamOutlet(info_out)
+    print(f"Publishing on '{LSL_STREAM_NAME_OUT}' (type='Classification').")
+
     # ---- optional replay-marker stream ----
     markers = None
     if args.replay:
@@ -744,44 +766,11 @@ def main():
         if not mstreams:
             sys.exit(f"--replay given but no '{LSL_MARKER_NAME_IN}' stream found.")
         m_inlet = StreamInlet(mstreams[0], max_buflen=30, processing_flags=proc_clocksync)
-        markers = MarkerTracker(m_inlet, CLASSIFY_WINDOW_SECONDS)
-        print(f"Connected to '{LSL_MARKER_NAME_IN}' for ground-truth markers.")
-
-    win_len = int(round(CLASSIFY_WINDOW_SECONDS * fs))+1
-
-    # ---- model + dry run to find number of classes ----
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model, n_model_ch = load_model(args.model, device)
-    model.to(device)
-    eeg.match_model(n_model_ch)
-    n_ch = eeg.n_ch
-    print(f"Model input: {n_ch} channels {eeg.ch_names or ''}")
-    try:
-        _, probs = classify(model, np.zeros((1, n_ch, win_len), dtype=np.float32), args)
-    except Exception as e:
-        sys.exit(f"Model rejected a dummy input of {n_ch} channels x {win_len} samples "
-                 f": {e}")
-    n_classes = len(probs)
-    labels = args.labels.split(",") if args.labels else [f"class_{i}" for i in range(n_classes)]
-    if len(labels) != n_classes:
-        print(f"Warning: {len(labels)} labels given but model outputs {n_classes} classes; ignoring labels.")
-        labels = [f"class_{i}" for i in range(n_classes)]
-    print(f"Model outputs {n_classes} classes: {labels}")
-
-    # ---- output stream (irregular rate, string) ----
-    info_out = StreamInfo(LSL_STREAM_NAME_OUT, "Classification", 1, 0.0, "string",
-                          f"{info_in.source_id() or 'eeg'}_classifier")
-    chans = info_out.desc().append_child("channels")
-    for name in ["predicted_class"] + [f"p_{l}" for l in labels]:
-        chans.append_child("channel").append_child_value("label", name)
-    outlet = StreamOutlet(info_out)
-    print(f"Publishing on '{LSL_STREAM_NAME_OUT}' (type='Classification').")
+        markers = MarkerTracker(m_inlet, CLASSIFY_WINDOW_SECONDS, outlet)
+        print(f"Connected to '{LSL_MARKER_NAME_IN}'; its pinch markers are forwarded as PINCH.")
 
     try:
-        if args.phased:
-            run_phases(eeg, model, labels, outlet, markers, args, device, win_len)
-        else:
-            run_inference(eeg, model, labels, outlet, markers, args)
+        run_phases(eeg, models, outlet, markers, args, device, win_len)
     except KeyboardInterrupt:
         print("\nStopped.")
 
