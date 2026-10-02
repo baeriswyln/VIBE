@@ -1,5 +1,5 @@
 """Per-subject x model LOSO accuracy bar chart (appendix, full-width figure).
-Reads out_thesis/per_fold_accuracy_loso.csv (produced by 01_model_metrics_significance.py)."""
+Reads out/per_fold_accuracy_loso.csv (produced by model_metrics_significance.py)."""
 import csv
 import sys
 from pathlib import Path
@@ -10,11 +10,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import paper_style  # noqa: E402  paper style shared with the notebooks
+from scripts import paper_style  # noqa: E402  paper style shared with the notebooks
 import numpy as np
 
 root = Path(__file__).resolve().parent.parent
-rows = list(csv.DictReader(open(root / "out_thesis" / "per_fold_accuracy_loso.csv")))
+rows = list(csv.DictReader(open(root / "out" / "per_fold_accuracy_loso.csv")))
 
 by_subject = defaultdict(dict)
 chance = {}
@@ -47,7 +47,7 @@ ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 fig.tight_layout(pad=0.3)
 
-out = root / "out_thesis" / "figs" / "persubject_accuracy.pdf"
+out = root / "out" / "figs" / "persubject_accuracy.pdf"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out)
 print("wrote", out)

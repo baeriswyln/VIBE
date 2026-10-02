@@ -4,13 +4,13 @@ mean/std for the base 14-fold LOSO runs of RF (EEGForest), EEGNet and the
 GAT-GRU-Transformer, plus paired Wilcoxon signed-rank significance tests
 across the 14 held-out subjects.
 
-Reads data/results/{rf,eegnet,transformer}_leave_one_out_run.pkl (read-only).
+Reads out/results/{rf,eegnet,transformer}_leave_one_out_run.pkl (read-only).
 Writes:
-  out_thesis/model_metrics_loso.csv
-  out_thesis/model_significance_loso.csv
-  out_thesis/per_fold_accuracy_loso.csv   (raw per-fold numbers, for appendix/debugging)
+  out/model_metrics_loso.csv
+  out/model_significance_loso.csv
+  out/per_fold_accuracy_loso.csv   (raw per-fold numbers, for appendix/debugging)
 
-Structure of each pkl (confirmed by direct inspection, see thesis_analysis/_inspect.py):
+Structure of each pkl (confirmed by direct inspection, see scripts/inspect_results.py):
     pickle.load(fh) -> {"data_version": str, "result": result}
     result: dict keyed by subject id (e.g. "subject_21"), 14 keys
         result[subj] = {"result": <train_fn output dict>, "test_metadata": <pd.DataFrame>}
@@ -45,8 +45,8 @@ def print_markdown_table(df: pd.DataFrame):
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-RESULTS_DIR = ROOT / "data" / "results"
-OUT_DIR = ROOT / "out_thesis"
+RESULTS_DIR = ROOT / "out" / "results"
+OUT_DIR = ROOT / "out"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 POS_LABEL = "PinchLog"

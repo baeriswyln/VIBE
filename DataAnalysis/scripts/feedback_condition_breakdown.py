@@ -6,7 +6,7 @@ Framing (documented explicitly per the task brief): the per-epoch feedback/task
 metadata columns (hasVisualFeedback, hasAuditoryFeedback, hasVirtualHand,
 feedbackIsDelayed, pinchIsHinted, isChoiceStimuli, numberOfStimuli) are only
 populated (non-null) for PinchLog epochs -- NoPinchLog epochs have all of
-them set to None/NaN in this dataset (verified directly, see thesis_analysis/_inspect.py
+them set to None/NaN in this dataset (verified directly, see scripts/inspect_results.py
 and the ad-hoc check run during development). So a negative-class (NoPinchLog)
 false-positive-rate breakdown by these same flags is NOT possible -- there is no
 per-condition metadata to group NoPinchLog epochs by. We therefore report, for
@@ -22,11 +22,11 @@ LOSO out-of-fold aggregation: each of the 14 EEGNet LOSO folds' test_metadata
 once in this pooled table, predicted by the model that did NOT see its subject
 during training -- the standard LOSO "out-of-fold prediction" definition.
 
-Reads data/results/eegnet_leave_one_out_run.pkl (read-only).
+Reads out/results/eegnet_leave_one_out_run.pkl (read-only).
 Writes:
-  out_thesis/feedback_condition_breakdown.csv
-  out_thesis/feedback_condition_breakdown.md
-  out_thesis/figs/feedback_condition_accuracy.pdf
+  out/feedback_condition_breakdown.csv
+  out/feedback_condition_breakdown.md
+  out/figs/feedback_condition_accuracy.pdf
 """
 import pathlib
 import pickle
@@ -39,8 +39,8 @@ from scipy.stats import fisher_exact
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-RESULTS_DIR = ROOT / "data" / "results"
-OUT_DIR = ROOT / "out_thesis"
+RESULTS_DIR = ROOT / "out" / "results"
+OUT_DIR = ROOT / "out"
 FIG_DIR = OUT_DIR / "figs"
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -159,7 +159,7 @@ def main():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    import paper_style  # paper style shared with the notebooks (sizes/font in paper_style.py)
+    from scripts import paper_style  # paper style shared with the notebooks (sizes/font in scripts/paper_style.py)
 
     labels_map = {
         "hasVisualFeedback": "Visual FB",

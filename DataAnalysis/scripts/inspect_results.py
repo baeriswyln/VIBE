@@ -2,7 +2,7 @@ import pickle, pathlib, gc, sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-RESULTS_DIR = pathlib.Path(__file__).resolve().parent.parent / "data/results"
+RESULTS_DIR = pathlib.Path(__file__).resolve().parent.parent / "out" / "results"
 
 def inspect(name):
     path = RESULTS_DIR / f"{name}.pkl"

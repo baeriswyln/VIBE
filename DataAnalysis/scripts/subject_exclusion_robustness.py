@@ -3,9 +3,9 @@ Task 4 for the thesis: 12-fold LOSO robustness check for EEGNet, excluding
 subject_22 and subject_26 (flagged for data-quality reasons in
 12_data_quality_analysis.ipynb, cell 24) entirely from both training and test
 data, then comparing the new 12-fold mean/std accuracy against the existing
-14-fold baseline (data/results/eegnet_leave_one_out_run.pkl: mean 0.6449, std 0.0573).
+14-fold baseline (out/results/eegnet_leave_one_out_run.pkl: mean 0.6449, std 0.0573).
 
-This exactly replicates 14_classification.ipynb's data-loading (cell 2) and its
+This exactly replicates 15_classification.ipynb's data-loading (cell 2) and its
 EEGNet LOSO loop (classify_leave_one_out / classify_cross_subject, cell 10):
   - same filtering query: ((EventType=='PinchLog') & (PinchType=='PINCH')) | (EventType=='NoPinchLog')
   - same per-channel z-scoring (epochs_scaled)
@@ -14,13 +14,13 @@ EEGNet LOSO loop (classify_leave_one_out / classify_cross_subject, cell 10):
   - the only difference is read_raw_dataset(..., subjects_to_drop=['subject_22','subject_26'])
     at load time, so those two subjects never appear in ANY fold's train or test split.
 
-Does NOT touch data/results/*.pkl (no caching there) and does NOT modify any existing
+Does NOT touch out/results/*.pkl (no caching there) and does NOT modify any existing
 notebook/module. Trained models are not persisted (only fold accuracies/predictions),
 to keep this a lightweight, disk-safe robustness check.
 
 Writes:
-  out_thesis/subject_exclusion_robustness.csv
-  out_thesis/subject_exclusion_robustness.md
+  out/subject_exclusion_robustness.csv
+  out/subject_exclusion_robustness.md
 """
 import pathlib
 import sys
@@ -37,19 +37,19 @@ from models.EEGNet import train_eegnet          # noqa: E402
 from scripts.dataset_manager import read_raw_dataset  # noqa: E402
 
 EPOCH_FILTERED_DATASET_NAME = ROOT / "data" / "epoch_dataset_filtered"
-OUT_DIR = ROOT / "out_thesis"
+OUT_DIR = ROOT / "out"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 EXCLUDED_SUBJECTS = ["subject_22", "subject_26"]
 
 # ---- baseline numbers from the existing 14-fold EEGNet LOSO run (computed in
-# thesis_analysis/01_model_metrics_significance.py from data/results/eegnet_leave_one_out_run.pkl) ----
+# scripts/model_metrics_significance.py from out/results/eegnet_leave_one_out_run.pkl) ----
 BASELINE_14FOLD_MEAN = 0.6449
 BASELINE_14FOLD_STD = 0.0573
 
 
 def merge_epochs_dict(epochs_dict):
-    """Copied verbatim from 14_classification.ipynb cell 2 (read-only reuse, not an edit)."""
+    """Copied verbatim from 15_classification.ipynb cell 2 (read-only reuse, not an edit)."""
     all_epochs = []
     for subj, sessions in epochs_dict.items():
         for sess, ep in sessions.items():
@@ -118,7 +118,7 @@ def main():
         result = train_eegnet(
             train_epochs, train_epochs.metadata.EventType,
             test_epochs, test_epochs.metadata.EventType,
-            log_wandb=False, n_epochs=150,  # exact call signature used in 14_classification.ipynb's LOSO loop
+            log_wandb=False, n_epochs=150,  # exact call signature used in 15_classification.ipynb's LOSO loop
         )
 
         y_true = test_epochs.metadata["EventType"].to_numpy()
@@ -141,7 +141,7 @@ def main():
     total_elapsed = time.time() - t_start
     print(f"\n12-fold (excl. subject_22, subject_26) EEGNet LOSO: "
           f"mean={mean_acc:.4f}  std={std_acc:.4f}  (total wall time {total_elapsed/60:.1f} min)")
-    print(f"14-fold baseline (all subjects, from data/results/eegnet_leave_one_out_run.pkl): "
+    print(f"14-fold baseline (all subjects, from out/results/eegnet_leave_one_out_run.pkl): "
           f"mean={BASELINE_14FOLD_MEAN:.4f}  std={BASELINE_14FOLD_STD:.4f}")
     print(f"Delta (12-fold minus 14-fold baseline): mean {mean_acc - BASELINE_14FOLD_MEAN:+.4f}, "
           f"std {std_acc - BASELINE_14FOLD_STD:+.4f}")

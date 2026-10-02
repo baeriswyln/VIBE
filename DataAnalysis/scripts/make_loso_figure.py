@@ -1,5 +1,5 @@
 """Headline LOSO model-comparison bar chart for the thesis (single-column figure).
-Reads out_thesis/model_metrics_loso.csv (produced by 01_model_metrics_significance.py)
+Reads out/model_metrics_loso.csv (produced by model_metrics_significance.py)
 so the numbers plotted are always the same ones reported in the text."""
 import csv
 import sys
@@ -10,10 +10,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import paper_style  # noqa: E402  paper style shared with the notebooks
+from scripts import paper_style  # noqa: E402  paper style shared with the notebooks
 
 root = Path(__file__).resolve().parent.parent
-rows = list(csv.DictReader(open(root / "out_thesis" / "model_metrics_loso.csv")))
+rows = list(csv.DictReader(open(root / "out" / "model_metrics_loso.csv")))
 order = ["RF", "EEGNet", "Transformer"]
 rows = sorted(rows, key=lambda r: order.index(r["model"]))
 labels = {"RF": "EEGForest\n(RF)", "EEGNet": "EEGNet", "Transformer": "GAT-GRU-\nTransformer"}
@@ -38,7 +38,7 @@ ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 fig.tight_layout(pad=0.3)
 
-out = root / "out_thesis" / "figs" / "loso_model_comparison.pdf"
+out = root / "out" / "figs" / "loso_model_comparison.pdf"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out)
 print("wrote", out)
