@@ -1,6 +1,6 @@
 # VIBE — Virtual Input via Brain-computer interfacE
 
-Original title: *Practical Input Detection using EEG for Augmented Reality*
+Original title: *Practical Input Detection using EEG for Virtual Reality*
 
 **Master's Thesis | ETH Zürich | Dept. of Computer Science**  
 Supervisor: Prof. Christian Holz
@@ -24,49 +24,11 @@ This thesis investigates whether a thumb-index finger pinch can be detected from
 ## Repository Structure
 
 ```
-├── data/               # Raw and preprocessed EEG recordings (excluded from version control)
-├── TechDemo/           # Unity XR task application and event logging
-├── LSLService/         # Lab Streaming Layer related code for data gathering
-└── results/            # Exported figures, tables, and model outputs
+├── DataAnalysis/               # Data anaylsis, and model creation for pinch detection.
+├── Experiment/                 # The Unity project for the experiment.
+├── ExperimentOrchestrator/     # Python utility to automate the data collection.
+├── LSLService/                 # Data collection and live inference utilities.
+├── MyoDetector/                # (discontinued) an early prototype for a Myo armband pinch detection.
+├── TechDemo/                   # Test environment for the final experiment.
+└── weekly_reports/             # Brief resume of weekly progres.
 ```
-
----
-
-## Setup
-
-```bash
-git clone https://github.com/baeriswyln/VIBE.git
-cd VIBE
-```
-
----
-
-## Experiment
-
-Participants perform pinch-based target selection in a Unity XR scene under four feedback conditions:
-
-```
-todo
-```
-
-EEG, hand tracking (Leap Motion), and VR event markers are synchronized via **Lab Streaming Layer (LSL)**.
-
----
-
-## Models
-
-- **Baseline:** Feature extraction + LDA/SVM
-- **Deep learning:** EEGNet
-- **Stretch goal:** EEG Conformer + Euclidean Alignment for cross-subject transfer
-
----
-
-## Status
-
-- [x] Literature review
-- [ ] Experimental setup & Unity app
-- [ ] Data recording (~6 participants)
-- [ ] EEG preprocessing & analysis
-- [ ] Model training & evaluation
-- [ ] Real-time proof of concept *(stretch goal)*
-- [ ] Thesis writing
