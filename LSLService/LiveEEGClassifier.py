@@ -9,7 +9,10 @@ tokens ("end_phase_1", "end_phase_2", "end_phase_3") on a backend stream:
     Phase 1: idle (LSLLiveViewLogger records the data used for fine tuning).
              At its end, the phase 1 data of the most recent recording is epoched
              (same preprocessing and epoching as DataAnalysis/11_preprocessing.ipynb)
-             and both models are fine tuned on it.
+             and both models are fine tuned on it. Each fine tuned model is then run over
+             the phase 1 recording like in live inference, and its pinch detector
+             (n consecutive windows with p(pinch) > threshold) is optimized for the
+             best F1 score against the ground-truth pinches.
     Phase 2: live inference with the fine tuned first model.
     Phase 3: live inference with the fine tuned second model.
 Readiness for each phase ("classifier_ready_phase_N") is published on the marker
@@ -23,6 +26,7 @@ import re
 import sys
 import time
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -65,6 +69,14 @@ FINETUNE_LR = 1e-4
 FINETUNE_BATCH_SIZE = 32
 FINETUNE_MIN_EPOCHS_PER_CLASS = 10   # keep the original models if fewer epochs per class are available
 
+# Pinch detector: a PINCH is triggered once DETECTOR_CONSECUTIVE consecutive windows have
+# p(pinch) > DETECTOR_THRESHOLD. These defaults are used if the optimization on the phase 1
+# data fails; otherwise the best combination of the grids below is used.
+DETECTOR_CONSECUTIVE = 2
+DETECTOR_THRESHOLD = 0.7
+OPTIMIZE_CONSECUTIVE = range(1, 9)
+OPTIMIZE_THRESHOLDS = np.round(np.arange(0.5, 0.96, 0.025), 3)
+
 ANSI_GREEN_BG = "\033[42m"
 ANSI_RED_BG = "\033[41m"
 ANSI_RESET = "\033[0m"
@@ -97,10 +109,6 @@ def parse_args():
                    help=f"Also subscribe to the '{LSL_MARKER_NAME_IN}' stream from EEGReplay.py, forward "
                         f"each of its pinch markers as PINCH on '{LSL_STREAM_NAME_OUT}' and report whether "
                         f"a ground-truth marker falls inside the classified window")
-    p.add_argument("--consecutive", type=int, default=2,
-                   help="Number of consecutively epochs classified as positive to trigger a marker.")
-    p.add_argument("--positive-threshold", type=float, default=0.7,
-                   help="Classification threshold for positive event.")
     p.add_argument("--data-dir", type=Path, default=Path(__file__).parent / "data",
                    help="Directory LSLLiveViewLogger writes to; the most recent recording is used for fine tuning")
     p.add_argument("--subject", default=None,
@@ -263,11 +271,42 @@ class EEGInput:
 
 
 # --------------------------------------------------------------------------
+# Pinch detection
+# --------------------------------------------------------------------------
+class PinchDetector:
+    """Triggers once the last `consecutive` windows all had p(pinch) > threshold, and
+    again only after that run was interrupted. trigger_indices is the offline equivalent."""
+
+    def __init__(self, consecutive, threshold):
+        self.threshold = threshold
+        self.buffer = [False] * consecutive   # ring buffer of the last predictions, True -> pinch
+        self.next_index = 0
+        self.active = False
+
+    def update(self, p_pinch):
+        self.buffer[self.next_index] = p_pinch > self.threshold
+        self.next_index = (self.next_index + 1) % len(self.buffer)
+        full = all(self.buffer)
+        triggered = full and not self.active
+        self.active = full
+        return triggered
+
+
+def trigger_indices(is_positive, consecutive):
+    """Indices of the windows at which PinchDetector triggers, given the per-window
+    predictions is_positive (bool array)."""
+    run = np.convolve(is_positive.astype(int), np.ones(consecutive, dtype=int))[:len(is_positive)]
+    full = run == consecutive
+    return np.flatnonzero(full & ~np.r_[False, full[:-1]])
+
+
+# --------------------------------------------------------------------------
 # Inference
 # --------------------------------------------------------------------------
-def run_inference(eeg, model, outlet, markers, args, should_stop, on_running=None):
-    """Classify the EEG stream until should_stop() returns True. on_running is
-    called once, right after the first classification."""
+def run_inference(eeg, model, outlet, markers, args, detector, should_stop, on_running=None):
+    """Classify the EEG stream until should_stop() returns True and publish a PINCH
+    whenever detector triggers. on_running is called once, right after the first
+    classification."""
     fs = eeg.fs
     win_len = int(round(CLASSIFY_WINDOW_SECONDS * fs))+1
     hop_len = max(1, int(round(args.hop * fs)))
@@ -284,11 +323,10 @@ def run_inference(eeg, model, outlet, markers, args, should_stop, on_running=Non
     min_samples = win_len + settle_len
 
     print(f"Window {CLASSIFY_WINDOW_SECONDS}s ({win_len} samples), hop {args.hop}s. "
-          f"Discarding first {CLASSIFY_WINDOW_SECONDS}s while filters settle. Ctrl+C to stop.")
+          f"Discarding first {CLASSIFY_WINDOW_SECONDS}s while filters settle. "
+          f"Pinch: {len(detector.buffer)} consecutive windows with p > {detector.threshold}. Ctrl+C to stop.")
 
-    last_was_positive = False # a debouncer for pinch event triggers
-    class_buffer = [False] * args.consecutive # the last N predictions. True -> predicted PinchLog
-    class_buffer_i = 0
+    pos = LABELS.index(LABEL_POSITIVE)
     while not should_stop():
         samples, stamps = eeg.inlet.pull_chunk(timeout=0.1, max_samples=int(fs))
         if markers is not None:
@@ -319,16 +357,10 @@ def run_inference(eeg, model, outlet, markers, args, should_stop, on_running=Non
                 on_running()
                 on_running = None
 
-            class_buffer[class_buffer_i] = (LABELS[cls] == LABEL_POSITIVE and probs[cls] > args.positive_threshold)
-            class_buffer_i = (class_buffer_i + 1) % args.consecutive
-
-            if all(class_buffer) and not last_was_positive:
+            if detector.update(probs[pos]):
                 outlet.push_sample(["PINCH"], timestamp=stamps[-1])
-                last_was_positive = True
-            else:
-                last_was_positive = False
 
-            buf_vis = render_classification_buffer(class_buffer, class_buffer_i)
+            buf_vis = render_classification_buffer(detector.buffer, detector.next_index)
 
             gt_vis = ""
             if markers is not None:
@@ -477,13 +509,9 @@ def empty_marker_timestamps(pinches, segment):
     return np.asarray(out)
 
 
-def build_finetune_dataset(csv_path, backend_end_stamps, restore_reference=False):
-    """Phase 1 epochs of the recording as (X, is_positive), X: (n_epochs, n_ch, n_times),
-    channel-wise z-scored as in 14_classification.ipynb. The channels match
-    EEGInput: with restore_reference the recording reference is the last one."""
-    import mne
-    mne.set_log_level("WARNING")
-
+def load_phase1_recording(csv_path, backend_end_stamps):
+    """The phase 1 part of a recording: raw EEG, experiment intervals and the
+    pinch / no pinch timestamps, as used for fine tuning and the detector optimization."""
     t = re.search(r"_(\d{8}_\d{6})\.csv$", csv_path.name).group(1)
     metadata = csv_path.with_name(f"{csv_path.stem}_metadata.txt").read_text()
     match = re.search(r"Info:\s*(\{.*\})", metadata, re.DOTALL)
@@ -517,14 +545,28 @@ def build_finetune_dataset(csv_path, backend_end_stamps, restore_reference=False
     pos_ts = ground_truth_pinches(pinches, end_phase_1)
     neg_ts = empty_marker_timestamps(pinches, segment)
 
-    # ---- raw EEG, cropped 10s before the first experiment to let the filters settle ----
     # a stream channel named like the logger's timestamp column is read as 'timestamp.1'
     ch_names = [c for c in eeg_csv.columns if c.split(".")[0] not in NON_EEG_CHANNELS]
-    timestamps = eeg_csv.timestamp.to_numpy()
-    t_idx = np.searchsorted(timestamps, start_ts - 10)
+    return SimpleNamespace(sfreq=sfreq, timestamps=eeg_csv.timestamp.to_numpy(),
+                           data=eeg_csv[ch_names].to_numpy(), ch_names=ch_names,
+                           start_ts=start_ts, end_phase_1=end_phase_1, intervals=intervals,
+                           pos_ts=pos_ts, neg_ts=neg_ts)
+
+
+def build_finetune_dataset(rec, csv_name, restore_reference=False):
+    """Phase 1 epochs of the recording rec (see load_phase1_recording) as (X, is_positive),
+    X: (n_epochs, n_ch, n_times), channel-wise z-scored as in 14_classification.ipynb.
+    The channels match EEGInput: with restore_reference the recording reference is the last one."""
+    import mne
+    mne.set_log_level("WARNING")
+    sfreq, ch_names, intervals, pos_ts, neg_ts = rec.sfreq, rec.ch_names, rec.intervals, rec.pos_ts, rec.neg_ts
+
+    # ---- raw EEG, cropped 10s before the first experiment to let the filters settle ----
+    timestamps = rec.timestamps
+    t_idx = np.searchsorted(timestamps, rec.start_ts - 10)
     t0 = timestamps[t_idx]
     info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types="eeg")
-    raw = mne.io.RawArray(eeg_csv[ch_names].to_numpy()[t_idx:].T * 1e-6, info)
+    raw = mne.io.RawArray(rec.data[t_idx:].T * 1e-6, info)
     raw.rename_channels({k: v for k, v in {"T3": "T7", "T4": "T8", "T5": "P7", "T6": "P8"}.items() if k in ch_names})
     if restore_reference:
         raw = mne.add_reference_channels(raw, REFERENCE_CHANNEL)
@@ -563,7 +605,7 @@ def build_finetune_dataset(csv_path, backend_end_stamps, restore_reference=False
     X = epochs.get_data().astype(np.float32)
     X = (X - X.mean(axis=(0, 2), keepdims=True)) / (X.std(axis=(0, 2), keepdims=True) + 1e-12)
     is_positive = epochs.events[:, 2] == event_id[LABEL_POSITIVE]
-    print(f"[finetune] {csv_path.name}: {is_positive.sum()} {LABEL_POSITIVE} / "
+    print(f"[finetune] {csv_name}: {is_positive.sum()} {LABEL_POSITIVE} / "
           f"{(~is_positive).sum()} {LABEL_NEGATIVE} epochs of shape {X.shape[1:]}")
     return X, is_positive
 
@@ -630,9 +672,11 @@ def finetune(model, X, y, device, validation_split=0.2, seed=42):
 
 
 def load_finetune_data(eeg, win_len, backend_end_stamps, args):
-    """-> (csv_path, X, y): the phase 1 epochs of the most recent recording and their class indices."""
+    """-> (csv_path, rec, X, y): the most recent recording (see load_phase1_recording), its
+    phase 1 epochs and their class indices."""
     csv_path = find_latest_recording(args.data_dir, args.subject)
-    X, is_positive = build_finetune_dataset(csv_path, backend_end_stamps, eeg.restore_reference)
+    rec = load_phase1_recording(csv_path, backend_end_stamps)
+    X, is_positive = build_finetune_dataset(rec, csv_path.name, eeg.restore_reference)
     n_pos, n_neg = int(is_positive.sum()), int((~is_positive).sum())
     if min(n_pos, n_neg) < FINETUNE_MIN_EPOCHS_PER_CLASS:
         raise ValueError(f"not enough epochs ({n_pos} {LABEL_POSITIVE}, {n_neg} {LABEL_NEGATIVE})")
@@ -640,7 +684,7 @@ def load_finetune_data(eeg, win_len, backend_end_stamps, args):
         raise ValueError(f"epochs have {X.shape[1]} channels x {X.shape[2]} samples, "
                          f"model expects {eeg.n_ch} x {win_len}")
     y = np.where(is_positive, LABELS.index(LABEL_POSITIVE), LABELS.index(LABEL_NEGATIVE))
-    return csv_path, X, y
+    return csv_path, rec, X, y
 
 
 def finetune_and_save(model, name, X, y, out_dir, device):
@@ -663,6 +707,73 @@ def finetune_and_save(model, name, X, y, out_dir, device):
     except Exception as e:
         print(f"[finetune] could not save the fine tuned '{name}': {e}")
     return True
+
+
+# --------------------------------------------------------------------------
+# Detector optimization on the phase 1 recording
+# --------------------------------------------------------------------------
+def replay_phase1(model, rec, eeg, win_len, hop):
+    """Runs the phase 1 recording through the live pipeline (average reference, causal
+    filter, window every hop seconds, per-window z-scoring) -> (window end timestamps,
+    p(pinch) per window)."""
+    i0 = np.searchsorted(rec.timestamps, rec.start_ts - 10)   # 10s for the filters to settle
+    i1 = np.searchsorted(rec.timestamps, rec.end_phase_1, side="right")
+    x = rec.data[i0:i1].T.astype(np.float64)
+    if eeg.restore_reference:
+        x = np.vstack([x, np.zeros((1, x.shape[1]))])
+    x = x - x.mean(axis=0, keepdims=True)
+    y = StreamingFilter(build_filter(rec.sfreq), x.shape[0])(x).astype(np.float32)
+
+    # live inference classifies once win_len + settle_len samples have been seen
+    hop_len = max(1, int(round(hop * rec.sfreq)))
+    ends = np.arange(2 * win_len, y.shape[1] + 1, hop_len)
+    pos = LABELS.index(LABEL_POSITIVE)
+    p_pinch = np.array([classify(model, y[None, :, e - win_len:e])[1][pos] for e in ends])
+    return rec.timestamps[i0:i1][ends - 1], p_pinch
+
+
+def count_hits(detection_ts, pinch_ts, window):
+    """One-to-one matching: a detection at t hits the earliest unmatched pinch in (t - window, t]."""
+    matched = np.zeros(len(pinch_ts), dtype=bool)
+    for t in detection_ts:
+        candidates = np.flatnonzero(~matched & (pinch_ts > t - window) & (pinch_ts <= t))
+        if len(candidates):
+            matched[candidates[0]] = True
+    return int(matched.sum())
+
+
+def optimize_detector(model, rec, eeg, win_len, hop):
+    """-> (consecutive, threshold) with the best pinch F1 score on the phase 1 recording.
+    Only detections and pinches inside the experiments are counted."""
+    def in_experiment(ts):
+        inside = np.zeros(len(ts), dtype=bool)
+        for s, e in rec.intervals:
+            inside |= (ts >= s) & (ts <= e)
+        return inside & (ts > rec.start_ts) & (ts <= rec.end_phase_1)
+
+    t_end, p_pinch = replay_phase1(model, rec, eeg, win_len, hop)
+    counted = in_experiment(t_end)
+    pinch_ts = np.sort(rec.pos_ts[in_experiment(rec.pos_ts)])
+    if not len(pinch_ts):
+        raise ValueError("no ground-truth pinches in phase 1")
+
+    best = None
+    for consecutive in OPTIMIZE_CONSECUTIVE:
+        for threshold in OPTIMIZE_THRESHOLDS:
+            det = trigger_indices(p_pinch > threshold, consecutive)
+            det = det[counted[det]]
+            tp = count_hits(t_end[det], pinch_ts, CLASSIFY_WINDOW_SECONDS)
+            fp, fn = len(det) - tp, len(pinch_ts) - tp
+            f1 = 2 * tp / max(1, 2 * tp + fp + fn)
+            if best is None or f1 > best[0]:
+                best = (f1, consecutive, threshold, tp, fp, fn)
+
+    f1, consecutive, threshold, tp, fp, fn = best
+    print(f"[detector] {counted.sum()} windows, {len(pinch_ts)} pinches: best consecutive={consecutive} "
+          f"threshold={threshold} -> F1 {f1:.3f} ({tp} hits, {fp} false alarms, {fn} misses)")
+    if f1 == 0:
+        raise ValueError("no parameter combination detects any pinch")
+    return consecutive, float(threshold)
 
 
 def run_phases(eeg, models, outlet, markers, args, device, win_len):
@@ -690,19 +801,29 @@ def run_phases(eeg, models, outlet, markers, args, device, win_len):
     ready.clear()
 
     # ---- fine tune both models on the phase 1 data ----
+    # ---- and optimize their pinch detectors on the same recording ----
     print("[phases] fine tuning both models on the phase 1 recording")
+    detector_params = {name: (DETECTOR_CONSECUTIVE, DETECTOR_THRESHOLD) for name, _ in models}
     try:
-        csv_path, X, y = load_finetune_data(eeg, win_len, phases.end_stamps, args)
+        csv_path, rec, X, y = load_finetune_data(eeg, win_len, phases.end_stamps, args)
     except Exception as e:
-        print(f"[finetune] FAILED to build the fine tuning data, continuing with the original models: {e}")
+        print(f"[finetune] FAILED to build the fine tuning data, continuing with the original models "
+              f"and consecutive={DETECTOR_CONSECUTIVE} threshold={DETECTOR_THRESHOLD}: {e}")
     else:
         for name, model in models:
             finetune_and_save(model, name, X, y, csv_path.parent, device)
+            print(f"[detector] optimizing the pinch detector of '{name}' on the phase 1 recording")
+            try:
+                detector_params[name] = optimize_detector(model, rec, eeg, win_len, args.hop)
+            except Exception as e:
+                print(f"[detector] FAILED, using consecutive={DETECTOR_CONSECUTIVE} "
+                      f"threshold={DETECTOR_THRESHOLD}: {e}")
 
     # ---- phases 2 and 3: inference with the first / second fine tuned model ----
     for phase, (name, model) in zip((2, 3), models):
         print(f"[phases] phase {phase}: inference with the fine tuned '{name}'")
-        run_inference(eeg, model, outlet, markers, args, should_stop=lambda p=phase: phase_over(p),
+        detector = PinchDetector(*detector_params[name])
+        run_inference(eeg, model, outlet, markers, args, detector, should_stop=lambda p=phase: phase_over(p),
                       on_running=lambda p=phase: ready.set(MSG_READY_PHASE.format(p)))
         ready.clear()
     print("[phases] all phases done.")
