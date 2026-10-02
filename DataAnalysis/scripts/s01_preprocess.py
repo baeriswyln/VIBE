@@ -100,7 +100,7 @@ def preprocess(
         max_iter="auto",
     )
     # ICA is sensitive to slow drift; fit on a 1 Hz highpassed copy.
-    raw_for_ica = raw.copy().filter(l_freq=1.0, h_freq=None)
+    raw_for_ica = raw.copy().filter(l_freq=0.3, h_freq=None)
     ica.fit(raw_for_ica)
 
     try:

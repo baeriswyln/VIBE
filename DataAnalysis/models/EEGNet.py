@@ -1,12 +1,13 @@
 import copy
 import torch
 
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 from torch import nn
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 
+from models.augment import augment_eeg, DEFAULT_MAX_SHIFT, DEFAULT_SCALE_RANGE, DEFAULT_SIGMA
 from models.wandb import *
 
 # --------------------------------------------------------------------------- #
@@ -105,11 +106,47 @@ class EEGNet(nn.Module):
 # --------------------------------------------------------------------------- #
 # Small helpers
 # --------------------------------------------------------------------------- #
-def _to_array(X) -> np.ndarray:
-    """Accept an MNE Epochs object or an array of shape (n_trials, C, T)."""
+def check_decim(sfreq: float, decim: int, lowpass: Optional[float] = None) -> float:
+    """Validate a decimation factor and return the resulting sampling rate.
+
+    Decimation here is plain sample-dropping (x[..., ::decim]), with no anti-aliasing
+    filter of its own -- that's only safe if the data is already low-passed well below
+    the new Nyquist frequency. Like mne.Epochs.decimate, require lowpass <= new_sfreq / 3
+    (e.g. our 45 Hz low-pass at 300 Hz allows decim=2 -> 150 Hz, limit 50 Hz). `lowpass`
+    is None for plain arrays, where the caller has to know the data is band-limited."""
+    decim = int(decim)
+    if decim < 1:
+        raise ValueError(f"decim must be a positive integer, got {decim}")
+    new_sfreq = sfreq / decim
+    if decim > 1 and lowpass is not None and lowpass > new_sfreq / 3:
+        raise ValueError(f"decim={decim} would alias: data is low-passed at {lowpass:g} Hz, but the new "
+                         f"sampling rate {new_sfreq:g} Hz only allows up to {new_sfreq / 3:g} Hz "
+                         f"(low-pass the data further first, or use a smaller decim)")
+    return new_sfreq
+
+
+class Decimate(nn.Module):
+    """Keeps every `decim`-th sample along the last (time) axis. Used to bake a model's
+    decimation into its exported graph, so the exported model takes full-rate input."""
+
+    def __init__(self, decim: int):
+        super().__init__()
+        self.decim = int(decim)
+
+    def forward(self, x):
+        return x[..., ::self.decim]
+
+
+def _to_array(X, decim: int = 1) -> np.ndarray:
+    """Accept an MNE Epochs object or an array of shape (n_trials, C, T), keeping every
+    `decim`-th sample (see check_decim; for Epochs the low-pass is checked from `info`)."""
     if hasattr(X, "get_data"):          # mne.Epochs / EpochsArray
+        check_decim(X.info["sfreq"], decim, X.info["lowpass"])
         X = X.get_data()
-    X = np.asarray(X, dtype=np.float32)
+    else:
+        check_decim(1.0, decim)
+    # slice before the float32 conversion, so that one copy is also the only one
+    X = np.asarray(X[..., ::decim] if decim > 1 else X, dtype=np.float32)
     if X.ndim != 3:
         raise ValueError(f"Expected epochs of shape (n_trials, n_chans, n_samples), got {X.shape}")
     return X
@@ -131,6 +168,22 @@ def _stratified_split(y: np.ndarray, frac: float, rng: np.random.Generator):
         val_idx.append(idx[:n_val])
         train_idx.append(idx[n_val:])
     return np.concatenate(train_idx), np.concatenate(val_idx)
+
+
+class _AugmentedDataset(Dataset):
+    """Wraps (X, y) tensors, optionally applying augment_eeg to X on every __getitem__ --
+    used for the training split only, so each epoch sees a freshly-perturbed version of
+    every sample instead of a fixed offline copy."""
+
+    def __init__(self, X, y, augment=False, **augment_kwargs):
+        self.X, self.y, self.augment, self.augment_kwargs = X, y, augment, augment_kwargs
+
+    def __len__(self):
+        return len(self.y)
+
+    def __getitem__(self, i):
+        x = self.X[i]
+        return (augment_eeg(x, **self.augment_kwargs) if self.augment else x), self.y[i]
 
 
 @torch.no_grad()
@@ -158,6 +211,9 @@ def train_eegnet(X_train, y_train, X_test, y_test, *, sfreq: float = 300.0, kern
     n_epochs: int = 100, batch_size: int = 256, lr: float = 3e-3,
     validation_split: float = 0.2, class_weights: bool = True,
     scale: str | float = "auto", device: Optional[str] = None, seed: int = 42, verbose: bool = True,
+    decim: int = 1,
+    augment: bool = False, augment_sigma: float = DEFAULT_SIGMA, augment_max_shift: int = DEFAULT_MAX_SHIFT,
+    augment_scale_range: Tuple[float, float] = DEFAULT_SCALE_RANGE,
     run_name: Optional[str] = None, wandb_group: Optional[str] = None,
     wandb_tags: Optional[list[str]] = None, log_wandb: bool = True,
     save_as: Optional[str] = None,
@@ -169,11 +225,23 @@ def train_eegnet(X_train, y_train, X_test, y_test, *, sfreq: float = 300.0, kern
     y_train / y_test : (n_trials,) labels (ints or strings).
 
     sfreq            : sampling rate, used to set kern_length = sfreq // 2 as in the paper.
+                       Taken from `info` when X_train is an Epochs object.
+    decim            : keep every decim-th sample (e.g. 2: 300 Hz -> 150 Hz), roughly
+                       dividing training time by decim. Only allowed if the data's
+                       low-pass is <= new sfreq / 3 (see check_decim), so nothing aliases.
+                       kern_length then follows the new rate (still 500 ms), and a model
+                       exported with `save_as` includes the decimation, so it still takes
+                       full-rate input.
     validation_split : fraction of the training epochs held out to pick the best
                        weights (the paper selects the checkpoint with lowest val loss).
                        Set to 0 to train on everything and keep the last epoch.
     scale            : 'auto' converts volts to microvolts when the data looks like
                        volts; pass a float to multiply by it, or 1.0 to leave as is.
+    augment          : if True, every training sample gets a freshly-drawn Gaussian
+                       noise + time shift + amplitude scale each epoch (see
+                       models/augment.py); validation/test data is never augmented.
+                       augment_sigma/augment_max_shift/augment_scale_range control it;
+                       defaults assume roughly unit-scale (e.g. z-scored) input.
     run_name / wandb_group / wandb_tags : forwarded to wandb_start_run (see above);
                        every call logs to Weights & Biases unless log_wandb=False.
 
@@ -186,7 +254,10 @@ def train_eegnet(X_train, y_train, X_test, y_test, *, sfreq: float = 300.0, kern
     torch.backends.cudnn.benchmark = True
 
     # ---- data preparation -------------------------------------------------
-    Xtr, Xte = _to_array(X_train), _to_array(X_test)
+    if hasattr(X_train, "info"):
+        sfreq = float(X_train.info["sfreq"])
+    sfreq = check_decim(sfreq, decim)   # effective rate the model sees
+    Xtr, Xte = _to_array(X_train, decim), _to_array(X_test, decim)
     ytr, yte = _to_labels(y_train), _to_labels(y_test)
     if Xtr.shape[1:] != Xte.shape[1:]:
         raise ValueError(f"Train/test epochs differ in shape: {Xtr.shape[1:]} vs {Xte.shape[1:]}")
@@ -221,7 +292,9 @@ def train_eegnet(X_train, y_train, X_test, y_test, *, sfreq: float = 300.0, kern
         tr_idx, va_idx = np.arange(n_trials), np.array([], dtype=int)
 
     train_loader = DataLoader(
-        TensorDataset(Xtr_t[tr_idx], ytr_t[tr_idx]), batch_size=batch_size, shuffle=True, pin_memory=True
+        _AugmentedDataset(Xtr_t[tr_idx], ytr_t[tr_idx], augment=augment, sigma=augment_sigma,
+                         max_shift=augment_max_shift, scale_range=augment_scale_range),
+        batch_size=batch_size, shuffle=True, pin_memory=True
     )
     val_loader = (
         DataLoader(TensorDataset(Xtr_t[va_idx], ytr_t[va_idx]), batch_size=256, pin_memory=True)
@@ -231,6 +304,7 @@ def train_eegnet(X_train, y_train, X_test, y_test, *, sfreq: float = 300.0, kern
 
     # ---- model ------------------------------------------------------------
     model = EEGNet( n_classes=len(classes), n_chans=n_chans, n_samples=n_samples, kern_length=kern_length, F1=F1, D=D, F2=F2, dropout=dropout, dropout_type=dropout_type,).to(device)
+    model.decim = decim   # input this model expects = full-rate epochs decimated by this factor
     n_par = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
     if class_weights:
@@ -242,7 +316,8 @@ def train_eegnet(X_train, y_train, X_test, y_test, *, sfreq: float = 300.0, kern
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     if verbose:
-        print(f"EEGNet-{F1},{D} | {n_chans} ch x {n_samples} samples | "
+        print(f"EEGNet-{F1},{D} | {n_chans} ch x {n_samples} samples @ {sfreq:g} Hz"
+              f"{f' (decim {decim})' if decim > 1 else ''} | "
               f"{len(classes)} classes | {n_par} trainable params | device={device}")
         if factor != 1.0:
             print(f"Scaled inputs by {factor:g} (volts -> microvolts)")
@@ -254,7 +329,10 @@ def train_eegnet(X_train, y_train, X_test, y_test, *, sfreq: float = 300.0, kern
             dropout=dropout, dropout_type=dropout_type,
             n_epochs=n_epochs, batch_size=batch_size, lr=lr,
             validation_split=validation_split, class_weights=class_weights,
-            scale=factor, sfreq=sfreq, seed=seed,
+            scale=factor, sfreq=sfreq, decim=decim, seed=seed,
+            augment=augment, augment_sigma=augment_sigma if augment else None,
+            augment_max_shift=augment_max_shift if augment else None,
+            augment_scale_range=augment_scale_range if augment else None,
             n_chans=n_chans, n_samples=n_samples, n_classes=len(classes),
             n_train=len(tr_idx), n_val=len(va_idx), n_test=len(Xte),
             n_params=n_par, device=str(device),
@@ -321,9 +399,14 @@ def train_eegnet(X_train, y_train, X_test, y_test, *, sfreq: float = 300.0, kern
             print(cm)
 
         if save_as is not None:
+            # exported for full-rate input (what the live pipeline delivers): the decimation
+            # is part of the exported graph
             n_channels = len(X_train.ch_names)
             n_times = len(X_train.times)
-            ep = torch.export.export(model, (torch.randn(1,n_channels, n_times, dtype=torch.float32).unsqueeze(1),))
+            export_model = copy.deepcopy(model).cpu().eval()
+            if decim > 1:
+                export_model = nn.Sequential(Decimate(decim), export_model).eval()
+            ep = torch.export.export(export_model, (torch.randn(1, 1, n_channels, n_times, dtype=torch.float32),))
             torch.export.save(ep, save_as)
 
         wandb_log_test_results(
@@ -342,4 +425,6 @@ def train_eegnet(X_train, y_train, X_test, y_test, *, sfreq: float = 300.0, kern
         "y_proba": proba,
         "classes": classes,
         "confusion_matrix": cm,
+        "sfreq": sfreq,
+        "decim": decim,
     }

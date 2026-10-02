@@ -1,5 +1,6 @@
 data/
 out/
+out_thesis/
 *.pt2
 
 # Byte-compiled / optimized / DLL files

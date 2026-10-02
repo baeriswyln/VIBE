@@ -33,7 +33,8 @@ import warnings
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from models.wandb import *
-from models.EEGNet import _to_array
+from models.EEGNet import _to_array, check_decim
+from models.augment import augment_eeg, DEFAULT_MAX_SHIFT, DEFAULT_SCALE_RANGE, DEFAULT_SIGMA
 
 import numpy as np
 import torch
@@ -56,15 +57,17 @@ BANDS: Dict[str, Tuple[float, float]] = {
 # =============================================================================
 # Input handling: mne.Epochs or ndarray
 # =============================================================================
-def _unpack(X, name: str = "X") -> Tuple[np.ndarray, Any]:
+def _unpack(X, name: str = "X", decim: int = 1) -> Tuple[np.ndarray, Any]:
     """
-    Returns (array (N, C, T), mne.Info or None).
+    Returns (array (N, C, T), mne.Info or None), keeping every `decim`-th sample.
 
     Epochs go through the notebook's `_to_array` when it exists, so whatever
-    scaling or channel picking it does is applied consistently.
+    scaling or channel picking it does is applied consistently -- including the
+    decimation and its low-pass check (see models.EEGNet.check_decim). The returned
+    info still describes the full-rate data.
     """
     if hasattr(X, "get_data") and hasattr(X, "info"):          # mne.Epochs
-        data = _to_array(X)
+        data = _to_array(X, decim)
         return np.asarray(data, dtype=np.float32), X.info
 
     x = np.asarray(X.detach().cpu() if isinstance(X, torch.Tensor) else X,
@@ -74,7 +77,14 @@ def _unpack(X, name: str = "X") -> Tuple[np.ndarray, Any]:
     if x.shape[1] > x.shape[2]:
         warnings.warn(f"{name} looks like (n_trials, n_times, n_channels); transposing")
         x = np.transpose(x, (0, 2, 1))
-    return x, None
+    check_decim(1.0, decim)
+    return (np.ascontiguousarray(x[..., ::decim]) if decim > 1 else x), None
+
+
+def _model_decim(model) -> int:
+    """Decimation a trained model expects its input to get (1 for models from before
+    `decim` existed)."""
+    return getattr(model, "decim", 1)
 
 
 def _montage(info, n_channels: int) -> Tuple[List[str], Optional[np.ndarray]]:
@@ -417,15 +427,19 @@ class MultiBranchGATGRUTransformer(nn.Module):
 # =============================================================================
 
 class _Dataset(torch.utils.data.Dataset):
-    def __init__(self, x, y):
+    def __init__(self, x, y, augment=False, **augment_kwargs):
         self.x = torch.as_tensor(np.ascontiguousarray(x), dtype=torch.float32)
         self.y = torch.as_tensor(np.ascontiguousarray(y), dtype=torch.long)
+        self.augment, self.augment_kwargs = augment, augment_kwargs
 
     def __len__(self):
         return len(self.y)
 
     def __getitem__(self, i):
-        return self.x[i], self.y[i]
+        x = self.x[i]
+        if self.augment:
+            x = augment_eeg(x, **self.augment_kwargs)
+        return x, self.y[i]
 
 
 @torch.no_grad()
@@ -473,6 +487,11 @@ def train_gat_gru_transformer(
     seed: int = 42,
     device: Optional[str] = None,
     verbose: int = 1,
+    augment: bool = False,
+    augment_sigma: float = DEFAULT_SIGMA,
+    augment_max_shift: int = DEFAULT_MAX_SHIFT,
+    augment_scale_range: Tuple[float, float] = DEFAULT_SCALE_RANGE,
+    decim: int = 1,
 ) -> Dict[str, Any]:
     """
     Train the Multi-Branch GAT-GRU-Transformer and evaluate it on the test set.
@@ -487,6 +506,17 @@ def train_gat_gru_transformer(
     per node), and `use_gat` / `use_transformer` / `use_freq` for the Table 5
     ablations.
 
+    augment : if True, every training sample gets a freshly-drawn Gaussian noise + time
+             shift + amplitude scale each epoch (see models/augment.py); validation/test
+             data is never augmented. augment_sigma/augment_max_shift/augment_scale_range
+             control it; defaults assume roughly unit-scale (e.g. z-scored) input.
+
+    decim  : keep every decim-th sample (e.g. 2: 300 Hz -> 150 Hz, close to the paper's
+             128 Hz), roughly 1.6x faster. Only allowed if the data's low-pass is <= new
+             sfreq / 3 (see models.EEGNet.check_decim). Bands, filter bank and PLV graph
+             follow the new rate. The model remembers its decim, so `predict` and the
+             interpretability helpers below still take full-rate epochs.
+
     Returns a dict with the trained model, per-epoch history, test accuracy,
     predictions, probabilities and the confusion matrix (keys: model, history,
     test_accuracy, y_pred, y_proba, confusion_matrix; plus y_true, classes,
@@ -500,12 +530,13 @@ def train_gat_gru_transformer(
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
 
     # ---- data ---------------------------------------------------------------
-    x_tr, info = _unpack(X_train, "X_train")
-    x_te, _ = _unpack(X_test, "X_test")
+    x_tr, info = _unpack(X_train, "X_train", decim)
+    x_te, _ = _unpack(X_test, "X_test", decim)
     if x_tr.shape[1:] != x_te.shape[1:]:
         raise ValueError(f"train/test shapes differ: {x_tr.shape[1:]} vs {x_te.shape[1:]}")
     if info is not None:
         sfreq = float(info["sfreq"])
+    sfreq = check_decim(sfreq, decim)   # effective rate the model sees
 
     y_tr, y_te, classes = _encode_labels(y_train, y_test)
     n_channels, n_times = x_tr.shape[1], x_tr.shape[2]
@@ -527,6 +558,7 @@ def train_gat_gru_transformer(
         n_channels, n_times, len(classes), sfreq, adj, d_model=d_model,
         gat_heads=gat_heads, dropout=dropout, use_gat=use_gat,
         use_transformer=use_transformer, use_freq=use_freq).to(device)
+    model.decim = decim   # input this model expects = full-rate epochs decimated by this factor
     if verbose:
         print(f"[model] {model.n_parameters():,} parameters on {device} | "
               f"{n_channels} ch x {n_times} samples @ {sfreq:g} Hz | "
@@ -535,7 +567,7 @@ def train_gat_gru_transformer(
     # ---- wandb --------------------------------------------------------------
     run = wandb_start_run("gat_gru_transformer", run_name=run_name, group=wandb_group,
                 tags=wandb_tags, enabled=log_wandb,
-                config=dict(sfreq=sfreq, n_channels=n_channels, n_times=n_times,
+                config=dict(sfreq=sfreq, decim=decim, n_channels=n_channels, n_times=n_times,
                             n_classes=len(classes), d_model=d_model,
                             gat_heads=gat_heads, dropout=dropout,
                             adjacency=str(adjacency)[:32],
@@ -544,13 +576,17 @@ def train_gat_gru_transformer(
                             epochs=epochs, batch_size=batch_size, lr=lr,
                             weight_decay=weight_decay, seed=seed,
                             n_train=len(x_fit), n_test=len(x_te),
-                            n_parameters=model.n_parameters()))
+                            n_parameters=model.n_parameters(),
+                            augment=augment, augment_sigma=augment_sigma if augment else None,
+                            augment_max_shift=augment_max_shift if augment else None,
+                            augment_scale_range=augment_scale_range if augment else None))
 
     try:
-        mk = lambda x, y, sh: torch.utils.data.DataLoader(
-            _Dataset(x, y), batch_size=batch_size, shuffle=sh,
-            drop_last=sh and len(y) > batch_size)
-        tr_loader = mk(x_fit, y_fit, True)
+        mk = lambda x, y, sh, aug=False: torch.utils.data.DataLoader(
+            _Dataset(x, y, augment=aug, sigma=augment_sigma, max_shift=augment_max_shift,
+                    scale_range=augment_scale_range),
+            batch_size=batch_size, shuffle=sh, drop_last=sh and len(y) > batch_size)
+        tr_loader = mk(x_fit, y_fit, True, aug=augment)
         va_loader = mk(x_va, y_va, False) if y_va is not None else None
         te_loader = mk(x_te, y_te, False)
 
@@ -630,7 +666,8 @@ def train_gat_gru_transformer(
                 "adjacency": adj, "test_loss": test["loss"],
                 "test_macro_f1": test["macro_f1"], "best_epoch": best_epoch,
                 "n_parameters": model.n_parameters(),
-                "training_time": time.time() - t0, "run": run}
+                "training_time": time.time() - t0, "run": run,
+                "sfreq": sfreq, "decim": decim}
     finally:
         wandb_finish_run(run)
 
@@ -639,7 +676,7 @@ def train_gat_gru_transformer(
 def predict(model: MultiBranchGATGRUTransformer, X, classes=None,
             batch_size: int = 64):
     """Run a trained model on new epochs. Returns (labels, probabilities)."""
-    x, _ = _unpack(X)
+    x, _ = _unpack(X, decim=_model_decim(model))
 
     device = next(model.parameters()).device
     model.eval()
@@ -662,7 +699,7 @@ def channel_importance(model, X, y, ch_names: Sequence[str], top_k: int = 10,
     this model; DeepExplainer does not, having no rule for the GRU and Transformer
     ops the paper's own model also contains.
     """
-    x, _ = _unpack(X)
+    x, _ = _unpack(X, decim=_model_decim(model))
     device = next(model.parameters()).device
     model.eval()
     scores = np.zeros(x.shape[1])
@@ -687,7 +724,7 @@ def band_importance(model, X, y, batch_size: int = 32) -> Dict[str, float]:
     """
     if model.frequency is None:
         raise ValueError("model was built with use_freq=False")
-    x, _ = _unpack(X)
+    x, _ = _unpack(X, decim=_model_decim(model))
     device = next(model.parameters()).device
     model.eval()
     totals = np.zeros(len(model.frequency.band_names))
@@ -708,7 +745,7 @@ def gat_attention(model, X, ch_names: Sequence[str], top_k: int = 10,
     """Mean incoming GAT attention per electrode — the learned spatial graph."""
     if model.spatial is None:
         raise ValueError("model was built with use_gat=False")
-    x, _ = _unpack(X)
+    x, _ = _unpack(X, decim=_model_decim(model))
     device = next(model.parameters()).device
     model.eval()
     total, n = 0.0, 0
