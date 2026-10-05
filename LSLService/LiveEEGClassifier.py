@@ -59,6 +59,7 @@ REFERENCE_CHANNEL = "Pz"
 EPOCH_T_MIN = -1.7
 EPOCH_T_MAX = 0.3
 MIN_DIST_BETWEEN_EVENTS = 1.1
+FEEDBACK_DELAY_SECONDS = 0.6   # PinchHandler.feedbackDelay in the Unity experiment
 LABEL_POSITIVE = "PinchLog"
 LABEL_NEGATIVE = "NoPinchLog"
 LABELS = [LABEL_NEGATIVE, LABEL_POSITIVE]   # model output order
@@ -123,7 +124,7 @@ def build_filter(fs):
     nyq = fs / 2.0
     if 45.0 >= nyq:
         sys.exit(f"Sampling rate {fs} Hz is too low for a 45 Hz low-pass.")
-    hp = signal.butter(4, 0.3, btype="highpass", fs=fs, output="sos")
+    hp = signal.butter(4, 1.0, btype="highpass", fs=fs, output="sos")
     lp = signal.butter(4, 45.0, btype="lowpass", fs=fs, output="sos")
     b, a = signal.iirnotch(50.0, Q=30.0, fs=fs)
     notch = signal.tf2sos(b, a)
@@ -489,9 +490,11 @@ def ground_truth_pinches(pinches, end_phase_1):
     new_group = (pos.timestamp.diff() > 0.3) | pos.timestamp.diff().isna()
     pos = pos[new_group.to_numpy()]
 
-    # the pinch log of delayed feedback is written .5s after the real pinch
-    delayed = pos["ExperimentConfig.feedbackIsDelayed"].fillna(False).astype(bool) & (pos["Payload.PinchType"] == "PINCH")
-    pos.loc[delayed, "timestamp"] -= 0.5
+    # the pinch log of delayed feedback is written FEEDBACK_DELAY_SECONDS after the real pinch; only
+    # stimulus selections go through the delay, pinches without a target (PINCH_NONE) are logged at once
+    delayed = (pos["ExperimentConfig.feedbackIsDelayed"].fillna(False).astype(bool)
+               & (pos["Payload.PinchType"] == "PINCH") & (pos.EventName == "PINCH_STIMULUS"))
+    pos.loc[delayed, "timestamp"] -= FEEDBACK_DELAY_SECONDS
     return pos.timestamp.to_numpy()
 
 
@@ -587,7 +590,7 @@ def build_finetune_dataset(rec, csv_name, restore_reference=False):
     raw.set_annotations(mne.Annotations(bad_onsets, bad_durations, ["BAD_BREAK"] * len(bad_onsets)))
 
     # 'eeg_light' preprocessing: frequency filters only
-    raw.filter(l_freq=0.3, h_freq=None)
+    raw.filter(l_freq=1.0, h_freq=None)
     raw.notch_filter(freqs=[50])
     raw.filter(l_freq=None, h_freq=45.)
 
