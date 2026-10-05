@@ -64,7 +64,6 @@ from joblib import Parallel, delayed
 from scipy.linalg import eigh
 from scipy.signal import welch
 from threadpoolctl import threadpool_limits
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectKBest, mutual_info_classif
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, log_loss
@@ -750,89 +749,6 @@ class SupervisedFeatures:
             out["xdawn"] = np.concatenate([self.xdawn_.transform(store.xdawn[sl].astype(np.float64))
                                            for sl in _chunks(len(store))])
         return out
-
-
-# ----------------------------------------------------------------------------- legacy
-# Pre-FeatureStore implementations, kept only so result pickles from before it (which hold
-# EEGForest models whose `pipes_` contain these objects) can still be unpickled. Not used by
-# anything in this module anymore, and such old models' predict() no longer works.
-class BandpassCrop(BaseEstimator, TransformerMixin):
-    """Band-pass filter, then crop to a fixed-length window anchored at each epoch's
-    own reference time. `win = (rel_start, rel_end)` is in seconds relative to that
-    reference time (`win=(None, None)` skips cropping entirely). `ref_times`/`times`/
-    `legacy` describe the batch currently being processed and are *not* constructor
-    parameters -- they're refreshed externally (see `_set_epoch_context`) right
-    before every fit()/transform() call, since they can differ from one call to the
-    next (train vs. val vs. test each have their own epochs)."""
-
-    def __init__(self, sfreq=300.0, band=(8, 30), win=(None, None)):
-        self.sfreq, self.band, self.win = sfreq, band, win
-        self.ref_times = None
-        self.times = None
-        self.legacy = True
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        if self.win[0] is None:
-            return _filt(X, self.sfreq, *self.band)
-        n_times = X.shape[-1]
-        ref = self.ref_times if self.ref_times is not None else np.zeros(X.shape[0])
-        times = self.times if self.times is not None else np.arange(n_times) / self.sfreq
-        start, n_samples = _resolve_window(times, ref, self.win, self.legacy)
-        # filter + crop chunk by chunk, so only the (usually much shorter) cropped window
-        # is ever held for the whole batch, never a full-length filtered copy
-        out = np.empty(X.shape[:2] + (n_samples,), dtype=np.float64)
-        for sl in _chunks(len(X)):
-            out[sl] = _take(_filt(X[sl], self.sfreq, *self.band), start[sl], n_samples)
-        return out
-
-
-def _fit_band_csp(X, y, sfreq, band, win, ref_times, times, legacy):
-    bc = BandpassCrop(sfreq, band, win)
-    bc.ref_times, bc.times, bc.legacy = ref_times, times, legacy
-    return mne.decoding.CSP(4, reg="ledoit_wolf", log=True).fit(bc.transform(X), y)
-
-
-def _transform_band_csp(csp, X, sfreq, band, win, ref_times, times, legacy):
-    bc = BandpassCrop(sfreq, band, win)
-    bc.ref_times, bc.times, bc.legacy = ref_times, times, legacy
-    return csp.transform(bc.transform(X))
-
-
-class FilterBankCSP(BaseEstimator, TransformerMixin):
-    """Filter-bank CSP (Ang et al. 2008) with shrinkage (Lotte & Guan 2011). The per-band
-    filter+CSP work is independent across bands, so it's parallelized over threads (the
-    actual work -- IIR filtering, covariance/eigendecomposition -- is numpy/BLAS/mne C code
-    that releases the GIL, so threads parallelize it without the pickling cost of processes).
-
-    While the band threads run, BLAS is limited to one thread each: letting every band thread
-    call into OpenBLAS with its own full-size thread pool (9 x 16 threads, across numpy's and
-    scipy's separate OpenBLAS copies) corrupted the heap and crashed the process with an
-    access violation on the large robust dataset. The thread count doesn't change results.
-
-    `win` and the `ref_times`/`times`/`legacy` context work exactly as in BandpassCrop -- see there."""
-
-    def __init__(self, sfreq=300.0, win=(None, None), bands=tuple((f, f + 4) for f in range(4, 40, 4)),
-                 n_jobs=-1):
-        self.sfreq, self.win, self.bands, self.n_jobs = sfreq, win, bands, n_jobs
-        self.ref_times = None
-        self.times = None
-        self.legacy = True
-
-    def fit(self, X, y):
-        with threadpool_limits(limits=1, user_api="blas"):
-            self.csps_ = Parallel(n_jobs=self.n_jobs, prefer="threads")(
-                delayed(_fit_band_csp)(X, y, self.sfreq, b, self.win, self.ref_times, self.times, self.legacy)
-                for b in self.bands)
-        return self
-
-    def transform(self, X):
-        with threadpool_limits(limits=1, user_api="blas"):
-            return np.hstack(Parallel(n_jobs=self.n_jobs, prefer="threads")(
-                delayed(_transform_band_csp)(c, X, self.sfreq, b, self.win, self.ref_times, self.times, self.legacy)
-                for c, b in zip(self.csps_, self.bands)))
 
 
 FEATURES = [bandpower_features, hjorth_features, mrcp_features, lowfreq_features,

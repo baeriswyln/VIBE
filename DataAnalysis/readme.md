@@ -37,4 +37,6 @@ All notebooks should be run in their numbered order, as they produce outputs req
 | 18_publication_figures                | Additional figure creation for the thesis.                                                                                |
 | 19_induced_error_errp                 | Analysing the ERRP for the induced errors.                                                                                |
 | 20_teaser_creator                     | A small notebook creating the figure used as teaser in the thesis.                                                        |
+| 21_live_inference_analysis            | Offline estimate of the live pinch detection of `LSLService/LiveEEGClassifier.py`, with and without fine tuning.          |
+| 22_live_inference_loso                | Same as 21 with leave-one-subject-out models (`<dataset>_<subject>.pt2`) on session 1, skipping the hinted experiments.   |
 | pinch_analys_results                  | Initial general analysis of the data and the potential for classification.                                                |

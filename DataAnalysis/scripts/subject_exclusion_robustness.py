@@ -1,9 +1,9 @@
 """
-Task 4 for the thesis: 12-fold LOSO robustness check for EEGNet, excluding
+Task 4 for the thesis: LOSO robustness check for EEGNet, excluding
 subject_22 and subject_26 (flagged for data-quality reasons in
-12_data_quality_analysis.ipynb, cell 24) entirely from both training and test
-data, then comparing the new 12-fold mean/std accuracy against the existing
-14-fold baseline (out/results/eegnet_leave_one_out_run.pkl: mean 0.6449, std 0.0573).
+12_data_quality_analysis.ipynb, high epoch-rejection rate) entirely from both training and test
+data, then comparing its mean/std accuracy against the all-subject EEGNet LOSO
+baseline read from out/results/eegnet_leave_one_out_run.pkl (same dataset version).
 
 This exactly replicates 15_classification.ipynb's data-loading (cell 2) and its
 EEGNet LOSO loop (classify_leave_one_out / classify_cross_subject, cell 10):
@@ -42,10 +42,19 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 EXCLUDED_SUBJECTS = ["subject_22", "subject_26"]
 
-# ---- baseline numbers from the existing 14-fold EEGNet LOSO run (computed in
-# scripts/model_metrics_significance.py from out/results/eegnet_leave_one_out_run.pkl) ----
-BASELINE_14FOLD_MEAN = 0.6449
-BASELINE_14FOLD_STD = 0.0573
+
+
+def load_baseline():
+    """Per-fold accuracy of the all-subject EEGNet LOSO run (out/results/eegnet_leave_one_out_run.pkl)."""
+    import pickle
+    with open(OUT_DIR / "results" / "eegnet_leave_one_out_run.pkl", "rb") as fh:
+        result = pickle.load(fh)["result"]
+    accs = []
+    for fold in result.values():
+        y_true = fold["test_metadata"]["EventType"].to_numpy()
+        accs.append(float((y_true == np.asarray(fold["result"]["y_pred"])).mean()))
+    accs = np.asarray(accs)
+    return len(accs), accs.mean(), accs.std(ddof=0)  # population std, as in notebook 17
 
 
 def merge_epochs_dict(epochs_dict):
@@ -85,7 +94,9 @@ def main():
     epoch_dict = read_raw_dataset(EPOCH_FILTERED_DATASET_NAME, subjects_to_drop=EXCLUDED_SUBJECTS)
     print(f"Subjects loaded: {sorted(epoch_dict.keys())} (n={len(epoch_dict)})")
     assert not (set(EXCLUDED_SUBJECTS) & set(epoch_dict.keys())), "excluded subjects leaked into load"
-    assert len(epoch_dict) == 12, f"expected 12 subjects, got {len(epoch_dict)}"
+    base_n, base_mean, base_std = load_baseline()
+    assert len(epoch_dict) == base_n - len(EXCLUDED_SUBJECTS), \
+        f"expected {base_n - len(EXCLUDED_SUBJECTS)} subjects, got {len(epoch_dict)}"
 
     epochs = merge_epochs_dict(epoch_dict)
     epochs_scaled = epochs.copy()
@@ -101,7 +112,8 @@ def main():
           f"{filtered_epochs_scaled.metadata['subject'].nunique()} subjects")
 
     subjects = filtered_epochs_scaled.metadata["subject"].unique().tolist()
-    print(f"12-fold LOSO over: {subjects}")
+    n = len(subjects)
+    print(f"{n}-fold LOSO over: {subjects}")
 
     fold_rows = []
     for i, subject in enumerate(subjects, 1):
@@ -112,7 +124,7 @@ def main():
         train_epochs = query_epochs(filtered_epochs_scaled, f"subject in {train_subjects}")
         test_epochs = query_epochs(filtered_epochs_scaled, f"subject in {test_subjects}")
 
-        print(f"\n[{i}/12] held-out={subject} | train={len(train_epochs)} epochs "
+        print(f"\n[{i}/{n}] held-out={subject} | train={len(train_epochs)} epochs "
               f"({len(train_subjects)} subj) | test={len(test_epochs)} epochs")
 
         result = train_eegnet(
@@ -127,7 +139,7 @@ def main():
         assert abs(acc - result["test_accuracy"]) < 1e-6, "accuracy mismatch vs train_eegnet's own report"
 
         elapsed = time.time() - t_fold
-        print(f"[{i}/12] held-out={subject} -> test_accuracy={acc:.4f}  ({elapsed:.1f}s)")
+        print(f"[{i}/{n}] held-out={subject} -> test_accuracy={acc:.4f}  ({elapsed:.1f}s)")
 
         fold_rows.append(dict(
             subject=subject, n_train=len(train_epochs), n_test=len(test_epochs),
@@ -136,23 +148,23 @@ def main():
 
     df = pd.DataFrame(fold_rows)
     mean_acc = df["test_accuracy"].mean()
-    std_acc = df["test_accuracy"].std(ddof=0)  # population std, matches how the 14-fold baseline was computed
+    std_acc = df["test_accuracy"].std(ddof=0)  # population std, same as the baseline
 
+    excl_label = f"{n}-fold (excl. {', '.join(EXCLUDED_SUBJECTS)})"
+    base_label = f"{base_n}-fold (all subjects, baseline)"
     total_elapsed = time.time() - t_start
-    print(f"\n12-fold (excl. subject_22, subject_26) EEGNet LOSO: "
+    print(f"\n{excl_label} EEGNet LOSO: "
           f"mean={mean_acc:.4f}  std={std_acc:.4f}  (total wall time {total_elapsed/60:.1f} min)")
-    print(f"14-fold baseline (all subjects, from out/results/eegnet_leave_one_out_run.pkl): "
-          f"mean={BASELINE_14FOLD_MEAN:.4f}  std={BASELINE_14FOLD_STD:.4f}")
-    print(f"Delta (12-fold minus 14-fold baseline): mean {mean_acc - BASELINE_14FOLD_MEAN:+.4f}, "
-          f"std {std_acc - BASELINE_14FOLD_STD:+.4f}")
+    print(f"{base_label}, from out/results/eegnet_leave_one_out_run.pkl: "
+          f"mean={base_mean:.4f}  std={base_std:.4f}")
+    print(f"Delta (excluded minus baseline): mean {mean_acc - base_mean:+.4f}, "
+          f"std {std_acc - base_std:+.4f}")
 
     df.to_csv(OUT_DIR / "subject_exclusion_robustness_per_fold.csv", index=False)
 
     summary = pd.DataFrame([
-        dict(variant="14-fold (all subjects, baseline)", n_folds=14,
-             accuracy_mean=BASELINE_14FOLD_MEAN, accuracy_std=BASELINE_14FOLD_STD),
-        dict(variant="12-fold (excl. subject_22, subject_26)", n_folds=12,
-             accuracy_mean=mean_acc, accuracy_std=std_acc),
+        dict(variant=base_label, n_folds=base_n, accuracy_mean=base_mean, accuracy_std=base_std),
+        dict(variant=excl_label, n_folds=n, accuracy_mean=mean_acc, accuracy_std=std_acc),
     ])
     summary.to_csv(OUT_DIR / "subject_exclusion_robustness.csv", index=False)
     print(f"\nWrote {OUT_DIR / 'subject_exclusion_robustness.csv'}")
@@ -160,16 +172,16 @@ def main():
 
     md_lines = [
         "# Subject-exclusion robustness check (EEGNet, LOSO, excl. subject_22 & subject_26)\n",
-        f"Total wall time: {total_elapsed/60:.1f} min for {len(subjects)} folds.\n",
+        f"Total wall time: {total_elapsed/60:.1f} min for {n} folds.\n",
         "| variant | n_folds | accuracy_mean | accuracy_std |",
         "|---|---|---|---|",
-        f"| 14-fold (all subjects, baseline) | 14 | {BASELINE_14FOLD_MEAN:.4f} | {BASELINE_14FOLD_STD:.4f} |",
-        f"| 12-fold (excl. subject_22, subject_26) | 12 | {mean_acc:.4f} | {std_acc:.4f} |",
+        f"| {base_label} | {base_n} | {base_mean:.4f} | {base_std:.4f} |",
+        f"| {excl_label} | {n} | {mean_acc:.4f} | {std_acc:.4f} |",
         "",
-        f"Delta (12-fold - 14-fold): mean {mean_acc - BASELINE_14FOLD_MEAN:+.4f}, "
-        f"std {std_acc - BASELINE_14FOLD_STD:+.4f}",
+        f"Delta (excluded - baseline): mean {mean_acc - base_mean:+.4f}, "
+        f"std {std_acc - base_std:+.4f}",
         "",
-        "## Per-fold accuracy (12-fold run)",
+        f"## Per-fold accuracy ({n}-fold run)",
         "",
         "| subject | n_train | n_test | test_accuracy |",
         "|---|---|---|---|",
